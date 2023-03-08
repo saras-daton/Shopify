@@ -7,9 +7,9 @@ config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "edm-saras" #equivalent to project_id in BigQuery
+  raw_database: "Shopify" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
+  raw_schema: "Raw" #equivalent to dataset in BigQuery
     # Example Schema name
 
   get_brandname_from_tablename_flag: True
@@ -27,10 +27,8 @@ vars:
   currency_conversion_flag: False
   timezone_conversion_flag: False
   raw_table_timezone_offset_hours: {
-    "edm-saras.EDM_Daton.Brand_US_Shopify_BQ_orders":7,
-    "edm-saras.EDM_Daton.Brand_US_Shopify_BQ_products":7,
-    "EDM.EDM.BRAND_US_SHOPIFY_SF_ORDERS":7,
-    "EDM.EDM.BRAND_US_SHOPIFY_SF_PRODUCTS":7
+    "Shopify.Raw.BRAND_UK_SHOPIFY_SF_ORDERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_SF_PRODUCTS":-7
   }
       # Above are Example entries for raw table level input offset hours
 
@@ -78,4 +76,4 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   shopify:
     Shopify:
-      +schema: stg_shopify_dbthub
+      +schema: stg_shopify
