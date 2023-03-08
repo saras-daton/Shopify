@@ -1,4 +1,4 @@
-{% if var('spy_orders_refunds_line_items') %}
+{% if var('shopify_orders_refunds_line_items') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}

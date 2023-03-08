@@ -1,3 +1,8 @@
+{% if var('shopify_orders_discount_allocation') %}
+{{ config( enabled = True ) }}
+{% else %}
+{{ config( enabled = False ) }}
+{% endif %}
 
 {% if var('currency_conversion_flag') %}
 -- depends_on: {{ ref('ExchangeRates') }}

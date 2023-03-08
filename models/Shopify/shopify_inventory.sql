@@ -1,4 +1,4 @@
-{% if var('spy_inventory') %}
+{% if var('shopify_inventory') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
