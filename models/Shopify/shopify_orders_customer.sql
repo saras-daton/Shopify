@@ -1,4 +1,4 @@
-{% if var('spy_orders_customer') %}
+{% if var('shopify_orders_customer') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}

@@ -1,4 +1,4 @@
-{% if var('spy_orders_line_items_tax_lines') %}
+{% if var('shopify_orders_line_items_tax_lines') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
