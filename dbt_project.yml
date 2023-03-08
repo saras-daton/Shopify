@@ -24,8 +24,8 @@ vars:
   # if get_storename_from_tablename_flag = False, provide the store name to be populated in the table
   default_storename: ""
 
-  currency_conversion_flag: False
-  timezone_conversion_flag: False
+  currency_conversion_flag: True
+  timezone_conversion_flag: True
   raw_table_timezone_offset_hours: {
     "edm-saras.EDM_Daton.Brand_US_Shopify_BQ_orders":7,
     "edm-saras.EDM_Daton.Brand_US_Shopify_BQ_products":7,
