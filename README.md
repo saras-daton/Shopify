@@ -175,7 +175,7 @@ models:
       materialized: incremental
       incremental_strategy: merge
       unique_key: ['order_id','line_items_id','line_items_properties_name','discount_application_index']
-      partition_by: { 'field': 'created_at', 'data_type': 'date' }
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
 
   - name: shopify_orders_fulfillment_orders
