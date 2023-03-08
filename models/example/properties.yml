@@ -1,0 +1,163 @@
+version: 2
+models:
+  - name: spy_customers
+    description: A list orders along with the customer details
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['customers_id','addresses_id']
+      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['customers_id']
+
+  - name: spy_inventory	
+    description: A detailed report which gives details about inventory levels
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['inventory_item_id','location_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['inventory_item_id']
+
+  - name: spy_orders_addresses
+    description: A list of billing and shipping addresses
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','email']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','email']
+
+  - name: spy_orders_customer
+    description: A report of orders at customer level
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','customer_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders_discount_allocation
+    description: A report of orders with discount allocations.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','line_items_id','line_items_properties_name','discount_application_index']
+      partition_by: { 'field': 'created_at', 'data_type': 'date' }
+      cluster_by: ['order_id','line_items_id']
+
+  - name: spy_orders_fulfillment_orders
+    description: A report of orders with fulfillment details, destinations and assigned locations.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','fulfillment_orders_id','line_items_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','line_items_id']
+
+  - name: spy_orders_fulfillments
+    description: A report of orders with fulfillment details, destinations and assigned locations at product level.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','fulfillments_id','fulfillments_line_items_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders_line_items_tax_lines
+    description: A list of orders with  product level taxes.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','line_items_id','line_items_tax_lines_title','_seq_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','line_items_id','line_items_tax_lines_title'] 
+
+  - name: spy_orders_line_items
+    description: A list of orders at product level.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','line_items_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','line_items_id']
+
+  - name: spy_orders_refund_lines
+    description: A list of refunded orders which includes refund & order level revenue.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','refund_line_items_line_item_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders_refunds_line_items
+    description: A list of refunded orders which includes refund & product level revenue.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','refund_line_items_id','transactions_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders_refunds_tax_lines
+    description: A list of taxes associated with the refunded item.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','refund_line_items_id','line_items_tax_lines_title','_seq_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders_shipping_lines
+    description: A list of orders.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders_transactions
+    description: A list of order transactions.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','transactions_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_orders
+    description: A list of orders.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_product
+    description: A list of product summary, manufacturer & dimensions
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['sku','product_id','variant_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['sku']
+
+  - name: spy_refunds_transactions
+    description: A list of refund transactions.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','transactions_id','_seq_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
+  - name: spy_transactions
+    description: A report of transactions with transactions fees, sources and status.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id', 'type', 'source_id', 'source_order_id']
+      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id', 'type', 'source_id', 'source_order_id']
