@@ -26,6 +26,9 @@ Daton Integrations for
 - Shopify 
 - Exchange Rates(Optional, if currency conversion is not required)
 
+*Note:* 
+*Please select 'Do Not Unnest' option while setting up Daton Integrataion*
+
 # Installation & Configuration
 
 ## Installation Instructions
