@@ -108,8 +108,8 @@ This package contains models from the Shopify API which includes reports on {{sa
 
 | **Category**                 | **Model**  | **Description** |
 | ------------------------- | ---------------| ----------------------- |
-|Customer | [Shopify_Customers](models/Shopify/Shopify_Customers.sql)  | A list orders along with the customer details |
-|Inventory | [Shopify_Inventory](models/Shopify/Shopify_Inventory.sql)  | A detailed report which gives details about inventory levels |
+|Customer | [Shopify_Customers](models/Shopify/Shopify_Customers.sql)  | A detailed report which gives infomration about Customers |
+|Inventory | [Shopify_Inventory](models/Shopify/Shopify_Inventory.sql)  | A detailed report which gives infomration about inventory levels |
 |Orders | [Shopify_Orders_addresses](models/Shopify/Shopify_Orders_addresses.sql)  | A list of billing and shipping addresses |
 |Orders | [Shopify_Orders_customer](models/Shopify/Shopify_Orders_customer.sql)| A report of orders at customer level |
 |Orders | [Shopify_Orders_fulfillment_orders](models/Shopify/Shopify_Orders_fulfillment_orders.sql)| A report of orders with fulfillment details, destinations and assigned locations. |
