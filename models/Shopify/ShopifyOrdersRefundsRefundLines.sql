@@ -114,7 +114,7 @@ with unnested_refunds as(
         contact_email,
         order_status_url,
         {% if target.type =='snowflake' %}
-        refunds.VALUE:id::VARCHAR as refunds_id,
+        COALESCE(refunds.VALUE:id::VARCHAR,'') as refunds_id,
         refunds.VALUE:order_id::VARCHAR as refunds_order_id,
         refunds.VALUE:created_at::timestamp as refunds_created_at,
         refunds.VALUE:note::VARCHAR as ref_note,
@@ -130,7 +130,7 @@ with unnested_refunds as(
         refund_line_items.VALUE:line_item as line_item,
         refunds.VALUE:transactions as transactions,
         {% else %}
-        refunds.id as refunds_id,
+        COALESCE(CAST(refunds.id as string),'') as refunds_id,
         refunds.order_id as refunds_order_id,
         CAST(refunds.created_at as timestamp) refunds_created_at,
         refunds.note as ref_note,
@@ -139,7 +139,7 @@ with unnested_refunds as(
         refunds.restock as restock,
         COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
         refund_line_items.quantity as refund_line_items_quantity,
-        refund_line_items.line_item_id as refund_line_items_line_item_id,
+        COALESCE(CAST(refund_line_items.line_item_id as string),'') as refund_line_items_line_item_id,
         refund_line_items.location_id as refund_line_items_location_id,
         refund_line_items.subtotal,
         refund_line_items.total_tax as refund_line_items_total_tax,
@@ -176,7 +176,7 @@ with unnested_refunds as(
 
 dedup as (
 select *,
-DENSE_RANK() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) row_num
+DENSE_RANK() OVER (PARTITION BY order_id, refunds_id, refund_line_items_id order by _daton_batch_runtime desc) row_num
 from unnested_refunds 
 )
 

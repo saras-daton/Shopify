@@ -86,7 +86,7 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','refund_line_items_line_item_id']
+      unique_key: ['order_id','refunds_id','refund_line_items_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
@@ -95,7 +95,7 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','refund_line_items_id','transactions_id']
+      unique_key: ['order_id','refund_line_items_id','variant_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 

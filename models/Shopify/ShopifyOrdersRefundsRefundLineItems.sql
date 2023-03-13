@@ -215,7 +215,7 @@ with unnested_refunds as(
 
 dedup as (
 select *,
-DENSE_RANK() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) row_num
+DENSE_RANK() OVER (PARTITION BY order_id, refund_line_items_id, variant_id order by _daton_batch_runtime desc) row_num
 from unnested_refunds 
 )
 
