@@ -1,4 +1,4 @@
-{% if var('shopify_orders_customer') %}
+{% if var('ShopifyOrdersCustomer') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}

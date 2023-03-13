@@ -1,4 +1,4 @@
-{% if var('shopify_orders_line_items') %}
+{% if var('ShopifyOrdersShippingLines') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -22,10 +22,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {%- endif -%}
 {% endif %}
 
-{% set table_name_query %}
-{{set_table_name('%shopify%orders%')}}    
-{% endset %}  
 
+{% set table_name_query %}
+{{set_table_name('%shopify%orders')}}    
+{% endset %}  
 
 {% set results = run_query(table_name_query) %}
 {% if execute %}
@@ -62,11 +62,12 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{brand}}' as brand,
         '{{store}}' as store,
         admin_graphql_api_id,
-        cast(a.id as string) order_id, 
+        cast(a.id as string) as order_id, 
         email,
         closed_at,
         cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
-        CAST(a.updated_at as timestamp) updated_at,
+        CAST(a.updated_at as timestamp) as updated_at,
+        fulfillment_orders,
         number,
         note,
         token,
@@ -96,72 +97,67 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         location_id,
         source_identifier,
         source_url,
-        CAST(a.processed_at as timestamp) processed_at,
+        CAST(a.processed_at as timestamp) as processed_at,
         device_id,
-        phone,
+        a.phone,
         customer_locale,
         app_id,
         browser_ip,
         landing_site_ref,
         order_number,
+        {% if target.type =='snowflake' %}
+        discount_codes.VALUE:code::VARCHAR as discount_code,
+        discount_codes.VALUE:amount::NUMERIC as discount_amount,
+        discount_codes.VALUE:type::VARCHAR as discount_type,
+        shipping_lines.VALUE:id::VARCHAR as shipping_lines_id,
+        shipping_lines.VALUE:title::VARCHAR as shipping_lines_title,
+        shipping_lines.VALUE:price::VARCHAR as price,
+        shipping_lines.VALUE:code::VARCHAR as code,
+        shipping_lines.VALUE:source::VARCHAR as source,
+        shipping_lines.VALUE:phone::VARCHAR as shipping_lines_phone,
+        shipping_lines.VALUE:requested_fulfillment_service_id::VARCHAR as requested_fulfillment_service_id,
+        shipping_lines.VALUE:delivery_category::VARCHAR as delivery_category,
+        shipping_lines.VALUE:carrier_identifier::VARCHAR as carrier_identifier,
+        shipping_lines.VALUE:discounted_price::FLOAT as discounted_price,
+        {% else %}
+        discount_codes.code as discount_code,
+        discount_codes.amount as discount_amount,
+        discount_codes.type as discount_type,
+        COALESCE(CAST(shipping_lines.id as string),'') as shipping_lines_id,
+        shipping_lines.title as shipping_lines_title,
+        shipping_lines.price as price,
+        shipping_lines.code as code,
+        shipping_lines.source as source,
+        shipping_lines.phone as shipping_lines_phone,
+        shipping_lines.requested_fulfillment_service_id as requested_fulfillment_service_id,
+        shipping_lines.delivery_category as delivery_category,
+        shipping_lines.carrier_identifier as carrier_identifier,
+        shipping_lines.discounted_price as discounted_price,
+        {% endif %}
+        note_attributes,
         payment_gateway_names,
         processing_method,
         checkout_id,
         source_name,
         a.fulfillment_status,
+        a.tax_lines,
         tags,
         contact_email,
         order_status_url,
-        {% if target.type =='snowflake' %}
-        line_items.VALUE:id::VARCHAR as line_items_id,
-        line_items.VALUE:variant_id::VARCHAR as variant_id,
-        line_items.VALUE:title::VARCHAR as title,
-        line_items.VALUE:quantity::FLOAT as quantity,
-        line_items.VALUE:price::FLOAT as price,
-        line_items.VALUE:sku::VARCHAR as sku,
-        line_items.VALUE:variant_title::VARCHAR as variant_title,
-        line_items.VALUE:vendor::VARCHAR as vendor,
-        line_items.VALUE:fulfillment_service::VARCHAR as fulfillment_service,
-        line_items.VALUE:product_id::VARCHAR as product_id,
-        line_items.VALUE:requires_shipping::VARCHAR as requires_shipping,
-        line_items.VALUE:taxable::VARCHAR as taxable,
-        line_items.VALUE:gift_card::VARCHAR as gift_card,
-        line_items.VALUE:name::VARCHAR as line_items_name,
-        line_items.VALUE:variant_inventory_management::VARCHAR as variant_inventory_management,
-        line_items.VALUE:properties::VARCHAR as properties,
-        line_items.VALUE:product_exists::VARCHAR as product_exists,
-        line_items.VALUE:fulfillable_quantity::VARCHAR as fulfillable_quantity,
-        line_items.VALUE:grams::VARCHAR as grams, 
-        line_items.VALUE:total_discount::numeric as line_items_total_discount,
-        line_items.VALUE:fulfillment_status::VARCHAR as line_items_fulfillment_status,
-        line_items.VALUE:tax_lines as line_items_tax_lines,
-        {% else %}
-        line_items.id as line_items_id,
-        line_items.variant_id as variant_id,
-        line_items.title as title,
-        line_items.quantity as quantity,
-        cast(line_items.price as numeric) price,
-        line_items.sku as sku,
-        line_items.variant_title as variant_title,
-        line_items.vendor as vendor,
-        line_items.fulfillment_service as fulfillment_service,
-        line_items.product_id as product_id,
-        line_items.requires_shipping as requires_shipping,
-        line_items.taxable as taxable,
-        line_items.gift_card as gift_card,
-        line_items.name as line_items_name,
-        line_items.variant_inventory_management as variant_inventory_management,
-        line_items.properties as properties,
-        line_items.product_exists as product_exists,
-        line_items.fulfillable_quantity as fulfillable_quantity,
-        line_items.grams as grams, 
-        cast(line_items.total_discount as numeric) line_items_total_discount,
-        line_items.fulfillment_status as line_items_fulfillment_status,
-        line_items.tax_lines as line_items_tax_lines,
-        {% endif %}
+        line_items,
+        shipping_lines,
+        billing_address,
+        shipping_address,
+        fulfillments,
+        client_details,
+        refunds,
+        payment_details,
+        customer,
+        transactions,
+
         {% if var('currency_conversion_flag') %}
-            case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
+            case when b.value is null then 1 else b.value end as exchange_currency_rate,
+            case when b.from_currency_code is null then currency else b.from_currency_code end as exchange_currency_code,
         {% else %}
             cast(1 as decimal) as exchange_currency_rate,
             currency as exchange_currency_code,
@@ -174,9 +170,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         Dense_Rank() OVER (PARTITION BY a.id order by a.{{daton_batch_runtime()}} desc) row_num
             from {{i}} a
                 {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+                    left join {{ref('ExchangeRates')}} b on date(created_at) = b.date and currency = b.to_currency_code
                 {% endif %}
-                {{unnesting("line_items")}}
+                {{unnesting("discount_codes")}}
+                {{unnesting("shipping_lines")}}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}

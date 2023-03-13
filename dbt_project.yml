@@ -9,7 +9,7 @@ require-dbt-version: [">=1.0.0", "<2.0.0"]
 vars:
   raw_database: "Shopify" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "Raw" #equivalent to dataset in BigQuery
+  raw_schema: "Daton" #equivalent to dataset in BigQuery
     # Example Schema name
 
   get_brandname_from_tablename_flag: True
@@ -27,28 +27,28 @@ vars:
   currency_conversion_flag: False
   timezone_conversion_flag: False
   raw_table_timezone_offset_hours: {
-    "Shopify.Raw.BRAND_UK_SHOPIFY_SF_ORDERS":-7,
-    "Shopify.Raw.BRAND_UK_SHOPIFY_SF_PRODUCTS":-7
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCTS":-7
   }
       # Above are Example entries for raw table level input offset hours
 
-  shopify_customers: True
-  shopify_inventory: True
-  shopify_orders: True
-  shopify_orders_addresses: True
-  shopify_orders_customer: True
-  shopify_orders_discount_allocation: True
-  shopify_orders_fulfillments: True
-  shopify_orders_fulfillment_orders: True
-  shopify_orders_line_items: True
-  shopify_orders_line_items_tax_lines: True
-  shopify_orders_refunds_line_items: True
-  shopify_orders_refunds_tax_lines: True
-  shopify_orders_refund_lines: True
-  shopify_orders_transactions: True
-  shopify_product: True
-  shopify_refunds_transactions: True
-  shopify_transactions: True
+  ShopifyCustomers: True
+  ShopifyInventory: True
+  ShopifyOrders: True
+  ShopifyOrdersAddresses: True
+  ShopifyOrdersCustomer: True
+  ShopifyOrdersLineItemsDiscounts: True
+  ShopifyOrdersFulfillments: True
+  ShopifyOrdersFulfillmentOrders: True
+  ShopifyOrdersLineItems: True
+  ShopifyOrdersLineItemsTaxLines: True
+  ShopifyOrdersRefundsRefundLineItems: True
+  ShopifyOrdersRefundLineItemsTax: True
+  ShopifyOrdersRefundsRefundLines: True
+  ShopifyOrdersTransactions: True
+  ShopifyProduct: True
+  ShopifyOrdersRefundsTransactions: True
+  ShopifyTransactions: True
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be

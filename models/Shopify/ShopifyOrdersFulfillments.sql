@@ -1,4 +1,4 @@
-{% if var('shopify_orders_fulfillments') %}
+{% if var('ShopifyOrdersFulfillments') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}

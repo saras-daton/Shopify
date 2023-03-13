@@ -1,4 +1,4 @@
-{% if var('shopify_product') %}
+{% if var('ShopifyProduct') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}

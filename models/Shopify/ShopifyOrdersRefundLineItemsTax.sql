@@ -1,4 +1,4 @@
-{% if var('shopify_orders_refunds_line_items') %}
+{% if var('ShopifyOrdersRefundLineItemsTax') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -26,7 +26,7 @@ with unnested_refunds as(
 {% set table_name_query %}
 {{set_table_name('%shopify%orders%')}}    
 {% endset %}  
- 
+
 {% set results = run_query(table_name_query) %}
 {% if execute %}
 {# Return the first column #}
@@ -146,24 +146,9 @@ with unnested_refunds as(
         line_item.VALUE:grams::VARCHAR as grams,
         line_item.VALUE:total_discount::NUMERIC as total_discount,
         line_item.VALUE:fulfillment_status::VARCHAR as line_item_fulfillment_status,
-        transactions.VALUE:id :: VARCHAR as transactions_id,
-        transactions.VALUE:order_id::VARCHAR as transactions_order_id,
-        transactions.VALUE:amount::NUMERIC as amount,
-        transactions.VALUE:kind::VARCHAR as kind,
-        transactions.VALUE:gateway::VARCHAR as transactions_gateway,
-        transactions.VALUE:status::VARCHAR as status,
-        transactions.VALUE:message::VARCHAR as message,
-        transactions.VALUE:created_at::VARCHAR as transactions_created_at,
-        transactions.VALUE:test::VARCHAR as transactions_test,
-        transactions.VALUE:authorization::VARCHAR as authorization,
-        transactions.VALUE:currency::VARCHAR as transactions_currency,
-        transactions.VALUE:location_id::VARCHAR as transactions_location_id,
-        transactions.VALUE:user_id::VARCHAR as transactions_user_id,
-        transactions.VALUE:parent_id::VARCHAR as parent_id,
-        transactions.VALUE:device_id::VARCHAR as transactions_device_id,
-        transactions.VALUE:receipt::VARCHAR as receipt,
-        transactions.VALUE:error_code::VARCHAR as error_code,
-        transactions.VALUE:source_name::VARCHAR as transactions_source_name,
+        tax_lines.VALUE:title::VARCHAR as line_items_tax_lines_title,
+        tax_lines.VALUE:price::NUMERIC as line_items_tax_lines_price,
+        tax_lines.VALUE:rate::NUMERIC as line_items_tax_lines_rate,
         {% else %}
         refunds.id as refunds_id,
         refunds.order_id as refunds_order_id,
@@ -198,32 +183,16 @@ with unnested_refunds as(
         line_item.grams,
         line_item.total_discount,
         line_item.fulfillment_status as line_item_fulfillment_status,
-        line_item.tax_lines as line_item_tax_lines,
-        transactions.id as transactions_id,
-        transactions.order_id as transactions_order_id,
-        transactions.amount,
-        transactions.kind,
-        transactions.gateway as transactions_gateway,
-        transactions.status,
-        transactions.message,
-        transactions.created_at as transactions_created_at,
-        transactions.test as transactions_test,
-        transactions.authorization,
-        transactions.currency as transactions_currency,
-        transactions.location_id as transactions_location_id,
-        transactions.user_id as transactions_user_id,
-        transactions.parent_id,
-        transactions.device_id as transactions_device_id,
-        transactions.receipt,
-        transactions.error_code,
-        transactions.source_name as transactions_source_name,
+        tax_lines.title as line_items_tax_lines_title,
+        tax_lines.price as line_items_tax_lines_price,
+        tax_lines.rate as line_items_tax_lines_rate,
         {% endif %}
         {% if var('currency_conversion_flag') %}
             case when d.value is null then 1 else d.value end as exchange_currency_rate,
             case when d.from_currency_code is null then a.currency else d.from_currency_code end as exchange_currency_code, 
         {% else %}
             cast(1 as decimal) as exchange_currency_rate,
-            a.currency as exchange_currency_code,
+            currency as exchange_currency_code,
         {% endif %}
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
@@ -236,8 +205,8 @@ with unnested_refunds as(
             {% endif %}
             {{unnesting("refunds")}}
             {{multi_unnesting("refunds","refund_line_items")}}
-            {{multi_unnesting("refunds","transactions")}}
             {{multi_unnesting("refund_line_items","line_item")}}
+            {{multi_unnesting("line_item","tax_lines")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
@@ -254,6 +223,8 @@ DENSE_RANK() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) row
 from unnested_refunds 
 )
 
+SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) _seq_id
+from (
 select * {{exclude()}} (row_num)
 from dedup 
-where row_num = 1
+where row_num = 1)

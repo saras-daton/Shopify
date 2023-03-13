@@ -1,4 +1,4 @@
-{% if var('shopify_orders_discount_allocation') %}
+{% if var('ShopifyOrdersLineItemsDiscounts') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}

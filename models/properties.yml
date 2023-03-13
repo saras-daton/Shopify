@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: shopify_customers
+  - name: ShopifyCustomers
     description: A list orders along with the customer details
     config:
       materialized: incremental
@@ -9,7 +9,7 @@ models:
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['customers_id']
 
-  - name: shopify_inventory	
+  - name: ShopifyInventory	
     description: A detailed report which gives details about inventory levels
     config:
       materialized: incremental
@@ -18,7 +18,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['inventory_item_id']
 
-  - name: shopify_orders_addresses
+  - name: ShopifyOrdersAddresses
     description: A list of billing and shipping addresses
     config:
       materialized: incremental
@@ -27,7 +27,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','email']
 
-  - name: shopify_orders_customer
+  - name: ShopifyOrdersCustomer
     description: A report of orders at customer level
     config:
       materialized: incremental
@@ -36,7 +36,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders_discount_allocation
+  - name: ShopifyOrdersLineItemsDiscounts
     description: A report of orders with discount allocations.
     config:
       materialized: incremental
@@ -45,7 +45,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
 
-  - name: shopify_orders_fulfillment_orders
+  - name: ShopifyOrdersFulfillmentOrders
     description: A report of orders with fulfillment details, destinations and assigned locations.
     config:
       materialized: incremental
@@ -54,7 +54,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
 
-  - name: shopify_orders_fulfillments
+  - name: ShopifyOrdersFulfillments
     description: A report of orders with fulfillment details, destinations and assigned locations at product level.
     config:
       materialized: incremental
@@ -63,7 +63,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders_line_items_tax_lines
+  - name: ShopifyOrdersLineItemsTaxLines
     description: A list of orders with  product level taxes.
     config:
       materialized: incremental
@@ -72,7 +72,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id','line_items_tax_lines_title'] 
 
-  - name: shopify_orders_line_items
+  - name: ShopifyOrdersLineItems
     description: A list of orders at product level.
     config:
       materialized: incremental
@@ -81,7 +81,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
 
-  - name: shopify_orders_refund_lines
+  - name: ShopifyOrdersRefundsRefundLines
     description: A list of refunded orders which includes refund & order level revenue.
     config:
       materialized: incremental
@@ -90,7 +90,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders_refunds_line_items
+  - name: ShopifyOrdersRefundsRefundLineItems
     description: A list of refunded orders which includes refund & product level revenue.
     config:
       materialized: incremental
@@ -99,7 +99,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders_refunds_tax_lines
+  - name: ShopifyOrdersRefundLineItemsTax
     description: A list of taxes associated with the refunded item.
     config:
       materialized: incremental
@@ -108,7 +108,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders_shipping_lines
+  - name: ShopifyOrdersShippingLines
     description: A list of orders.
     config:
       materialized: incremental
@@ -117,7 +117,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders_transactions
+  - name: ShopifyOrdersTransactions
     description: A list of order transactions.
     config:
       materialized: incremental
@@ -126,7 +126,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_orders
+  - name: ShopifyOrders
     description: A list of orders.
     config:
       materialized: incremental
@@ -135,7 +135,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_product
+  - name: ShopifyProduct
     description: A list of product summary, manufacturer & dimensions
     config:
       materialized: incremental
@@ -144,7 +144,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['sku']
 
-  - name: shopify_refunds_transactions
+  - name: ShopifyOrdersRefundsTransactions
     description: A list of refund transactions.
     config:
       materialized: incremental
@@ -153,7 +153,7 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: shopify_transactions
+  - name: ShopifyTransactions
     description: A report of transactions with transactions fees, sources and status.
     config:
       materialized: incremental

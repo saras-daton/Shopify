@@ -1,4 +1,4 @@
-{% if var('shopify_refunds_transactions') %}
+{% if var('ShopifyOrdersRefundsRefundLineItems') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -26,7 +26,7 @@ with unnested_refunds as(
 {% set table_name_query %}
 {{set_table_name('%shopify%orders%')}}    
 {% endset %}  
-
+ 
 {% set results = run_query(table_name_query) %}
 {% if execute %}
 {# Return the first column #}
@@ -75,7 +75,7 @@ with unnested_refunds as(
         total_price,
         subtotal_price,
         total_weight,
-        total_tax,
+        a.total_tax,
         taxes_included,
         a.currency,
         financial_status,
@@ -119,26 +119,34 @@ with unnested_refunds as(
         refunds.VALUE:note::VARCHAR as ref_note,
         refunds.VALUE:user_id::VARCHAR as refunds_user_id,
         refunds.VALUE:processed_at::timestamp as refunds_processed_at,
-        refunds.VALUE:restock as restock,
-        refunds.VALUE:refund_line_items,
-        COALESCE(transactions.VALUE:id::VARCHAR,'') as transactions_id,
-        transactions.VALUE:order_id::VARCHAR as transactions_order_id,
-        transactions.VALUE:amount::numeric as transactions_amount,
-        transactions.VALUE:kind::VARCHAR as kind,
-        transactions.VALUE:gateway::VARCHAR as transactions_gateway,
-        transactions.VALUE:status::VARCHAR as status,
-        transactions.VALUE:message::VARCHAR as message,
-        transactions.VALUE:created_at::VARCHAR as transactions_created_at,
-        transactions.VALUE:test::VARCHAR as transactions_test,
-        transactions.VALUE:authorization::VARCHAR as authorization,
-        transactions.VALUE:currency::VARCHAR as transactions_currency,
-        transactions.VALUE:location_id::VARCHAR as transactions_location_id,
-        transactions.VALUE:user_id::VARCHAR as transactions_user_id,
-        transactions.VALUE:parent_id::VARCHAR as parent_id,
-        transactions.VALUE:device_id::VARCHAR as transactions_device_id,
-        transactions.VALUE:receipt::VARCHAR as receipt,
-        transactions.VALUE:error_code::VARCHAR as error_code,
-        transactions.VALUE:source_name::VARCHAR as transactions_source_name,
+        refunds.VALUE:restock::VARCHAR as restock,
+        COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
+        refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
+        refund_line_items.VALUE:line_item_id::VARCHAR as refund_line_items_line_item_id,
+        refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
+        refund_line_items.VALUE:subtotal::NUMERIC as subtotal,
+        refund_line_items.VALUE:total_tax::NUMERIC as refund_line_items_total_tax,
+        line_item.VALUE:id::VARCHAR as line_item_id,
+        line_item.VALUE:variant_id::VARCHAR as variant_id,
+        line_item.VALUE:title::VARCHAR as title,
+        line_item.VALUE:quantity::NUMERIC as quantity,
+        line_item.VALUE:price::NUMERIC as price,
+        line_item.VALUE:sku::VARCHAR as sku,
+        line_item.VALUE:variant_title::VARCHAR as variant_title,
+        line_item.VALUE:vendor::VARCHAR as vendor,
+        line_item.VALUE:fulfillment_service::VARCHAR as fulfillment_service,
+        line_item.VALUE:product_id::VARCHAR as product_id,
+        line_item.VALUE:requires_shipping::VARCHAR as requires_shipping,
+        line_item.VALUE:taxable::VARCHAR as taxable,
+        line_item.VALUE:gift_card::VARCHAR as gift_card,
+        line_item.VALUE:name::VARCHAR as line_item_name,
+        line_item.VALUE:variant_inventory_management::VARCHAR as variant_inventory_management,
+        line_item.VALUE:product_exists::VARCHAR as product_exists,
+        line_item.VALUE:fulfillable_quantity::NUMERIC as fulfillable_quantity,
+        line_item.VALUE:grams::VARCHAR as grams,
+        line_item.VALUE:total_discount::NUMERIC as total_discount,
+        line_item.VALUE:fulfillment_status::VARCHAR as line_item_fulfillment_status,
+        refunds.VALUE:transactions::VARCHAR as refunds_transactions,
         {% else %}
         refunds.id as refunds_id,
         refunds.order_id as refunds_order_id,
@@ -147,25 +155,34 @@ with unnested_refunds as(
         refunds.user_id as refunds_user_id,
         CAST(refunds.processed_at as timestamp) refunds_processed_at,
         refunds.restock as restock,
-        refunds.refund_line_items,
-        COALESCE(CAST(transactions.id as string),'') as transactions_id,
-        transactions.order_id as transactions_order_id,
-        transactions.amount as transactions_amount,
-        transactions.kind,
-        transactions.gateway as transactions_gateway,
-        transactions.status,
-        transactions.message,
-        transactions.created_at as transactions_created_at,
-        transactions.test as transactions_test,
-        transactions.authorization,
-        transactions.currency as transactions_currency,
-        transactions.location_id as transactions_location_id,
-        transactions.user_id as transactions_user_id,
-        transactions.parent_id,
-        transactions.device_id as transactions_device_id,
-        transactions.receipt,
-        transactions.error_code,
-        transactions.source_name as transactions_source_name,
+        COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
+        refund_line_items.quantity as refund_line_items_quantity,
+        refund_line_items.line_item_id as refund_line_items_line_item_id,
+        refund_line_items.location_id as refund_line_items_location_id,
+        refund_line_items.subtotal,
+        refund_line_items.total_tax as refund_line_items_total_tax,
+        line_item.id as line_item_id,
+        line_item.variant_id,
+        line_item.title,
+        line_item.quantity,
+        line_item.price,
+        line_item.sku,
+        line_item.variant_title,
+        line_item.vendor,
+        line_item.fulfillment_service,
+        line_item.product_id,
+        line_item.requires_shipping,
+        line_item.taxable,
+        line_item.gift_card,
+        line_item.name as line_item_name,
+        line_item.variant_inventory_management,
+        line_item.product_exists,
+        line_item.fulfillable_quantity,
+        line_item.grams,
+        line_item.total_discount,
+        line_item.fulfillment_status as line_item_fulfillment_status,
+        line_item.tax_lines as line_item_tax_lines,
+        refunds.transactions as refunds_transactions,
         {% endif %}
         {% if var('currency_conversion_flag') %}
             case when d.value is null then 1 else d.value end as exchange_currency_rate,
@@ -184,7 +201,8 @@ with unnested_refunds as(
                 left join {{ref('ExchangeRates')}} d on date(a.created_at) = d.date and a.currency = d.to_currency_code
             {% endif %}
             {{unnesting("refunds")}}
-            {{multi_unnesting("refunds","transactions")}}
+            {{multi_unnesting("refunds","refund_line_items")}}
+            {{multi_unnesting("refund_line_items","line_item")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
@@ -201,8 +219,6 @@ DENSE_RANK() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) row
 from unnested_refunds 
 )
 
-SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) _seq_id
-from (
 select * {{exclude()}} (row_num)
 from dedup 
-where row_num = 1)
+where row_num = 1
