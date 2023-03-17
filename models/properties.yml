@@ -161,3 +161,111 @@ models:
       unique_key: ['id', 'type', 'source_id', 'source_order_id']
       partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id', 'type', 'source_id', 'source_order_id']
+
+
+  - name:ShopifyCountries
+    description: A list of countries.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id','provinces_id']
+      cluster_by: ['provinces_id']
+
+
+  - name: ShopifyEvents
+    description: A list of events.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyShop
+    description: Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyCheckouts
+    description: After a customer adds products to a cart, they use your checkout to enter their shipping information and payment details before placing the order.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyTenderTransactions
+    description: Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyPolicies
+    description: List of policies for your Shopify store like Refund policy, Privacy policy, Terms of service, Shipping policy, Legal notice.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['title']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['title']
+
+  - name: ShopifySmartCollections
+    description: An automated collection uses selection conditions to automatically include matching products.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyCollects
+    description: A list of collects.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyLocations
+    description: Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyPriceRules
+    description: A list of rules to set pricing.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyCarrierServices
+    description: A list of carrier services.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      cluster_by: ['id']
+
+  - name: ShopifyPayouts
+    description: lists all of your payouts and their current status.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'date', 'data_type': 'date' }
+      cluster_by: ['id']
