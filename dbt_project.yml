@@ -49,6 +49,18 @@ vars:
   ShopifyProduct: True
   ShopifyOrdersRefundsTransactions: True
   ShopifyTransactions: True
+  ShopifyCheckouts: True
+  ShopifyCollects: True
+  ShopifyCarrierServices: True
+  ShopifyCountries: True
+  ShopifyEvents: True
+  ShopifyLocations: True
+  ShopifyPayouts: True
+  ShopifyPolicies: True
+  ShopifyPriceRules: True
+  ShopifyShop: True
+  ShopifySmartCollections: True
+  ShopifyTenderTransactions: True
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
