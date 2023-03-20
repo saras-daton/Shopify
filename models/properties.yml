@@ -163,7 +163,7 @@ models:
       cluster_by: ['id', 'type', 'source_id', 'source_order_id']
 
 
-  - name:ShopifyCountries
+  - name: ShopifyCountries
     description: A list of countries.
     config:
       materialized: incremental

@@ -58,19 +58,44 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        id,
-        name,
-        tax,
-        code,
-        tax_name,
-        provinces,
+        a.id,
+        a.name,
+        a.tax,
+        a.code,
+        a.tax_name,
+        {% if target.type =='snowflake' %}
+        provinces.VALUE:id as provinces_id,
+        provinces.VALUE:country_id as provinces_country_id,
+        provinces.VALUE:name as provinces_name,
+        provinces.VALUE:code as provinces_code,
+        provinces.VALUE:tax as provinces_tax,
+        provinces.VALUE:tax_name as provinces_tax_name,
+        provinces.VALUE:tax_type as provinces_tax_type,
+        provinces.VALUE:shipping_zone_id as provinces_shipping_zone_id,
+        provinces.VALUE:tax_percentage as provinces_tax_percentage,
+        {% else %}
+        provinces.id as provinces_id,
+        provinces.country_id as provinces_country_id,
+        provinces.name as provinces_name,
+        provinces.code as provinces_code,
+        provinces.tax as provinces_tax,
+        provinces.tax_name as provinces_tax_name,
+        provinces.tax_type as provinces_tax_type,
+        provinces.shipping_zone_id as provinces_shipping_zone_id,
+        provinces.tax_percentage as provinces_tax_percentage,
+        {% endif %}
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
+        {% if target.type =='snowflake' %}
+        DENSE_RANK() OVER (PARTITION BY a.id,provinces.VALUE:id order by {{daton_batch_runtime()}} desc) row_num
+        {% else %}
+        DENSE_RANK() OVER (PARTITION BY a.id,provinces.id order by {{daton_batch_runtime()}} desc) row_num
+        {% endif %}
         FROM  {{i}} a
+                {{unnesting("provinces")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
