@@ -37,8 +37,8 @@ If you haven't already, you will need to create a packages.yml file in your DBT 
 
 ```yaml
 packages:
-  - package: saras-daton/shopify
-    version: v1.0.0
+  - package: saras-daton/Shopify
+    version: v1.1.1
 ```
 
 # Configuration 
