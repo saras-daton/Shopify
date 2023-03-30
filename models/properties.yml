@@ -126,6 +126,15 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
+  - name: ShopifyOrdersDiscountApplications
+    description: A list of order and line item discounts with their coupon codes.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','discount_applications_target_type','discount_applications_type','discount_applications_value_type','_seq_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+
   - name: ShopifyOrders
     description: A list of orders.
     config:

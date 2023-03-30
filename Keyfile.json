@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "edm-saras",
+  "private_key_id": "c5203e7fe0e40f08ca12ccbb6cbf5c2fc4ae532b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDQD20FtvluHiXF\nlFP3Ou7e0EwuDGTU/DuKLbV8Vna7uqfJ8vDEU4R+iQoDdtSG7E6437w9IASRhAwo\n0knlO0bb/+x6QK54YcE55heSevInUQfKxPhCcA6flAew6UUYAsGeJgl6hdrAkExE\nODeN5kg6e+ASA2XawWs6DmmmZ9c3VmQEAD2LH46O4gi7oLzSbJ6lcRI3wuWoiSXX\n/sF2POtw3G04g0ZV4gx8if2fku/4tbdj9pqzBB77eMfUYuOlnqcYRSKYZJyQfcSK\nXPb9bNWBoT1juDH5UhjdFltEt7HXwRwTqm40BCCsLv4IPHIZlaKDz2neYEhHg9Lq\nP8BHPj/7AgMBAAECggEAPDOqdRPbmnxIq6HepdO8mGYnFM/rQSF2zOWq9L5D/s/k\niu+rsPMFjGN0rUnt9thbcuzyF7GzALP3nLw0O4rqVu/3aexbT2PhuDIWsgC3Hp84\npPhXaUnpQU1g6FSm9GqfwXX6GiSvBjb6imbF1F5Emf+L90paZ3C96P+QnGDBijYE\nd97b7/obdjtzFeAFzmpxnIfn1zJk2+xCwCYdmGCJgcejnoZB+vuBMrhTd8/3yOqc\n8QKL2NoSQC5BZ859Vep0jP8/QuzanqeTtq+B+/HgHQXjjxrGDh94NvNRQMq8J2Og\nrwOkKldjT27FIQoxJxaGlNWzmnlEIgehDHFxb0DVcQKBgQDvKPvMogw5C2Bd8DaU\nOI2t3m7LadlkF1vyqKOlmRl4y7RDUS0YT08/KjG2R/1Fve/GdRSqieer9HmyVQbl\nDC2WwgJz4P4mA6yf7Jh+ls3j0OE0hoqjMjZqq1LryqiFYsF1HAwsqsyfMDBEYecA\nztvhLEs8Tyz13uplGc97N6fSaQKBgQDetdj10eU9PHUUtgQJHPquv9VbblDOoljP\nK/E0eyrY7h9NZJPats8eE1HkAehs3Do+zlrDy1dm/tXqJfNQVhRhVKgeKAdqeWa+\nqTLueqE2GJ5wV2OD1KevIjs0WG5V8NY7unIHFNN5xz4na6wK0sTpIonh7h7ce3m6\n3v+WTs3qwwKBgA7C28/EjLaUoi0KH4REfVIm8XWyoc1Qt8cha4BUE8Nl50lkYEEo\n2/5ND2ZtyQ8d6we3wD/KZTcyzrQYFWXbu5CbhuU6FNWp0mTIiJz/l9Og19WTHEl4\nVu18h5CwIHijIMempIW5QQnuQnxmAokFO4MJZddiF6dRS+xTjH/RbpVJAoGAGLSH\nes1r5p0cR83hKLmkPVpeaqQUJrfvrhuryCyZljLkGgu8MxjwZN+zx91GUT0k4O63\nNt0Jtw0x4aWQFitWW22usJm0KOWKtj/CvJ2x4HRerwuiqG8gotbjRm1A4Bu1SC7o\nk0yGIQ4vIORa02CKI2qHbR6jIcY4vLgcFiprwU0CgYEA2YAvqybkBwIO728iVAnk\nJYj+ia6/3WfxGneGrl9Em9mMygG/wjmRdBCubgFfpTst/CLv311zENXsm80cqgqT\ntck1lGhyghiZAPtR5d9MW0JlSpm2+5Pkqk9acmYde5Qv6IScySOv5hHGzr0GjU8C\niSqpUKfzPO4ObCRxzJwl7WM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "edm-819@edm-saras.iam.gserviceaccount.com",
+  "client_id": "106243115731108930156",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/edm-819%40edm-saras.iam.gserviceaccount.com"
+}

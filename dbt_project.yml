@@ -6,11 +6,17 @@ version: '1.0.0'
 config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
+
+# This setting configures which "profile" dbt uses for this project.
+profile: "edm_data_transformation"
+
 vars:
-  raw_database: "Shopify" #equivalent to project_id in BigQuery
-    # Example Database name
-  raw_schema: "Daton" #equivalent to dataset in BigQuery
-    # Example Schema name
+  # raw_database: "EDM"
+  # raw_schema: "EDM"
+  raw_database: "edm-saras"
+  raw_schema: "EDM_Daton"
+  mdl_database: "edm-saras"
+  mdl_schema: "edm_mdl_prerequisites"
 
   get_brandname_from_tablename_flag: True
   # if get_brandname_from_tablename_flag = True, position of brand name in the daton integration name
@@ -62,6 +68,7 @@ vars:
   ShopifySmartCollections: True
   ShopifyTenderTransactions: True
   ShopifyOrdersShippingLines: True
+  ShopifyOrdersDiscountApplications: True
   
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
