@@ -36,9 +36,9 @@ Daton Integrations for
 If you haven't already, you will need to create a packages.yml file in your DBT project. Include this in your `packages.yml` file
 
 ```yaml
-packages:
+packages: 
   - package: saras-daton/Shopify
-    version: v1.1.1
+    version: v1.1.2
 ```
 
 # Configuration 
