@@ -36,15 +36,6 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: ShopifyOrdersLineItemsDiscounts
-    description: A report of orders with discount allocations.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','line_items_id','line_items_properties_name','discount_application_index']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id']
-
   - name: ShopifyOrdersFulfillmentOrders
     description: A report of orders with fulfillment details, destinations and assigned locations.
     config:
