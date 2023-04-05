@@ -1,4 +1,4 @@
-{% if var('ShopifyCustomers') %}
+{% if var('ShopifyCustomersAddresses') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -64,8 +64,24 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         total_spent,
         multipass_identifier,
         accepts_marketing,
-        addresses,
         {% if target.type =='snowflake' %}
+        addresses.VALUE:province_code::VARCHAR as addresses_province_code,
+        addresses.VALUE:name::VARCHAR as addresses_name,
+        addresses.VALUE:default::VARCHAR as addresses_default,
+        addresses.VALUE:customer_id::VARCHAR as addresses_customer_id,
+        addresses.VALUE:first_name::VARCHAR as addresses_first_name,
+        addresses.VALUE:last_name::VARCHAR as addresses_last_name,
+        addresses.VALUE:company::VARCHAR as addresses_company,
+        addresses.VALUE:country_name::VARCHAR as addresses_country_name,
+        COALESCE(addresses.VALUE:id::VARCHAR,'') as addresses_id,
+        addresses.VALUE:address1::VARCHAR as addresses_address1,
+        addresses.VALUE:country_code::VARCHAR as addresses_country_code,
+        addresses.VALUE:address2::VARCHAR as addresses_address2,
+        addresses.VALUE:zip::VARCHAR as addresses_zip,
+        addresses.VALUE:city::VARCHAR as addresses_city,
+        addresses.VALUE:phone::VARCHAR as addresses_phone,
+        addresses.VALUE:province::VARCHAR as addresses_province,
+        addresses.VALUE:country::VARCHAR as addresses_country,
         verified_email,
         a.state,
         CAST(a.created_at as timestamp) customers_created_at,
@@ -87,6 +103,23 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         default_address.VALUE:province::VARCHAR as default_address_province,
         default_address.VALUE:country::VARCHAR as default_address_country,
         {% else %}
+        addresses.province_code as addresses_province_code,
+        addresses.name as addresses_name,
+        addresses.default as addresses_default,
+        addresses.customer_id as addresses_customer_id,
+        addresses.first_name as addresses_first_name,
+        addresses.last_name as addresses_last_name,
+        addresses.company as addresses_company,
+        addresses.country_name as addresses_country_name,
+        COALESCE(cast(addresses.id as string),'') as addresses_id,
+        addresses.address1 as addresses_address1,
+        addresses.country_code as addresses_country_code,
+        addresses.address2 as addresses_address2,
+        addresses.zip as addresses_zip,
+        addresses.city as addresses_city,
+        addresses.phone as addresses_phone,
+        addresses.province as addresses_province,
+        addresses.country as addresses_country,
         verified_email,
         state,
         CAST(a.created_at as timestamp) customers_created_at,
@@ -126,6 +159,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
         DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
         FROM  {{i}} a
+                {{unnesting("addresses")}} 
                 {{unnesting("default_address")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
