@@ -98,7 +98,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         source_url,
         CAST(a.processed_at as timestamp) processed_at,
         device_id,
-        phone,
+        a.phone,
         customer_locale,
         app_id,
         browser_ip,
