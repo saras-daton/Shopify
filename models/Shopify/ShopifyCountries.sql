@@ -64,7 +64,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.code,
         a.tax_name,
         {% if target.type =='snowflake' %}
-        provinces.VALUE:id as provinces_id,
+        provinces.VALUE:id::VARCHAR as provinces_id,
         provinces.VALUE:country_id as provinces_country_id,
         provinces.VALUE:name as provinces_name,
         provinces.VALUE:code as provinces_code,

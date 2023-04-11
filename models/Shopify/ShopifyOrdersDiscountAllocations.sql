@@ -1,4 +1,4 @@
-{% if var('ShopifyOrdersLineItems') %}
+{% if var('ShopifyOrdersDiscountAllocations') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -135,6 +135,12 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         line_items.VALUE:total_discount::numeric as line_items_total_discount,
         line_items.VALUE:fulfillment_status::VARCHAR as line_items_fulfillment_status,
         line_items.VALUE:tax_lines as line_items_tax_lines,
+        cast(discount_allocations.VALUE:amount as numeric) as discount_allocations_amount,
+        cast(shop_money.VALUE:amount as numeric) as shop_money_amount,
+        shop_money.VALUE:currency_code as shop_money_currency_code,
+        cast(presentment_money.VALUE:amount as numeric) as presentment_money_amount,
+        presentment_money.VALUE:currency_code as presentment_money_currency_code,
+        discount_allocations.VALUE:discount_application_index::VARCHAR as discount_application_index,
         {% else %}
         line_items.id as line_items_id,
         line_items.variant_id as variant_id,
@@ -158,6 +164,12 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         cast(line_items.total_discount as numeric) line_items_total_discount,
         line_items.fulfillment_status as line_items_fulfillment_status,
         line_items.tax_lines as line_items_tax_lines,
+        cast(discount_allocations.amount as numeric) as discount_allocations_amount,
+        cast(shop_money.amount as numeric) as shop_money_amount,
+        shop_money.currency_code as shop_money_currency_code,
+        cast(presentment_money.amount as numeric) as presentment_money_amount,
+        presentment_money.currency_code as presentment_money_currency_code,
+        discount_allocations.discount_application_index as discount_application_index,
         {% endif %}
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
@@ -177,6 +189,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
                     left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
                 {% endif %}
                 {{unnesting("line_items")}}
+                {{multi_unnesting("line_items","discount_allocations")}}
+                {{multi_unnesting("discount_allocations","amount_set")}}
+                {{multi_unnesting("amount_set","shop_money")}}
+                {{multi_unnesting("amount_set","presentment_money")}}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}

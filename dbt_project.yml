@@ -38,7 +38,7 @@ vars:
   ShopifyOrders: True
   ShopifyOrdersAddresses: True
   ShopifyOrdersCustomer: True
-  ShopifyOrdersLineItemsDiscounts: True
+  ShopifyOrdersDiscountAllocations: True
   ShopifyOrdersFulfillments: True
   ShopifyOrdersFulfillmentOrders: True
   ShopifyOrdersLineItems: True
