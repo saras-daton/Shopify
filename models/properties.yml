@@ -45,6 +45,15 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
+  - name: ShopifyOrdersLineItems
+    description: A list of orders at product level.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','line_items_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','line_items_id']
+
   - name: ShopifyOrdersFulfillmentOrders
     description: A report of orders with fulfillment details, destinations and assigned locations.
     config:
@@ -72,14 +81,14 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id','line_items_tax_lines_title'] 
 
-  - name: ShopifyOrdersLineItems
+  - name: ShopifyOrdersDiscountAllocations
     description: A list of orders at product level.
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','line_items_id']
+      unique_key: ['order_id','line_items_id','discount_application_index']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id']
+      cluster_by: ['order_id','line_items_id','discount_application_index']
 
   - name: ShopifyOrdersRefundsRefundLines
     description: A list of refunded orders which includes refund & order level revenue.
@@ -113,9 +122,9 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id']
+      unique_key: ['order_id','shipping_lines_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
+      cluster_by: ['order_id','shipping_lines_id']
 
   - name: ShopifyOrdersTransactions
     description: A list of order transactions.

@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%smart_collections')}}    
+{{set_table_name('%shopify%smart_collections')}} and lower(table_name) not like '%googleanalytics%'
 {% endset %}  
 
 

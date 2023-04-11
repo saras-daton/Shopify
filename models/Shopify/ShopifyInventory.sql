@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 with unnested_inventory_levels as (
 {% set table_name_query %}
-{{set_table_name('%shopify%inventory%')}}    
+{{set_table_name('%shopify%inventory%')}} and lower(table_name) not like '%googleanalytics%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -60,11 +60,11 @@ FROM (
     {% if target.type =='snowflake' %}
     INVENTORY_LEVELS.VALUE:inventory_item_id::VARCHAR as inventory_item_id,
     INVENTORY_LEVELS.VALUE:location_id::VARCHAR as location_id,
-    INVENTORY_LEVELS.VALUE:available,
+    INVENTORY_LEVELS.VALUE:available::VARCHAR as inventory_levels_available,
     INVENTORY_LEVELS.VALUE:updated_at::timestamp as inventory_levels_updated_at,
     INVENTORY_LEVELS.VALUE:admin_graphql_api_id::VARCHAR as inventory_levels_admin_graphql_api_id,
-    INVENTORY_ITEM.VALUE:id,
-    INVENTORY_ITEM.VALUE:SKU,
+    INVENTORY_ITEM.VALUE:id::VARCHAR as id,
+    INVENTORY_ITEM.VALUE:SKU::VARCHAR as SKU,
     INVENTORY_ITEM.VALUE:created_at::{{ dbt.type_timestamp() }} as created_at,
     INVENTORY_ITEM.VALUE:updated_at::timestamp as inventory_item_updated_at,
     INVENTORY_ITEM.VALUE:requires_shipping,
@@ -78,7 +78,7 @@ FROM (
     {% else %}
     inventory_levels.inventory_item_id as inventory_item_id,
     inventory_levels.location_id as location_id,
-    inventory_levels.available as available,
+    inventory_levels.available as as inventory_levels_available,
     CAST(inventory_levels.updated_at as timestamp) inventory_levels_updated_at,
     inventory_levels.admin_graphql_api_id as inventory_levels_admin_graphql_api_id,
     inventory_item.id as id,

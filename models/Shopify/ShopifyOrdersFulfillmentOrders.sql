@@ -24,7 +24,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 with unnested_fulfillment_orders as(
 {% set table_name_query %}
-{{set_table_name('%shopify%orders%')}}    
+{{set_table_name('%shopify%orders%')}} and lower(table_name) not like '%googleanalytics%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -204,14 +204,14 @@ with unnested_fulfillment_orders as(
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from {{i}} a
+                {% if var('currency_conversion_flag') %}
+                    left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+                {% endif %}
                 {{unnesting("fulfillment_orders")}}
                 {{multi_unnesting("fulfillment_orders","destination")}}
                 {{multi_unnesting("fulfillment_orders","line_items")}}
                 {{multi_unnesting("fulfillment_orders","delivery_method")}}
                 {{multi_unnesting("fulfillment_orders","assigned_location")}}
-                {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
-                {% endif %}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
