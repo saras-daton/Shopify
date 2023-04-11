@@ -5,6 +5,15 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
+      unique_key: ['customers_id']
+      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['customers_id']
+
+  - name: ShopifyCustomersAddresses
+    description: A list of all the customer addresses and related fields
+    config:
+      materialized: incremental
+      incremental_strategy: merge
       unique_key: ['customers_id','addresses_id']
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['customers_id']

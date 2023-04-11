@@ -109,6 +109,7 @@ This package contains models from the Shopify API which includes reports on {{sa
 | **Category**                 | **Model**  | **Description** |
 | ------------------------- | ---------------| ----------------------- |
 |Customer | [ShopifyCustomers](models/Shopify/ShopifyCustomers.sql)  | A detailed report which gives infomration about Customers |
+|Addresses | [ShopifyCustomersAddresses](models/Shopify/ShopifyCustomersAddresses.sql)  | A detailed report which gives infomration about the addresses of each customer |
 |Inventory | [ShopifyInventory](models/Shopify/ShopifyInventory.sql)  | A detailed report which gives infomration about inventory levels |
 |Orders | [ShopifyOrdersAddresses](models/Shopify/ShopifyOrdersAddresses.sql)  | A list of billing and shipping addresses |
 |Orders | [ShopifyOrdersCustomer](models/Shopify/ShopifyOrdersCustomer.sql)| A report of orders at customer level |
@@ -149,6 +150,15 @@ version: 2
 models:
   - name: ShopifyCustomers
     description: A list orders along with the customer details
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['customers_id']
+      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['customers_id']
+
+  - name: ShopifyCustomersAddresses
+    description: A list of all the customer addresses and related fields
     config:
       materialized: incremental
       incremental_strategy: merge
