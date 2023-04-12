@@ -78,7 +78,7 @@ FROM (
     {% else %}
     inventory_levels.inventory_item_id as inventory_item_id,
     inventory_levels.location_id as location_id,
-    inventory_levels.available as as inventory_levels_available,
+    inventory_levels.available as inventory_levels_available,
     CAST(inventory_levels.updated_at as timestamp) inventory_levels_updated_at,
     inventory_levels.admin_graphql_api_id as inventory_levels_admin_graphql_api_id,
     inventory_item.id as id,
