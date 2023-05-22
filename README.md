@@ -136,6 +136,66 @@ This package contains models from the Shopify API which includes reports on {{sa
 ```yaml
 version: 2
 models:
+  - name: ShopifyAbandonedCheckouts
+    description: After a customer adds products to a cart, they use your checkout to enter their shipping information and payment details before placing the order.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyBalanceTransactions
+    description: A list of order transactions.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyCarrierServices
+    description: A list of carrier services.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      cluster_by: ['id']
+
+  - name: ShopifyCollects
+    description: A list of collects.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyCountries
+    description: A list of countries.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id','provinces_id']
+      cluster_by: ['provinces_id']
+
+  - name: ShopifyCustomCollections
+    description: An automated collection uses selection conditions to automatically include matching products.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyCustomerAddress
+    description: A list of all the customer addresses and related fields
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['customers_id','id']
+      cluster_by: ['customers_id']
+
   - name: ShopifyCustomers
     description: A list orders along with the customer details
     config:
@@ -145,23 +205,86 @@ models:
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['customers_id']
 
-  - name: ShopifyCustomersAddresses
-    description: A list of all the customer addresses and related fields
+  - name: ShopifyDisputes
+    description: A list orders along with the customer details
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['customers_id','addresses_id']
-      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['customers_id']
+      unique_key: ['id','order_id']
+      partition_by: { 'field': 'initiated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id','order_id']
 
-  - name: ShopifyInventory	
+  - name: ShopifyEvents
+    description: A list of events.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyFulfillmentEvents
+    description: A list of events.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id','fulfillment_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyFulfillmentOrders
+    description: A report of orders with fulfillment details, destinations and assigned locations.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id','order_id','line_items_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','line_items_id']
+
+  - name: ShopifyGiftCards
+    description: A report of gift cards.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyInventoryItems
+    description: A detailed report which gives details about inventory levels
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id','inventory_item_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['inventory_item_id']
+
+  - name: ShopifyInventoryLevels
     description: A detailed report which gives details about inventory levels
     config:
       materialized: incremental
       incremental_strategy: merge
       unique_key: ['inventory_item_id','location_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['inventory_item_id']
+
+  - name: ShopifyLocations
+    description: Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyOrders
+    description: A list of orders.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
 
   - name: ShopifyOrdersAddresses
     description: A list of billing and shipping addresses
@@ -181,41 +304,32 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
 
-  - name: ShopifyOrdersLineItemsDiscounts
-    description: A report of orders with discount allocations.
+  - name: ShopifyOrdersDiscountAllocations
+    description: A list of orders at product level.
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','line_items_id','line_items_properties_name','discount_application_index']
+      unique_key: ['order_id','line_items_id','discount_application_index']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id']
+      cluster_by: ['order_id','line_items_id','discount_application_index']
 
-  - name: ShopifyOrdersFulfillmentOrders
-    description: A report of orders with fulfillment details, destinations and assigned locations.
+  - name: ShopifyOrdersDiscountApplications
+    description: A list of order and line item discounts with their coupon codes.
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','fulfillment_orders_id','line_items_id']
+      unique_key: ['order_id','discount_applications_target_type','discount_applications_type','discount_applications_value_type','_seq_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id']
+      cluster_by: ['order_id']
 
   - name: ShopifyOrdersFulfillments
     description: A report of orders with fulfillment details, destinations and assigned locations at product level.
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','fulfillments_id','fulfillments_line_items_id']
+      unique_key: ['order_id','fulfillments_id','line_items_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
-
-  - name: ShopifyOrdersLineItemsTaxLines
-    description: A list of orders with  product level taxes.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','line_items_id','line_items_tax_lines_title','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id','line_items_tax_lines_title'] 
 
   - name: ShopifyOrdersLineItems
     description: A list of orders at product level.
@@ -226,131 +340,31 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
 
-  - name: ShopifyOrdersRefundLines
-    description: A list of refunded orders which includes refund & order level revenue.
+  - name: ShopifyOrdersLineItemsTaxLines
+    description: A list of orders with  product level taxes.
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','refund_line_items_line_item_id']
+      unique_key: ['order_id','line_items_id','tax_lines_title','_seq_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersRefundsLineItems
-    description: A list of refunded orders which includes refund & product level revenue.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','refund_line_items_id','transactions_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersRefundsTaxLines
-    description: A list of taxes associated with the refunded item.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','refund_line_items_id','line_items_tax_lines_title','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
+      cluster_by: ['order_id','line_items_id','tax_lines_title'] 
 
   - name: ShopifyOrdersShippingLines
-    description: A list of orders with shipping details.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersTransactions
-    description: A list of order transactions.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','transactions_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrders
     description: A list of orders.
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id']
+      unique_key: ['order_id','shipping_lines_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
+      cluster_by: ['order_id','shipping_lines_id']
 
-  - name: ShopifyProduct
-    description: A list of product summary, manufacturer & dimensions
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['sku','product_id','variant_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['sku']
-
-  - name: ShopifyRefundsTransactions
-    description: A list of refund transactions.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','transactions_id','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyTransactions
-    description: A report of transactions with transactions fees, sources and status.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id', 'type', 'source_id', 'source_order_id']
-      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id', 'type', 'source_id', 'source_order_id']
-
-
-  - name:ShopifyCountries
-    description: A list of countries.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id','provinces_id']
-      cluster_by: ['provinces_id']
-
-
-  - name: ShopifyEvents
-    description: A list of events.
+  - name: ShopifyPayouts
+    description: lists all of your payouts and their current status.
     config:
       materialized: incremental
       incremental_strategy: merge
       unique_key: ['id']
-      partition_by: { 'field': '_last_updated', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyShop
-    description: Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyCheckouts
-    description: After a customer adds products to a cart, they use your checkout to enter their shipping information and payment details before placing the order.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyTenderTransactions
-    description: Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      partition_by: { 'field': 'date', 'data_type': 'date' }
       cluster_by: ['id']
 
   - name: ShopifyPolicies
@@ -362,6 +376,78 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['title']
 
+  - name: ShopifyPriceRules
+    description: A list of rules to set pricing.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyProductMetafields
+    description: A report of product metadata
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyProducts
+    description: A list of product summary, manufacturer & dimensions
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['sku','product_id','variant_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['sku']
+
+  - name: ShopifyRefundLineItemsTax
+    description: A list of taxes associated with the refunded item.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['refund_id','refund_line_items_id','tax_lines_title','_seq_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['refund_id']
+
+  - name: ShopifyRefundsLineItems
+    description: A list of refunded orders which includes refund & product level revenue.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['refund_id','refund_line_items_id','line_item_variant_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['refund_id']
+
+  - name: ShopifyRefundsRefundLineItems
+    description: A list of refunded orders which includes refund & product level revenue.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['refund_id','refund_line_items_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['refund_id']
+
+  - name: ShopifyRefundsTransactions
+    description: A list of refund transactions.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['refund_id','transactions_id','_seq_id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['refund_id']
+
+  - name: ShopifyShop
+    description: Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
   - name: ShopifySmartCollections
     description: An automated collection uses selection conditions to automatically include matching products.
     config:
@@ -371,8 +457,17 @@ models:
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
 
-  - name: ShopifyCollects
-    description: A list of collects.
+  - name: ShopifyTenderTransactions
+    description: Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['id']
+      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['id']
+
+  - name: ShopifyTransactions
+    description: A report of transactions with transactions fees, sources and status.
     config:
       materialized: incremental
       incremental_strategy: merge
@@ -380,40 +475,6 @@ models:
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
 
-  - name: ShopifyLocations
-    description: Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyPriceRules
-    description: A list of rules to set pricing.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': '_last_updated', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyCarrierServices
-    description: A list of carrier services.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      cluster_by: ['id']
-
-  - name: ShopifyPayouts
-    description: lists all of your payouts and their current status.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'date', 'data_type': 'date' }
-      cluster_by: ['id']
 ```
 
 

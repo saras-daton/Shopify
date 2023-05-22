@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%shop')}} and lower(table_name) not like '%googleanalytics%'
+{{set_table_name('%shopify%shop')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -47,12 +47,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
-
     SELECT * {{exclude()}} (row_num)
     FROM (
         select 
@@ -67,7 +61,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         address1,
         zip,
         city,
-        source,
         phone,
         latitude,
         longitude,
@@ -86,32 +79,34 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         money_with_currency_format,
         weight_unit,
         province_code,
-        taxes_included,
-        tax_shipping,
         county_taxes,
         plan_display_name,
         plan_name,
         has_discounts,
         has_gift_cards,
         myshopify_domain,
-        google_apps_domain,
-        google_apps_login_enabled,
         money_in_emails_format,
         money_with_currency_in_emails_format,
         eligible_for_payments,
         requires_extra_payments_agreement,
         password_enabled,
         has_storefront,
-        eligible_for_card_reader_giveaway,
         finances,
         primary_location_id,
-        force_ssl,
+        cookie_consent_level,
+        visitor_tracking_consent_preference,
         checkout_api_supported,
         multi_location_enabled,
         setup_required,
         pre_launch_enabled,
         enabled_presentment_currencies,
-        metafields,
+        transactional_sms_disabled,
+        marketing_sms_consent_enabled_at_checkout,
+        taxes_included,
+        auto_configure_tax_inclusivity,
+        tax_shipping,
+        google_apps_domain,
+        google_apps_login_enabled,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,

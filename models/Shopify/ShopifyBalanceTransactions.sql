@@ -1,7 +1,11 @@
-{% if var('ShopifyTenderTransactions') %}
+{% if var('ShopifyBalanceTransactions') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
+{% endif %}
+
+{% if var('currency_conversion_flag') %}
+-- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
 {% if is_incremental() %}
@@ -20,9 +24,9 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%tender_transactions')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%balance_transactions')}} 
+and lower(table_name) not like '%tender%' and lower(table_name) not like '%googleanalytics%'
 {% endset %}  
-
 
 {% set results = run_query(table_name_query) %}
 {% if execute %}
@@ -47,44 +51,48 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
-        select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
-        id,
-        order_id,
-        amount,
-        currency,
-        test,
-        cast(processed_at as timestamp) as processed_at,
-        remote_reference,
-        payment_method,
-        payment_details,
-        user_id,
-        {% if var('currency_conversion_flag') %}
-            case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
-        {% else %}
-            cast(1 as decimal) as exchange_currency_rate,
-            currency as exchange_currency_code,
-        {% endif %}
-        {{daton_user_id()}} as _daton_user_id,
-        {{daton_batch_runtime()}} as _daton_batch_runtime,
-        {{daton_batch_id()}} as _daton_batch_id,
-        current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
-        FROM  {{i}} a
+select * {{exclude()}} (row_num)
+FROM (
+    select 
+    '{{brand}}' as brand,
+    '{{store}}' as store,
+    id,
+    type,
+    test,
+    payout_id,
+    payout_status,
+    currency,
+    amount,
+    fee,
+    net,
+    source_id,
+    source_type,
+    cast(a.processed_at as {{ dbt.type_timestamp() }}) processed_at,
+    source_order_id,
+    source_order_transaction_id,
+    {% if var('currency_conversion_flag') %}
+        case when c.value is null then 1 else c.value end as exchange_currency_rate,
+        case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
+    {% else %}
+        cast(1 as decimal) as exchange_currency_rate,
+        currency as exchange_currency_code,
+    {% endif %}
+    a.{{daton_user_id()}} as _daton_user_id,
+    a.{{daton_batch_runtime()}} as _daton_batch_runtime,
+    a.{{daton_batch_id()}} as _daton_batch_id,
+    current_timestamp() as _last_updated,
+    '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+    Dense_Rank() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
+	    from {{i}} a
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code
                 {% endif %}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+                WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
+
         )
         where row_num = 1
-
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
