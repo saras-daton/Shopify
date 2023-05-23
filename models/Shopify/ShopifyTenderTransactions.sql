@@ -4,6 +4,10 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
+{% if var('currency_conversion_flag') %}
+-- depends_on: {{ ref('ExchangeRates') }}
+{% endif %}
+
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
 SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
@@ -69,19 +73,19 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             cast(1 as decimal) as exchange_currency_rate,
             currency as exchange_currency_code,
         {% endif %}
-        {{daton_user_id()}} as _daton_user_id,
-        {{daton_batch_runtime()}} as _daton_batch_runtime,
-        {{daton_batch_id()}} as _daton_batch_id,
+        a.{{daton_user_id()}} as _daton_user_id,
+        a.{{daton_batch_runtime()}} as _daton_batch_runtime,
+        a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
+        DENSE_RANK() OVER (PARTITION BY a.id order by a.{{daton_batch_runtime()}} desc) row_num
         FROM  {{i}} a
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code
                 {% endif %}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+                WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
         )
         where row_num = 1

@@ -65,7 +65,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         province_code,
         country_code,
         country_name,
-        default,
+        a.default,
         first_name,
         last_name,
         company,

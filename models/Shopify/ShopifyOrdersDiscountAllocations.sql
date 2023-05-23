@@ -23,7 +23,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -56,7 +56,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{brand}}' as brand,
         '{{store}}' as store,
         coalesce(cast(a.id as string),'') as order_id, 
-        admin_graphql_api_id,
+        a.admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
         cart_token,
@@ -82,7 +82,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         gateway,
         landing_site,
         landing_site_ref,
-        name,
+        a.name,
         note_attributes,
         number,
         order_number,
@@ -99,7 +99,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         subtotal_price,
         subtotal_price_set,
         tags,
-        tax_lines,
+        a.tax_lines,
         taxes_included,
         test,
         token,
@@ -200,7 +200,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         customer_locale,
         note,
         closed_at,
-        fulfillment_status,
+        a.fulfillment_status,
         location_id,
         cancel_reason,
         cancelled_at,

@@ -15,7 +15,7 @@ models:
       materialized: incremental
       incremental_strategy: merge
       unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
 
   - name: ShopifyCarrierServices
@@ -57,8 +57,8 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['customers_id','id']
-      cluster_by: ['customers_id']
+      unique_key: ['customer_id','id']
+      cluster_by: ['customer_id']
 
   - name: ShopifyCustomers
     description: A list orders along with the customer details
@@ -119,9 +119,9 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['id','inventory_item_id']
+      unique_key: ['id','sku']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['inventory_item_id']
+      cluster_by: ['id','sku']
 
   - name: ShopifyInventoryLevels
     description: A detailed report which gives details about inventory levels
@@ -263,9 +263,9 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['sku','product_id','variant_id']
+      unique_key: ['variant_sku','id','variant_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['sku']
+      cluster_by: ['variant_sku']
 
   - name: ShopifyRefundLineItemsTax
     description: A list of taxes associated with the refunded item.

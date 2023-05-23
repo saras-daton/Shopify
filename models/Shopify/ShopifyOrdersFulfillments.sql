@@ -22,9 +22,8 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {%- endif -%}
 {% endif %}
 
-with unnested_fulfillments as(
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -50,13 +49,13 @@ with unnested_fulfillments as(
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * 
+    select * {{exclude()}} (row_num)
     FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
         cast(a.id as string) as order_id, 
-        admin_graphql_api_id,
+        a.admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
         cart_token,
@@ -65,7 +64,7 @@ with unnested_fulfillments as(
         client_details,
         confirmed,
         contact_email,
-        cast(created_at as {{ dbt.type_timestamp() }}) as created_at,
+        cast(a.created_at as {{ dbt.type_timestamp() }}) as created_at,
         currency,
         current_subtotal_price,
         current_subtotal_price_set,
@@ -82,7 +81,7 @@ with unnested_fulfillments as(
         gateway,
         landing_site,
         landing_site_ref,
-        name,
+        a.name,
         note_attributes,
         number,
         order_number,
@@ -99,7 +98,7 @@ with unnested_fulfillments as(
         subtotal_price,
         subtotal_price_set,
         tags,
-        tax_lines,
+        a.tax_lines,
         taxes_included,
         test,
         token,
@@ -124,7 +123,6 @@ with unnested_fulfillments as(
         COALESCE(fulfillments.VALUE:id::VARCHAR,'') as fulfillments_id,
         fulfillments.VALUE:admin_graphql_api_id as fulfillments_admin_graphql_api_id,
         fulfillments.VALUE:created_at as fulfillments_created_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(fulfillments.VALUE:created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
         fulfillments.VALUE:location_id as fulfillments_location_id,
         fulfillments.VALUE:name as fulfillments_name,
         fulfillments.VALUE:order_id::VARCHAR as fulfillments_orders_id,
@@ -139,7 +137,6 @@ with unnested_fulfillments as(
         fulfillments.VALUE:tracking_url as fulfillments_tracking_url,
         fulfillments.VALUE:tracking_urls as fulfillments_tracking_urls,
         fulfillments.VALUE:updated_at as fulfillments_updated_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(fulfillments.VALUE:updated_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,
         fulfillments_line_items.VALUE:id::VARCHAR as line_items_id,
         fulfillments_line_items.VALUE:admin_graphql_api_id::VARCHAR as line_items_admin_graphql_api_id,
         fulfillments_line_items.VALUE:fulfillable_quantity::VARCHAR as line_items_fulfillable_quantity,
@@ -174,7 +171,6 @@ with unnested_fulfillments as(
         COALESCE(cast(fulfillments.id as string),'') as fulfillments_id,
         fulfillments.admin_graphql_api_id as fulfillments_admin_graphql_api_id,
         fulfillments.created_at as fulfillments_created_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(fulfillments.created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
         fulfillments.location_id as fulfillments_location_id,
         fulfillments.name as fulfillments_name,
         cast(fulfillments.order_id as string) as fulfillments_orders_id,
@@ -189,7 +185,6 @@ with unnested_fulfillments as(
         fulfillments.tracking_url as fulfillments_tracking_url,
         fulfillments.tracking_urls as fulfillments_tracking_urls,
         fulfillments.updated_at as fulfillments_updated_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(fulfillments.updated_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,        
         fulfillments_line_items.id as line_items_id,
         fulfillments_line_items.admin_graphql_api_id as line_items_admin_graphql_api_id,
         fulfillments_line_items.fulfillable_quantity as line_items_fulfillable_quantity,
@@ -221,7 +216,7 @@ with unnested_fulfillments as(
         fulfillments_line_items.vendor as line_items_vendor,
         fulfillments.shipment_status as fulfillments_shipment_status,
         {% endif %}
-        line_items,
+        a.line_items,
         payment_details,
         refunds,
         shipping_address,
@@ -230,8 +225,8 @@ with unnested_fulfillments as(
         customer_locale,
         note,
         closed_at,
-        fulfillment_status,
-        location_id,
+        a.fulfillment_status,
+        a.location_id,
         cancel_reason,
         cancelled_at,
         user_id,
@@ -247,7 +242,8 @@ with unnested_fulfillments as(
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        DENSE_RANK() OVER (PARTITION BY a.id order by a._daton_batch_runtime desc) row_num
         from {{i}} a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
@@ -264,17 +260,7 @@ with unnested_fulfillments as(
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
         )
+        where row_num = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
-),
-
-dedup as (
-select *,
-DENSE_RANK() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) row_num
-from unnested_fulfillments 
-)
-
-select * {{exclude()}} (row_num)
-from dedup 
-where row_num = 1

@@ -54,7 +54,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{store}}' as store,
         a.id,
         a.name,
-        a.tax,
         a.code,
         a.tax_name,
         a.tax,

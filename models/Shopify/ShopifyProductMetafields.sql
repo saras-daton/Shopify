@@ -70,7 +70,7 @@ FROM (
     from {{i}} a
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE {{daton_batch_runtime()}}  >= {{max_loaded}} and sku is not null
+            WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
 
         )

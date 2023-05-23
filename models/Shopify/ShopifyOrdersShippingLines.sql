@@ -24,7 +24,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -96,7 +96,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         order_number,
         order_status_url,
         payment_gateway_names,
-        phone,
+        a.phone,
         presentment_currency,
         CAST(processed_at as timestamp) as processed_at,
         processing_method,
@@ -107,7 +107,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         subtotal_price,
         subtotal_price_set,
         tags,
-        tax_lines,
+        a.tax_lines,
         taxes_included,
         test,
         token,
@@ -135,26 +135,28 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         shipping_address,
         {% if target.type =='snowflake' %}
         COALESCE(shipping_lines.VALUE:id::VARCHAR,'') as shipping_lines_id,
-        shipping_lines.VALUE:title::VARCHAR as shipping_lines_title,
-        shipping_lines.VALUE:price::VARCHAR as shipping_lines_price,
         shipping_lines.VALUE:code::VARCHAR as shipping_lines_code,
-        shipping_lines.VALUE:source::VARCHAR as shipping_lines_source,
-        shipping_lines.VALUE:phone::VARCHAR as shipping_lines_phone,
-        shipping_lines.VALUE:requested_fulfillment_service_id::VARCHAR as shipping_lines_requested_fulfillment_service_id,
-        shipping_lines.VALUE:delivery_category::VARCHAR as shipping_lines_delivery_category,
-        shipping_lines.VALUE:carrier_identifier::VARCHAR as shipping_lines_carrier_identifier,
         shipping_lines.VALUE:discounted_price::FLOAT as shipping_lines_discounted_price,
+        shipping_lines.VALUE:discounted_price_set as shipping_lines_discounted_price_set,
+        shipping_lines.VALUE:price::VARCHAR as shipping_lines_price,
+        shipping_lines.VALUE:price_set as shipping_lines_price_set,
+        shipping_lines.VALUE:source::VARCHAR as shipping_lines_source,
+        shipping_lines.VALUE:title::VARCHAR as shipping_lines_title,
+        shipping_lines.VALUE:tax_lines as shipping_lines_tax_lines,
+        shipping_lines.VALUE:discount_allocations as shipping_lines_discount_allocations,
+        shipping_lines.VALUE:carrier_identifier::VARCHAR as shipping_lines_carrier_identifier,
         {% else %}
         COALESCE(CAST(shipping_lines.id as string),'') as shipping_lines_id,
-        shipping_lines.title as shipping_lines_title,
-        shipping_lines.price as shipping_lines_price,
         shipping_lines.code as shipping_lines_code,
-        shipping_lines.source as shipping_lines_source,
-        shipping_lines.phone as shipping_lines_phone,
-        shipping_lines.requested_fulfillment_service_id as shipping_lines_requested_fulfillment_service_id,
-        shipping_lines.delivery_category as shipping_lines_delivery_category,
-        shipping_lines.carrier_identifier as shipping_lines_carrier_identifier,
         shipping_lines.discounted_price as shipping_lines_discounted_price,
+        shipping_lines.discounted_price_set as shipping_lines_discounted_price_set,
+        shipping_lines.price as shipping_lines_price,
+        shipping_lines.price_set as shipping_lines_price_set,
+        shipping_lines.source as shipping_lines_source,
+        shipping_lines.title as shipping_lines_title,
+        shipping_lines.tax_lines as shipping_lines_tax_lines,
+        shipping_lines.discount_allocations as shipping_lines_discount_allocations,
+        shipping_lines.carrier_identifier as shipping_lines_carrier_identifier,
         {% endif %}
         app_id,
         customer_locale,

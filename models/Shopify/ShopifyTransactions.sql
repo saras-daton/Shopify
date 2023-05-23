@@ -25,7 +25,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 {% set table_name_query %}
 {{set_table_name('%shopify%transactions')}} 
-and lower(table_name) not like '%tender%' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+and lower(table_name) not like '%tender%' and lower(table_name) not like '%balance%' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -93,7 +93,7 @@ FROM (
     a.{{daton_batch_id()}} as _daton_batch_id,
     current_timestamp() as _last_updated,
     '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-    Dense_Rank() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
+    ROW_NUMBER() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
 	    from {{i}} a
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code

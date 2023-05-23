@@ -4,10 +4,6 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% if var('currency_conversion_flag') %}
--- depends_on: {{ ref('ExchangeRates') }}
-{% endif %}
-
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
 SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
@@ -22,7 +18,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {%- endif -%}
 {% endif %}
 
-with unnested_fulfillment_orders as(
 {% set table_name_query %}
 {{set_table_name('%shopify%fulfillment_orders%')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
@@ -50,14 +45,14 @@ with unnested_fulfillment_orders as(
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * 
+    select * {{exclude()}} (row_num)
     FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        id,
+        a.id,
         -- id as order_id,
-        shop_id,
+        a.shop_id,
         order_id,
         -- COALESCE(order_id,'') as fulfillment_orders_order_id, (fulfillment_order_id already in lineitems)
         assigned_location_id,
@@ -141,11 +136,9 @@ with unnested_fulfillment_orders as(
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        ROW_NUMBER() OVER (PARTITION BY a.id order by _daton_batch_runtime desc) row_num
         from {{i}} a
-                {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
-                {% endif %}
                 {{unnesting("destination")}}
                 {{unnesting("line_items")}}
                 {{unnesting("assigned_location")}}
@@ -154,19 +147,8 @@ with unnested_fulfillment_orders as(
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-
         )
+        where row_num = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
 
-),
-
-dedup as (
-select *,
-DENSE_RANK() OVER (PARTITION BY order_id order by _daton_batch_runtime desc) row_num
-from unnested_fulfillment_orders 
-)
-
-select * {{exclude()}} (row_num)
-from dedup 
-where row_num = 1

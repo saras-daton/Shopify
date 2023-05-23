@@ -69,7 +69,7 @@ with unnested_refunds as(
         user_id,
         cast(a.processed_at as {{ dbt.type_timestamp() }}) processed_at,
         restock,
-        admin_graphql_api_id,
+        a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
         COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
         refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,

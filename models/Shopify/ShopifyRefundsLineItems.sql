@@ -22,7 +22,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {%- endif -%}
 {% endif %}
 
-with unnested_refunds as(
 {% set table_name_query %}
 {{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
@@ -50,7 +49,7 @@ with unnested_refunds as(
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * 
+    select * {{exclude()}} (row_num)
     FROM (
         select 
         '{{brand}}' as brand,
@@ -62,7 +61,7 @@ with unnested_refunds as(
         user_id,
         CAST(a.processed_at as timestamp) processed_at,
         restock,
-        admin_graphql_api_id,
+        a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
         COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
         refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
@@ -153,7 +152,12 @@ with unnested_refunds as(
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        {% if target.type =='snowflake' %}
+        ROW_NUMBER() OVER (PARTITION BY a.id, refund_line_items.VALUE:id, line_item.VALUE:variant_id order by _daton_batch_runtime desc) row_num
+        {% else %}
+        ROW_NUMBER() OVER (PARTITION BY a.id, refund_line_items.id, line_item.variant_id order by _daton_batch_runtime desc) row_num
+        {% endif %}
         from {{i}} a
             {{unnesting("refund_line_items")}}
             {{multi_unnesting("refund_line_items","line_item")}}
@@ -163,16 +167,7 @@ with unnested_refunds as(
             {% endif %}
 
         )
+        where row_num = 1
+
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
-),
-
-dedup as (
-select *,
-DENSE_RANK() OVER (PARTITION BY refund_id, refund_line_items_id, variant_id order by _daton_batch_runtime desc) row_num
-from unnested_refunds 
-)
-
-select * {{exclude()}} (row_num)
-from dedup 
-where row_num = 1

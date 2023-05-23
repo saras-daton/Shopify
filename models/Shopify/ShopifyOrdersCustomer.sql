@@ -22,9 +22,8 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {%- endif -%}
 {% endif %}
 
-with unnested_customers as(
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -51,14 +50,13 @@ with unnested_customers as(
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * 
+    select * {{exclude()}} (row_num)
     FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-
         coalesce(cast(a.id as string),'') as order_id, 
-        admin_graphql_api_id,
+        a.admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
         cart_token,
@@ -68,7 +66,7 @@ with unnested_customers as(
         confirmed,
         contact_email,
         cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
-        currency,
+        a.currency,
         current_subtotal_price,
         current_subtotal_price_set,
         current_total_discounts,
@@ -78,19 +76,19 @@ with unnested_customers as(
         current_total_tax,
         current_total_tax_set,
         discount_codes,
-        coalesce(email,'') as email,
+        coalesce(a.email,'') as email,
         estimated_taxes,
         financial_status,
         gateway,
         landing_site,
         landing_site_ref,
-        name,
+        a.name,
         note_attributes,
         number,
         order_number,
         order_status_url,
         payment_gateway_names,
-        phone,
+        a.phone,
         presentment_currency,
         CAST(a.processed_at as timestamp) processed_at,
         processing_method,
@@ -100,7 +98,7 @@ with unnested_customers as(
         source_name,
         subtotal_price,
         subtotal_price_set,
-        tags,
+        a.tags,
         tax_lines,
         taxes_included,
         test,
@@ -126,8 +124,6 @@ with unnested_customers as(
         CUSTOMER.VALUE:accepts_marketing as customer_accepts_marketing,
         CUSTOMER.VALUE:created_at::TIMESTAMP as customer_created_at,
         CUSTOMER.VALUE:updated_at::TIMESTAMP as customer_updated_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(CUSTOMER.VALUE:created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as customer_created_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(CUSTOMER.VALUE:updated_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as customer_updated_at,
         CUSTOMER.VALUE:first_name::VARCHAR as customer_first_name,
         CUSTOMER.VALUE:last_name::VARCHAR as customer_last_name,
         CUSTOMER.VALUE:orders_count as customer_orders_count,
@@ -165,8 +161,7 @@ with unnested_customers as(
         CUSTOMER.accepts_marketing as customer_accepts_marketing,
         CUSTOMER.created_at as customer_created_at,
         CUSTOMER.updated_at as customer_updated_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(CUSTOMER.created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as customer_created_at,
-        -- CAST({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(CUSTOMER.updated_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as customer_updated_at,        CUSTOMER.VALUE:first_name::VARCHAR as customer_first_name,
+        CUSTOMER.first_name as customer_first_name,
         CUSTOMER.last_name as customer_last_name,
         CUSTOMER.orders_count as customer_orders_count,
         CUSTOMER.state as customer_state,
@@ -207,7 +202,7 @@ with unnested_customers as(
         shipping_lines,
         app_id,
         customer_locale,
-        note,
+        a.note,
         closed_at,
         fulfillment_status,
         location_id,
@@ -217,16 +212,21 @@ with unnested_customers as(
         device_id,
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
+            case when c.from_currency_code is null then a.currency else c.from_currency_code end as exchange_currency_code,
         {% else %}
             cast(1 as decimal) as exchange_currency_rate,
-            currency as exchange_currency_code,
+            a.currency as exchange_currency_code,
         {% endif %}
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        {% if target.type =='snowflake' %}
+        DENSE_RANK() OVER (PARTITION BY a.id, CUSTOMER.VALUE:id order by a._daton_batch_runtime desc) row_num
+        {% else %}
+        DENSE_RANK() OVER (PARTITION BY a.id, CUSTOMER.id order by a._daton_batch_runtime desc) row_num
+        {% endif %}
         from {{i}} a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
@@ -238,18 +238,8 @@ with unnested_customers as(
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
     )
+    where row_num = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
 
 
-),
-
-dedup as (
-select *,
-DENSE_RANK() OVER (PARTITION BY order_id, customer_id order by _daton_batch_runtime desc) row_num
-from unnested_customers 
-)
-
-select * {{exclude()}} (row_num)
-from dedup 
-where row_num = 1

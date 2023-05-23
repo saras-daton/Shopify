@@ -38,7 +38,7 @@ vars:
   ShopifyCollects: True
   ShopifyCountries: True
   ShopifyCustomCollections: True
-  ShopifyCustomersAddress: True
+  ShopifyCustomerAddress: True
   ShopifyCustomers: True
   ShopifyDisputes: True
   ShopifyEvents: True
