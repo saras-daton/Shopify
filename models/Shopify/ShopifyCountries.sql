@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%countries')}} and lower(table_name) not like '%googleanalytics%'
+{{set_table_name('%shopify%countries')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -47,12 +47,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
-
     SELECT * {{exclude()}} (row_num)
     FROM (
         select 
@@ -60,29 +54,27 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{store}}' as store,
         a.id,
         a.name,
-        a.tax,
         a.code,
         a.tax_name,
+        a.tax,
         {% if target.type =='snowflake' %}
         provinces.VALUE:id::VARCHAR as provinces_id,
         provinces.VALUE:country_id as provinces_country_id,
         provinces.VALUE:name as provinces_name,
         provinces.VALUE:code as provinces_code,
-        provinces.VALUE:tax as provinces_tax,
-        provinces.VALUE:tax_name as provinces_tax_name,
-        provinces.VALUE:tax_type as provinces_tax_type,
         provinces.VALUE:shipping_zone_id as provinces_shipping_zone_id,
+        provinces.VALUE:tax as provinces_tax,
         provinces.VALUE:tax_percentage as provinces_tax_percentage,
+        provinces.VALUE:tax_name as provinces_tax_name,
         {% else %}
         provinces.id as provinces_id,
         provinces.country_id as provinces_country_id,
         provinces.name as provinces_name,
         provinces.code as provinces_code,
-        provinces.tax as provinces_tax,
-        provinces.tax_name as provinces_tax_name,
-        provinces.tax_type as provinces_tax_type,
         provinces.shipping_zone_id as provinces_shipping_zone_id,
+        provinces.tax as provinces_tax,
         provinces.tax_percentage as provinces_tax_percentage,
+        provinces.tax_name as provinces_tax_name,
         {% endif %}
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,

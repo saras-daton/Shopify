@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%price_rules')}} and lower(table_name) not like '%googleanalytics%'
+{{set_table_name('%shopify%price_rules')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -47,12 +47,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
-
     SELECT * {{exclude()}} (row_num)
     FROM (
         select 
@@ -65,28 +59,22 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         target_type,
         target_selection,
         allocation_method,
-        allocation_limit,
         once_per_customer,
-        usage_limit,
         starts_at,
         ends_at,
         cast(created_at as timestamp) as created_at,
         cast(updated_at as timestamp) as updated_at,
-        entitled_product_ids,
-        entitled_variant_ids,
-        entitled_collection_ids,
-        entitled_country_ids,
-        prerequisite_product_ids,
-        prerequisite_variant_ids,
-        prerequisite_collection_ids,
-        prerequisite_saved_search_ids,
-        prerequisite_customer_ids,
-        prerequisite_subtotal_range,
-        prerequisite_quantity_range,
-        prerequisite_shipping_price_range,
-        prerequisite_to_entitlement_quantity_ratio,
         title,
         admin_graphql_api_id,
+        usage_limit,
+        prerequisite_subtotal_range,
+        entitled_collection_ids,
+        customer_segment_prerequisite_ids,
+        prerequisite_customer_ids,
+        prerequisite_to_entitlement_quantity_ratio,
+        prerequisite_collection_ids,
+        entitled_product_ids,
+        prerequisite_quantity_range,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,

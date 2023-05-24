@@ -1,4 +1,4 @@
-{% if var('ShopifyPayouts') %}
+{% if var('ShopifyGiftCards') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%payouts')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%gift_cards')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -53,33 +53,21 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{brand}}' as brand,
         '{{store}}' as store,
         id,
-        status,
-        CAST(date as DATE) as date,
+        balance,
+        created_at,
+        updated_at,
         currency,
-        amount,
-        {% if target.type =='snowflake' %}
-        summary.VALUE:adjustments_fee_amount as summary_adjustments_fee_amount,
-        summary.VALUE:adjustments_gross_amount as summary_adjustments_gross_amount,
-        summary.VALUE:charges_fee_amount as summary_charges_fee_amount,
-        summary.VALUE:charges_gross_amount as summary_charges_gross_amount,
-        summary.VALUE:refunds_fee_amount as summary_refunds_fee_amount,
-        summary.VALUE:refunds_gross_amount as summary_refunds_gross_amount,
-        summary.VALUE:reserved_funds_fee_amount as summary_reserved_funds_fee_amount,
-        summary.VALUE:reserved_funds_gross_amount as summary_reserved_funds_gross_amount,
-        summary.VALUE:retried_payouts_fee_amount as summary_retried_payouts_fee_amount,
-        summary.VALUE:retried_payouts_gross_amount as summary_retried_payouts_gross_amount,
-        {% else %}
-        summary.adjustments_fee_amount as summary_adjustments_fee_amount,
-        summary.adjustments_gross_amount as summary_adjustments_gross_amount,
-        summary.charges_fee_amount as summary_charges_fee_amount,
-        summary.charges_gross_amount as summary_charges_gross_amount,
-        summary.refunds_fee_amount as summary_refunds_fee_amount,
-        summary.refunds_gross_amount as summary_refunds_gross_amount,
-        summary.reserved_funds_fee_amount as summary_reserved_funds_fee_amount,
-        summary.reserved_funds_gross_amount as summary_reserved_funds_gross_amount,
-        summary.retried_payouts_fee_amount as summary_retried_payouts_fee_amount,
-        summary.retried_payouts_gross_amount as summary_retried_payouts_gross_amount,
-        {% endif %}
+        initial_value,
+        disabled_at,
+        line_item_id,
+        api_client_id,
+        user_id,
+        customer_id,
+        note,
+        template_suffix,
+        expires_on,
+        last_characters,
+        order_id,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
@@ -87,7 +75,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
         DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
         FROM  {{i}} a
-                {{unnesting("summary")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}

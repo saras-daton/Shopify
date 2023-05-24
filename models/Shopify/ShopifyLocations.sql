@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%locations')}} and lower(table_name) not like '%googleanalytics%'
+{{set_table_name('%shopify%locations')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -47,12 +47,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
-
     SELECT * {{exclude()}} (row_num)
     FROM (
         select 
@@ -61,12 +55,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         id,
         name,
         address1,
-        address2,
         city,
         zip,
         province,
         country,
-        phone,
         cast(created_at as timestamp) as created_at,
         cast(updated_at as timestamp) as updated_at,
         country_code,
@@ -75,6 +67,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         legacy,
         active,
         admin_graphql_api_id,
+        localized_country_name,
+        localized_province_name,
+        address2,
+        phone,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,

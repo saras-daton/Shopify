@@ -1,4 +1,4 @@
-{% if var('ShopifyCheckouts') %}
+{% if var('ShopifyDisputes') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%checkouts')}} and lower(table_name) not like '%googleanalytics%'
+{{set_table_name('%shopify%disputes')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -47,64 +47,29 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
-
     SELECT * {{exclude()}} (row_num)
     FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
         id,
-        token,
-        cart_token,
-        email,
-        gateway,
-        buyer_accepts_marketing,
-        cast(created_at as timestamp) as created_at,
-        cast(updated_at as timestamp) as updated_at,
-        landing_site,
-        note,
-        note_attributes,
-        referring_site,
-        shipping_lines,
-        taxes_included,
-        total_weight,
+        order_id,
+        type,
+        amount,
         currency,
-        completed_at,
-        closed_at,
-        user_id,
-        location_id,
-        source_identifier,
-        source_url,
-        device_id,
-        phone,
-        customer_locale,
-        line_items,
-        name,
-        source,
-        abandoned_checkout_url,
-        discount_codes,
-        tax_lines,
-        source_name,
-        presentment_currency,
-        total_discounts,
-        total_line_items_price,
-        total_price,
-        total_tax,
-        subtotal_price,
-        billing_address,
-        shipping_address,
-        customer,
+        reason,
+        network_reason_code,
+        status,
+        evidence_due_by,
+        evidence_sent_on,
+        finalized_on,
+        initiated_at,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        ROW_NUMBER() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
+        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
         FROM  {{i}} a
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}

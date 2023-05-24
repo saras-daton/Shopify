@@ -25,7 +25,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 {% set table_name_query %}
 {{set_table_name('%shopify%transactions')}} 
-and lower(table_name) not like '%tender%' and lower(table_name) not like '%googleanalytics%'
+and lower(table_name) not like '%tender%' and lower(table_name) not like '%balance%' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -51,29 +51,36 @@ and lower(table_name) not like '%tender%' and lower(table_name) not like '%googl
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
-
 select * {{exclude()}} (row_num)
 FROM (
     select 
     '{{brand}}' as brand,
     '{{store}}' as store,
     id,
-    type,
+    order_id,
+    kind,
+    gateway,
+    status,
+    cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
     test,
-    payout_id,
-    payout_status,
-    currency,
-    amount,
-    fee,
-    source_id,
-    source_type,
-    source_order_id,
+    authorization,
+    parent_id,
     cast(a.processed_at as {{ dbt.type_timestamp() }}) processed_at,
+    source_name,
+    amount,
+    currency,
+    payment_id,
+    total_unsettled_set,
+    admin_graphql_api_id,
+    payment_details,
+    receipt,
+    message,
+    error_code,
+    payments_refund_attributes,
+    user_id,
+    location_id,
+    device_id,
+    signature,
     {% if var('currency_conversion_flag') %}
         case when c.value is null then 1 else c.value end as exchange_currency_rate,
         case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
@@ -86,7 +93,7 @@ FROM (
     a.{{daton_batch_id()}} as _daton_batch_id,
     current_timestamp() as _last_updated,
     '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-    Dense_Rank() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
+    ROW_NUMBER() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
 	    from {{i}} a
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code

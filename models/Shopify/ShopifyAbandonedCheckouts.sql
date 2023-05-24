@@ -1,4 +1,4 @@
-{% if var('ShopifyPayouts') %}
+{% if var('ShopifyAbandonedCheckouts') %}
 {{ config( enabled = True ) }}
 {% else %}
 {{ config( enabled = False ) }}
@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%payouts')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%abandoned_checkouts')}} and lower(table_name) not like '%googleanalytics%'
 {% endset %}  
 
 
@@ -53,41 +53,50 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{brand}}' as brand,
         '{{store}}' as store,
         id,
-        status,
-        CAST(date as DATE) as date,
+        token,
+        cart_token,
+        email,
+        buyer_accepts_marketing,
+        cast(created_at as timestamp) as created_at,
+        cast(updated_at as timestamp) as updated_at,
+        note_attributes,
+        shipping_lines,
+        taxes_included,
+        total_weight,
         currency,
-        amount,
-        {% if target.type =='snowflake' %}
-        summary.VALUE:adjustments_fee_amount as summary_adjustments_fee_amount,
-        summary.VALUE:adjustments_gross_amount as summary_adjustments_gross_amount,
-        summary.VALUE:charges_fee_amount as summary_charges_fee_amount,
-        summary.VALUE:charges_gross_amount as summary_charges_gross_amount,
-        summary.VALUE:refunds_fee_amount as summary_refunds_fee_amount,
-        summary.VALUE:refunds_gross_amount as summary_refunds_gross_amount,
-        summary.VALUE:reserved_funds_fee_amount as summary_reserved_funds_fee_amount,
-        summary.VALUE:reserved_funds_gross_amount as summary_reserved_funds_gross_amount,
-        summary.VALUE:retried_payouts_fee_amount as summary_retried_payouts_fee_amount,
-        summary.VALUE:retried_payouts_gross_amount as summary_retried_payouts_gross_amount,
-        {% else %}
-        summary.adjustments_fee_amount as summary_adjustments_fee_amount,
-        summary.adjustments_gross_amount as summary_adjustments_gross_amount,
-        summary.charges_fee_amount as summary_charges_fee_amount,
-        summary.charges_gross_amount as summary_charges_gross_amount,
-        summary.refunds_fee_amount as summary_refunds_fee_amount,
-        summary.refunds_gross_amount as summary_refunds_gross_amount,
-        summary.reserved_funds_fee_amount as summary_reserved_funds_fee_amount,
-        summary.reserved_funds_gross_amount as summary_reserved_funds_gross_amount,
-        summary.retried_payouts_fee_amount as summary_retried_payouts_fee_amount,
-        summary.retried_payouts_gross_amount as summary_retried_payouts_gross_amount,
-        {% endif %}
+        customer_locale,
+        line_items,
+        name,
+        abandoned_checkout_url,
+        discount_codes,
+        tax_lines,
+        source_name,
+        presentment_currency,
+        buyer_accepts_sms_marketing,
+        total_discounts,
+        total_line_items_price,
+        total_price,
+        total_tax,
+        subtotal_price,
+        billing_address,
+        shipping_address,
+        customer,
+        landing_site,
+        referring_site,
+        gateway,
+        total_duties,
+        user_id,
+        location_id,
+        source_identifier,
+        device_id,
+        completed_at,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
+        ROW_NUMBER() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
         FROM  {{i}} a
-                {{unnesting("summary")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
