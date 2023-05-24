@@ -55,6 +55,21 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
+        b.* {{exclude()}} (_daton_user_id, _daton_batch_runtime, _daton_batch_id),
+        {% if var('currency_conversion_flag') %}
+            case when c.value is null then 1 else c.value end as exchange_currency_rate,
+            case when c.from_currency_code is null then b.subtotal_set_presentment_currency_code else c.from_currency_code end as exchange_currency_code,
+        {% else %}
+            cast(1 as decimal) as exchange_currency_rate,
+            b.subtotal_set_presentment_currency_code as exchange_currency_code, 
+        {% endif %}
+        b._daton_user_id,
+        b._daton_batch_runtime,
+        b._daton_batch_id,
+        current_timestamp() as _last_updated,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        from (
+        select
         CAST(a.id as string) refund_id,
         order_id,
         cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
@@ -71,7 +86,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         refund_line_items.VALUE:restock_type::VARCHAR as refund_line_items_restock_type,
         refund_line_items.VALUE:subtotal::NUMERIC as refund_line_items_subtotal,
         refund_line_items.VALUE:total_tax::NUMERIC as refund_line_items_total_tax,
-        refund_line_items.VALUE:subtotal_set as refund_line_items_subtotal_set,
+        presentment_money.VALUE:amount as subtotal_set_presentment_amount,
+        presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
+        shop_money.VALUE:amount as subtotal_set_shop_amount,
+        shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
         refund_line_items.VALUE:total_tax_set as refund_line_items_total_tax_set,
         refund_line_items.VALUE:line_item as refund_line_items_line_item,
         {% else %}
@@ -82,7 +100,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         refund_line_items.restock_type as refund_line_items_restock_type,
         refund_line_items.subtotal as refund_line_items_subtotal,
         refund_line_items.total_tax as refund_line_items_total_tax,
-        refund_line_items.subtotal_set as refund_line_items_subtotal_set,
+        presentment_money.amount as subtotal_set_presentment_amount,
+        presentment_money.currency_code as subtotal_set_presentment_currency_code,
+        shop_money.amount as subtotal_set_shop_amount,
+        shop_money.currency_code as subtotal_set_shop_currency_code,
         refund_line_items.total_tax_set as refund_line_items_total_tax_set,
         refund_line_items.line_item as refund_line_items_line_item,
         {% endif %}
@@ -92,8 +113,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
-        current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
         {% if target.type =='snowflake' %}
         ROW_NUMBER() OVER (PARTITION BY order_id, a.id, refund_line_items.VALUE:id order by _daton_batch_runtime desc) row_num
         {% else %}
@@ -101,13 +120,20 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% endif %}
         from {{i}} a
             {{unnesting("refund_line_items")}}
+            {{multi_unnesting("refund_line_items","subtotal_set")}}
+            {{multi_unnesting("subtotal_set","shop_money")}}
+            {{multi_unnesting("subtotal_set","presentment_money")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
 
-        )
-        where row_num = 1
+        ) b
+        {% if var('currency_conversion_flag') %}
+            left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.subtotal_set_presentment_currency_code = c.to_currency_code
+        {% endif %}
+    )
+    where row_num = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
