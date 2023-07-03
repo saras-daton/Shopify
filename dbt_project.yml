@@ -30,6 +30,10 @@ vars:
     "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERS":-7,
     "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCTS":-7
   }
+
+  # Variables used for dbt-tests
+  'dbt_date:time_zone': 'America/Los_Angeles'
+
       # Above are Example entries for raw table level input offset hours
 
   ShopifyAbandonedCheckouts: True
