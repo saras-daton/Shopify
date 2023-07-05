@@ -137,25 +137,24 @@ The tests property defines assertions about a column, table, or view. The proper
 | ---------------| ------------------------------------------- |
 | [Not Null Test](https://docs.getdbt.com/reference/resource-properties/tests#testing-an-expression)  | This test validates that there are no null values present in a column |
 | [Uniqueness Test](https://docs.getdbt.com/reference/resource-properties/tests#testing-an-expression)  | This test validates that there are no duplicate values present in a field |
-| [Data Recency Test] | This is used to check for issues with data refresh within {{ x }} days |
-| [Accepted Value Test](https://docs.getdbt.com/reference/resource-properties/tests#accepted_values)  | This test validates that all of the values in a column are present in a supplied list of values. If any values other than those provided in the list are present, then the test will fail |
-| [Aggregation Test](https://github.com/calogica/dbt-expectations/blob/0.8.5/macros/schema_tests/table_shape/expect_table_aggregation_to_equal_other_table.sql)  | Used to check and validate the integrity of the data with the reference table from which the table was created |
+| [Data Recency Test](https://github.com/dbt-labs/dbt-utils/blob/main/macros/generic_tests/recency.sql)  | This is used to check for issues with data refresh within {{ x }} days, please specify the value of number of days at {{ x }} |
+| [Accepted Value Test](https://docs.getdbt.com/reference/resource-properties/tests#accepted_values)  | This test validates that all of the values in a column are present in a supplied list of values. If any values other than those provided in the list are present, then the test will fail, by default it consists of default values and this needs to be changed based on the project |
 
 ### Table Name: ShopifyAbandonedCheckouts
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
 | email | Yes |  |  |  |
 | created_at | Yes |  |  |  |
-| updated_at | Yes (1 day) |  |  |  |
+| updated_at | Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyBalanceTransactions
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -165,17 +164,17 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyCarrierServices
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| id | Yes |  | Yes |
-| active | Yes | Yes ['true', 'false'] |  |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| id | Yes |  |  | Yes |
+| active | Yes |  | Yes ['true', 'false'] |  |
 
 ### Table Name: ShopifyCollects
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -186,19 +185,19 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyCountries
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| id | Yes |  | Yes |
-| name | Yes |  |  |
-| code | Yes |  |  |
-| provinces_id | Yes |  | Yes |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| id | Yes |  |  | Yes |
+| name | Yes |  |  |  |
+| code | Yes |  |  |  |
+| provinces_id | Yes |  |  | Yes |
 
 ### Table Name: ShopifyCustomCollections
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -209,18 +208,18 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyCustomerAddress
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| id | Yes |  | Yes |
-| customer_id | Yes |  | Yes |
-| country | Yes |  |  |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| id | Yes |  |  | Yes |
+| customer_id | Yes |  |  | Yes |
+| country | Yes |  |  |  |
 
 ### Table Name: ShopifyCustomers
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -232,7 +231,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyDisputes
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -244,7 +243,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyEvents
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -255,7 +254,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyFulfillmentEvents
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -268,7 +267,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyFulfillmentOrders
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -283,7 +282,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyGiftCards
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -293,7 +292,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyInventoryItems
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -307,7 +306,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyInventoryLevels
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | inventory_item_id | Yes |  |  | Yes |
@@ -316,18 +315,18 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyLocations
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| id | Yes |  | Yes |
-| zip | Yes |  | Yes |
-| country | Yes |  |  |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| id | Yes |  |  | Yes |
+| zip | Yes |  |  | Yes |
+| country | Yes |  |  |  |
 
 ### Table Name: ShopifyOrders
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -340,7 +339,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersAddresses
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -353,7 +352,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersCustomer
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -370,7 +369,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersDiscountAllocations
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -385,7 +384,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersDiscountApplications
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -402,7 +401,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersFulfillments
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -417,7 +416,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersLineItems
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -432,7 +431,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersLineItemsTaxLines
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -448,7 +447,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyOrdersShippingLines
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | order_id | Yes |  |  | Yes |
@@ -462,7 +461,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyPayouts
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -471,18 +470,18 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyPolicies
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| created_at | Yes |  |  |
-| updated_at | Yes |  |  |
-| title | Yes |  | Yes |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| created_at | Yes |  |  |  |
+| updated_at | Yes |  |  |  |
+| title | Yes |  |  | Yes |
 
 ### Table Name: ShopifyPriceRules
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -495,7 +494,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyProductMetafields
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -506,7 +505,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyProducts
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -518,65 +517,65 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyRefundLineItemsTax
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| refund_id | Yes |  | Yes |
-| order_id | Yes |  |  |
-| created_at | Yes |  |  |
-| user_id | Yes |  |  |
-| processed_at | Yes |  |  |
-| refund_line_items_id | Yes |  | Yes |
-| line_item_id | Yes |  |  |
-| tax_lines_title | Yes |  | Yes |
-| _seq_id | Yes |  | Yes |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| refund_id | Yes |  |  | Yes |
+| order_id | Yes |  |  |  |
+| created_at | Yes |  |  |  |
+| user_id | Yes |  |  |  |
+| processed_at | Yes |  |  |  |
+| refund_line_items_id | Yes |  |  | Yes |
+| line_item_id | Yes |  |  |  |
+| tax_lines_title | Yes |  |  | Yes |
+| _seq_id | Yes |  |  | Yes |
 
 ### Table Name: ShopifyRefundsLineItems
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| refund_id | Yes |  | Yes |
-| order_id | Yes |  |  |
-| created_at | Yes |  |  |
-| user_id | Yes |  |  |
-| processed_at | Yes |  |  |
-| refund_line_items_id | Yes |  | Yes |
-| line_item_id | Yes |  |  |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| refund_id | Yes |  |  | Yes |
+| order_id | Yes |  |  |  |
+| created_at | Yes |  |  |  |
+| user_id | Yes |  |  |  |
+| processed_at | Yes |  |  |  |
+| refund_line_items_id | Yes |  |  | Yes |
+| line_item_id | Yes |  |  |  |
 
 ### Table Name: ShopifyRefundsRefundLineItems
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| refund_id | Yes |  | Yes |
-| order_id | Yes |  |  |
-| created_at | Yes |  |  |
-| user_id | Yes |  |  |
-| processed_at | Yes |  |  |
-| refund_line_items_id | Yes |  | Yes |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| refund_id | Yes |  |  | Yes |
+| order_id | Yes |  |  |  |
+| created_at | Yes |  |  |  |
+| user_id | Yes |  |  |  |
+| processed_at | Yes |  |  |  |
+| refund_line_items_id | Yes |  |  | Yes |
 
 ### Table Name: ShopifyRefundsTransactions
 
-| **Columns**  | **Not Null Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- |
-| brand | Yes | Yes |  |
-| store | Yes |  |  |
-| refund_id | Yes |  | Yes |
-| order_id | Yes |  |  |
-| created_at | Yes |  |  |
-| user_id | Yes |  |  |
-| processed_at | Yes |  |  |
-| transactions_id | Yes |  | Yes |
-| _seq_id | Yes |  | Yes |
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| brand | Yes |  | Yes |  |
+| store | Yes |  |  |  |
+| refund_id | Yes |  |  | Yes |
+| order_id | Yes |  |  |  |
+| created_at | Yes |  |  |  |
+| user_id | Yes |  |  |  |
+| processed_at | Yes |  |  |  |
+| transactions_id | Yes |  |  | Yes |
+| _seq_id | Yes |  |  | Yes |
 
 ### Table Name: ShopifyShop
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -587,7 +586,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifySmartCollections
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -596,7 +595,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyTenderTransactions
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
@@ -607,7 +606,7 @@ The tests property defines assertions about a column, table, or view. The proper
 ### Table Name: ShopifyTransactions
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| --------------- | --------------- | --------------- | --------------- | --------------- |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
