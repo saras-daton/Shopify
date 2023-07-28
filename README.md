@@ -112,6 +112,7 @@ This package contains models from the Shopify API which includes reports on {{sa
 |Orders | [ShopifyOrdersShippingLines](models/Shopify/ShopifyOrdersShippingLines.sql)| A list of orders with shipping details |
 |Orders | [ShopifyOrdersTransactions](models/Shopify/ShopifyOrdersTransactions.sql)| A list of order transactions |
 |Orders | [ShopifyOrders](models/Shopify/ShopifyOrders.sql)| A list of orders |
+|Orders | [ShopifyOrdersNoteAttributes](models/Shopify/ShopifyOrdersNoteAttributes.sql)| A list of orders with the order note attributes unnested|
 |Product | [ShopifyProduct](models/Shopify/ShopifyProduct.sql)| A list of product summary, manufacturer & dimensions |
 |Refunds | [ShopifyRefundsTransactions](models/Shopify/ShopifyRefundsTransactions.sql)| A list of refund transactions |
 |Transactions | [ShopifyTransactions](models/Shopify/ShopifyTransactions.sql)| A report of transactions with transactions fees, sources and status. |
@@ -170,6 +171,49 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+
+  - name: ShopifyOrdersNoteAttributes
+    description: A list of orders along with the note attributes unnested.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','note_attributes_name']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
 
   - name: ShopifyCountries
     description: A list of countries.
