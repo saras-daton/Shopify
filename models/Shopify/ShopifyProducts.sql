@@ -84,7 +84,6 @@ FROM (
     variants.VALUE:inventory_item_id::VARCHAR as variants_inventory_item_id,
     variants.VALUE:inventory_quantity::numeric as variants_inventory_quantity,
     variants.VALUE:old_inventory_quantity::numeric as variants_old_inventory_quantity,
-    variants.VALUE:presentment_prices as variants_presentment_prices,
     {% else %}
     variants.id as variant_id,
     coalesce(cast(variants.product_id as string),'') as variants_product_id,
@@ -107,11 +106,7 @@ FROM (
     variants.inventory_item_id as variants_inventory_item_id,
     variants.inventory_quantity as variants_inventory_quantity,
     variants.old_inventory_quantity as variants_old_inventory_quantity,
-    variants.presentment_prices as variants_presentment_prices,
     {% endif %}
-    options,
-    images,
-    image,
     template_suffix,
     status,
     {{daton_user_id()}} as _daton_user_id,

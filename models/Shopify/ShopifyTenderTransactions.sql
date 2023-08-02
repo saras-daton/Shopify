@@ -64,7 +64,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         cast(processed_at as timestamp) as processed_at,
         remote_reference,
         payment_method,
-        payment_details,
         user_id,
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,

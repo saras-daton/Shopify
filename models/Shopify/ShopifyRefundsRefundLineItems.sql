@@ -90,8 +90,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
         shop_money.VALUE:amount as subtotal_set_shop_amount,
         shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
-        refund_line_items.VALUE:total_tax_set as refund_line_items_total_tax_set,
-        refund_line_items.VALUE:line_item as refund_line_items_line_item,
         {% else %}
         COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
         refund_line_items.quantity as refund_line_items_quantity,
@@ -104,12 +102,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         presentment_money.currency_code as subtotal_set_presentment_currency_code,
         shop_money.amount as subtotal_set_shop_amount,
         shop_money.currency_code as subtotal_set_shop_currency_code,
-        refund_line_items.total_tax_set as refund_line_items_total_tax_set,
-        refund_line_items.line_item as refund_line_items_line_item,
         {% endif %}
-        transactions,
-        total_duties_set,
-        order_adjustments,
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,

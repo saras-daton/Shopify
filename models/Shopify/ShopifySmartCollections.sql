@@ -59,7 +59,6 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         published_at,
         sort_order,
         disjunctive,
-        rules,
         published_scope,
         admin_graphql_api_id,
         body_html,
