@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -50,8 +50,13 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    select * {{exclude()}} (row_num)
-    FROM (
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
+        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+        {% set hr = 0 %}
+    {% endif %}
+
+    
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
@@ -70,18 +75,18 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from (
         select
-        CAST(a.id as string) refund_id,
-        order_id,
-        cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
+        cast(a.id as string) refund_id,
+        cast(order_id as string) order_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         note,
-        user_id,
-        CAST(a.processed_at as timestamp) processed_at,
+        cast(user_id as string) user_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         restock,
         admin_graphql_api_id,
         {% if target.type =='snowflake' %}
-        COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
+        coalesce(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
         refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
-        COALESCE(refund_line_items.VALUE:line_item_id::VARCHAR,'') as refund_line_items_line_item_id,
+        coalesce(refund_line_items.VALUE:line_item_id::VARCHAR,'') as refund_line_items_line_item_id,
         refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
         refund_line_items.VALUE:restock_type::VARCHAR as refund_line_items_restock_type,
         refund_line_items.VALUE:subtotal::NUMERIC as refund_line_items_subtotal,
@@ -90,13 +95,11 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
         shop_money.VALUE:amount as subtotal_set_shop_amount,
         shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
-        refund_line_items.VALUE:total_tax_set as refund_line_items_total_tax_set,
-        refund_line_items.VALUE:line_item as refund_line_items_line_item,
         {% else %}
-        COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
+        coalesce(cast(refund_line_items.id as string),'') as refund_line_items_id,
         refund_line_items.quantity as refund_line_items_quantity,
-        COALESCE(CAST(refund_line_items.line_item_id as string),'') as refund_line_items_line_item_id,
-        refund_line_items.location_id as refund_line_items_location_id,
+        coalesce(cast(refund_line_items.line_item_id as string),'') as refund_line_items_line_item_id,
+        cast(refund_line_items.location_id as string) as refund_line_items_location_id,
         refund_line_items.restock_type as refund_line_items_restock_type,
         refund_line_items.subtotal as refund_line_items_subtotal,
         refund_line_items.total_tax as refund_line_items_total_tax,
@@ -104,20 +107,13 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         presentment_money.currency_code as subtotal_set_presentment_currency_code,
         shop_money.amount as subtotal_set_shop_amount,
         shop_money.currency_code as subtotal_set_shop_currency_code,
-        refund_line_items.total_tax_set as refund_line_items_total_tax_set,
-        refund_line_items.line_item as refund_line_items_line_item,
         {% endif %}
-        transactions,
-        total_duties_set,
-        order_adjustments,
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
-        {% if target.type =='snowflake' %}
-        ROW_NUMBER() OVER (PARTITION BY order_id, a.id, refund_line_items.VALUE:id order by _daton_batch_runtime desc) row_num
-        {% else %}
-        ROW_NUMBER() OVER (PARTITION BY order_id, a.id, refund_line_items.id order by _daton_batch_runtime desc) row_num
-        {% endif %}
+        current_timestamp() as _last_updated,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+    
         from {{i}} a
             {{unnesting("refund_line_items")}}
             {{multi_unnesting("refund_line_items","subtotal_set")}}
@@ -132,8 +128,12 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% if var('currency_conversion_flag') %}
             left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.subtotal_set_presentment_currency_code = c.to_currency_code
         {% endif %}
-    )
-    where row_num = 1
+        qualify
+        {% if target.type =='snowflake' %}
+        row_number() over (partition by order_id, a.id, refund_line_items.VALUE:id order by _daton_batch_runtime desc) row_num = 1
+        {% else %}
+        row_number() over (partition by order_id, a.id, refund_line_items.id order by _daton_batch_runtime desc) row_num = 1
+        {% endif %}
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

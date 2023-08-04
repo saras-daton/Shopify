@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -56,8 +56,8 @@ with unnested_refunds as(
         {% set hr = 0 %}
     {% endif %}
 
-    SELECT * 
-    FROM (
+    select * 
+    from (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
@@ -76,17 +76,17 @@ with unnested_refunds as(
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from (
         select
-        CAST(a.id as string) refund_id,
+        cast(a.id as string) refund_id,
 --        cast(a.id as string) order_id, 
-        a.order_id,
-        cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
+        cast(a.order_id as string) order_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         a.note,
-        user_id,
-        cast(a.processed_at as {{ dbt.type_timestamp() }}) processed_at,
+        cast(user_id as string) user_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         restock,
         a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
-        COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
+        coalesce(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
         refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
         refund_line_items.VALUE:line_item_id::VARCHAR as refund_line_items_line_item_id,
         refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
@@ -97,7 +97,6 @@ with unnested_refunds as(
         presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
         shop_money.VALUE:amount as subtotal_set_shop_amount,
         shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
-        refund_line_items.VALUE:total_tax_set as refund_line_items_total_tax_set,
         line_item.VALUE:id::VARCHAR as line_item_id,
         line_item.VALUE:variant_id::VARCHAR as line_item_variant_id,
         line_item.VALUE:title::VARCHAR as line_item_title,
@@ -116,28 +115,20 @@ with unnested_refunds as(
         line_item.VALUE:grams::VARCHAR as line_item_grams,
         line_item.VALUE:price::NUMERIC as line_item_price,
         line_item.VALUE:total_discount::NUMERIC as line_item_total_discount,
-        line_item.VALUE:price_set as line_item_price_set,
-        line_item.VALUE:total_discount_set as line_item_total_discount_set,
-        line_item.VALUE:discount_allocations as line_item_discount_allocations,
         line_item.VALUE:admin_graphql_api_id as line_item_admin_graphql_api_id,
-        line_item.VALUE:properties as line_item_properties,
-        line_item.VALUE:pre_tax_price_set as line_item_pre_tax_price_set,
         line_item.VALUE:vendor as line_item_vendor,
         line_item.VALUE:tax_code as line_item_tax_code,
         line_item.VALUE:pre_tax_price::NUMERIC as line_item_pre_tax_price,
         line_item.VALUE:fulfillment_status::VARCHAR as line_item_fulfillment_status,
-        line_item.VALUE:origin_location::VARCHAR as line_item_origin_location,
-        line_item.VALUE:destination_location::VARCHAR as line_item_destination_location,
         tax_lines.VALUE:title::VARCHAR as tax_lines_title,
         tax_lines.VALUE:price::NUMERIC as tax_lines_price,
         tax_lines.VALUE:rate::NUMERIC as tax_lines_rate,
-        tax_lines.VALUE:price_set as tax_lines_price_set,
         tax_lines.VALUE:channel_liable as tax_lines_channel_liable,
         {% else %}
-        COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
+        coalesce(cast(refund_line_items.id as string),'') as refund_line_items_id,
         refund_line_items.quantity as refund_line_items_quantity,
-        refund_line_items.line_item_id as refund_line_items_line_item_id,
-        refund_line_items.location_id as refund_line_items_location_id,
+        cast(refund_line_items.line_item_id as string) as refund_line_items_line_item_id,
+        cast(refund_line_items.location_id as string) as refund_line_items_location_id,
         refund_line_items.restock_type as refund_line_items_restock_type,
         refund_line_items.subtotal as refund_line_items_subtotal,
         refund_line_items.total_tax as refund_line_items_total_tax,
@@ -145,15 +136,14 @@ with unnested_refunds as(
         presentment_money.currency_code as subtotal_set_presentment_currency_code,
         shop_money.amount as subtotal_set_shop_amount,
         shop_money.currency_code as subtotal_set_shop_currency_code,
-        refund_line_items.total_tax_set as refund_line_items_total_tax_set,
-        line_item.id as line_item_id,
-        line_item.variant_id as line_item_variant_id,
+        cast(line_item.id as string) as line_item_id,
+        cast(line_item.variant_id as string) as line_item_variant_id,
         line_item.title as line_item_title,
         line_item.quantity as line_item_quantity,
         line_item.sku as line_item_sku,
         line_item.variant_title as line_item_variant_title,
         line_item.fulfillment_service as line_item_fulfillment_service,
-        line_item.product_id as line_item_product_id,
+        cast(line_item.product_id as string) as line_item_product_id,
         line_item.requires_shipping as line_item_requires_shipping,
         line_item.taxable as line_item_taxable,
         line_item.gift_card as line_item_gift_card,
@@ -162,32 +152,24 @@ with unnested_refunds as(
         line_item.product_exists as line_item_product_exists,
         line_item.fulfillable_quantity as line_item_fulfillable_quantity,
         line_item.grams as line_item_grams,
-        line_item.price as line_item_price,
-        line_item.total_discount as line_item_total_discount,
-        line_item.price_set as line_item_price_set,
-        line_item.total_discount_set as line_item_total_discount_set,
-        line_item.discount_allocations as line_item_discount_allocations,
+        cast(line_item.price as numeric) as line_item_price,
+        cast(line_item.total_discount as numeric) as line_item_total_discount,
         line_item.admin_graphql_api_id as line_item_admin_graphql_api_id,
-        line_item.properties as line_item_properties,
-        line_item.pre_tax_price_set as line_item_pre_tax_price_set,
         line_item.vendor as line_item_vendor,
         line_item.tax_code as line_item_tax_code,
-        line_item.pre_tax_price as line_item_pre_tax_price,
+        cast(line_item.pre_tax_price as numeric) as line_item_pre_tax_price,
         line_item.fulfillment_status as line_item_fulfillment_status,
-        line_item.origin_location as line_item_origin_location,
-        line_item.destination_location as line_item_destination_location,
         tax_lines.title as tax_lines_title,
-        tax_lines.price as tax_lines_price,
+        cast(tax_lines.price as numeric) as tax_lines_price,
         tax_lines.rate as tax_lines_rate,
-        tax_lines.price_set as tax_lines_price_set,
         tax_lines.channel_liable as tax_lines_channel_liable,
         {% endif %}
-        transactions,
-        total_duties_set,
-        order_adjustments,
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
+        current_timestamp() as _last_updated,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+    
         from {{i}} a
             {{unnesting("refund_line_items")}}
             {{multi_unnesting("refund_line_items","subtotal_set")}}
@@ -209,13 +191,11 @@ with unnested_refunds as(
 ),
 
 dedup as (
-select *,
-DENSE_RANK() OVER (PARTITION BY refund_id order by _daton_batch_runtime desc) row_num
+select *
 from unnested_refunds 
+qualify
+dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) row_num = 1
 )
 
-SELECT *, ROW_NUMBER() OVER (PARTITION BY refund_id order by _daton_batch_runtime desc) _seq_id
-from (
-select * {{exclude()}} (row_num)
-from dedup 
-where row_num = 1)
+SELECT *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
+from dedup

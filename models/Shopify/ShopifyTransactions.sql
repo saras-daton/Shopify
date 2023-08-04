@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -51,36 +51,35 @@ and lower(table_name) not like '%tender%' and lower(table_name) not like '%balan
         {% set store = var('default_storename') %}
     {% endif %}
 
-select * {{exclude()}} (row_num)
-FROM (
-    select 
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
+        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+        {% set hr = 0 %}
+    {% endif %}
+
+select 
     '{{brand}}' as brand,
     '{{store}}' as store,
-    id,
-    order_id,
+    cast(id as string) id,
+    cast(order_id as string) order_id,
     kind,
     gateway,
     status,
-    cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
     test,
     authorization,
     parent_id,
-    cast(a.processed_at as {{ dbt.type_timestamp() }}) processed_at,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
     source_name,
-    amount,
+    cast(amount as numeric) amount,
     currency,
     payment_id,
-    total_unsettled_set,
     admin_graphql_api_id,
-    payment_details,
-    receipt,
     message,
     error_code,
-    payments_refund_attributes,
-    user_id,
-    location_id,
-    device_id,
-    signature,
+    cast(user_id as string) user_id,
+    cast(location_id as string) location_id,
+    cast(device_id as string) device_id,
     {% if var('currency_conversion_flag') %}
         case when c.value is null then 1 else c.value end as exchange_currency_rate,
         case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
@@ -92,8 +91,7 @@ FROM (
     a.{{daton_batch_runtime()}} as _daton_batch_runtime,
     a.{{daton_batch_id()}} as _daton_batch_id,
     current_timestamp() as _last_updated,
-    '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-    ROW_NUMBER() OVER (PARTITION BY id order by a.{{daton_batch_runtime()}} desc) row_num
+    '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
 	    from {{i}} a
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code
@@ -103,7 +101,7 @@ FROM (
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
 
-        )
-        where row_num = 1
+        qualify
+        row_number() over (partition by id order by a.{{daton_batch_runtime()}} desc) row_num = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
