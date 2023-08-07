@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -85,26 +85,26 @@ with unnested_refunds as(
         restock,
         a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
-            coalesce(transactions.VALUE:id::VARCHAR,'') as transactions_id,
-            transactions.VALUE:order_id::VARCHAR as transactions_order_id,
-            transactions.VALUE:kind::VARCHAR as transactions_kind,
-            transactions.VALUE:gateway::VARCHAR as transactions_gateway,
-            transactions.VALUE:status::VARCHAR as transactions_status,
-            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.VALUE:created_at::TIMESTAMP") }} as {{ dbt.type_timestamp() }}) as transactions_created_at,
-            transactions.VALUE:test::VARCHAR as transactions_test,
-            transactions.VALUE:authorization::VARCHAR as transactions_authorization,
-            transactions.VALUE:parent_id::VARCHAR as transactions_parent_id,
-            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.VALUE:processed_at::TIMESTAMP") }} as {{ dbt.type_timestamp() }}) as transactions_processed_at,
-            transactions.VALUE:source_name::VARCHAR as transactions_source_name,
-            transactions.VALUE:amount::NUMERIC as transactions_amount,
-            transactions.VALUE:currency as transactions_currency,
-            transactions.VALUE:admin_graphql_api_id as transactions_admin_graphql_api_id,
-            transactions.VALUE:message as transactions_message,
-            transactions.VALUE:user_id::VARCHAR as transactions_user_id,
-            transactions.VALUE:payment_id as transactions_payment_id,
-            transactions.VALUE:error_code::VARCHAR as transactions_error_code,
+            coalesce(transactions.value:id::varchar,'N/A') as transactions_id,
+            transactions.value:order_id::varchar as transactions_order_id,
+            transactions.value:kind::varchar as transactions_kind,
+            transactions.value:gateway::varchar as transactions_gateway,
+            transactions.value:status::varchar as transactions_status,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.value:created_at::timestamp") }} as {{ dbt.type_timestamp() }}) as transactions_created_at,
+            transactions.value:test::varchar as transactions_test,
+            transactions.value:authorization::varchar as transactions_authorization,
+            transactions.value:parent_id::varchar as transactions_parent_id,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.value:processed_at::timestamp") }} as {{ dbt.type_timestamp() }}) as transactions_processed_at,
+            transactions.value:source_name::varchar as transactions_source_name,
+            transactions.value:amount::numeric as transactions_amount,
+            transactions.value:currency as transactions_currency,
+            transactions.value:admin_graphql_api_id as transactions_admin_graphql_api_id,
+            transactions.value:message as transactions_message,
+            transactions.value:user_id::varchar as transactions_user_id,
+            transactions.value:payment_id as transactions_payment_id,
+            transactions.value:error_code::varchar as transactions_error_code,
         {% else %}
-            coalesce(cast(transactions.id as string),'') as transactions_id,
+            coalesce(cast(transactions.id as string),'N/A') as transactions_id,
             cast(transactions.order_id as string) as transactions_order_id,
             transactions.kind as transactions_kind,
             transactions.gateway as transactions_gateway,
@@ -149,7 +149,7 @@ dedup as (
 select *
 from unnested_refunds 
 qualify
-dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) row_num = 1
+dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) = 1
 )
 
 SELECT *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id

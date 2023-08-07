@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -90,7 +90,7 @@ SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
                 where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
         qualify
-        dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) row_num = 1
+        dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) = 1
         
 
     {% if not loop.last %} union all {% endif %}

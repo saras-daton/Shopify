@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -84,21 +84,21 @@ SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         restock,
         admin_graphql_api_id,
         {% if target.type =='snowflake' %}
-        coalesce(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
-        refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
-        coalesce(refund_line_items.VALUE:line_item_id::VARCHAR,'') as refund_line_items_line_item_id,
-        refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
-        refund_line_items.VALUE:restock_type::VARCHAR as refund_line_items_restock_type,
-        refund_line_items.VALUE:subtotal::NUMERIC as refund_line_items_subtotal,
-        refund_line_items.VALUE:total_tax::NUMERIC as refund_line_items_total_tax,
-        presentment_money.VALUE:amount as subtotal_set_presentment_amount,
-        presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
-        shop_money.VALUE:amount as subtotal_set_shop_amount,
-        shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
+        coalesce(refund_line_items.value:id::varchar,'N/A') as refund_line_items_id,
+        refund_line_items.value:quantity::numeric as refund_line_items_quantity,
+        coalesce(refund_line_items.value:line_item_id::varchar,'N/A') as refund_line_items_line_item_id,
+        refund_line_items.value:location_id::varchar as refund_line_items_location_id,
+        refund_line_items.value:restock_type::varchar as refund_line_items_restock_type,
+        refund_line_items.value:subtotal::numeric as refund_line_items_subtotal,
+        refund_line_items.value:total_tax::numeric as refund_line_items_total_tax,
+        presentment_money.value:amount as subtotal_set_presentment_amount,
+        presentment_money.value:currency_code as subtotal_set_presentment_currency_code,
+        shop_money.value:amount as subtotal_set_shop_amount,
+        shop_money.value:currency_code as subtotal_set_shop_currency_code,
         {% else %}
-        coalesce(cast(refund_line_items.id as string),'') as refund_line_items_id,
+        coalesce(cast(refund_line_items.id as string),'N/A') as refund_line_items_id,
         refund_line_items.quantity as refund_line_items_quantity,
-        coalesce(cast(refund_line_items.line_item_id as string),'') as refund_line_items_line_item_id,
+        coalesce(cast(refund_line_items.line_item_id as string),'N/A') as refund_line_items_line_item_id,
         cast(refund_line_items.location_id as string) as refund_line_items_location_id,
         refund_line_items.restock_type as refund_line_items_restock_type,
         refund_line_items.subtotal as refund_line_items_subtotal,
@@ -130,9 +130,9 @@ SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% endif %}
         qualify
         {% if target.type =='snowflake' %}
-        row_number() over (partition by order_id, a.id, refund_line_items.VALUE:id order by _daton_batch_runtime desc) row_num = 1
+        row_number() over (partition by order_id, a.id, refund_line_items.value:id order by _daton_batch_runtime desc) = 1
         {% else %}
-        row_number() over (partition by order_id, a.id, refund_line_items.id order by _daton_batch_runtime desc) row_num = 1
+        row_number() over (partition by order_id, a.id, refund_line_items.id order by _daton_batch_runtime desc) = 1
         {% endif %}
 
     {% if not loop.last %} union all {% endif %}

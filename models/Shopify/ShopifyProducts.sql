@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -68,34 +68,34 @@ SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
     tags,
     a.admin_graphql_api_id,
     {% if target.type =='snowflake' %}
-    variants.VALUE:id::VARCHAR as variant_id,
-    coalesce(variants.VALUE:product_id::VARCHAR,'') as variants_product_id,
-    variants.VALUE:title::VARCHAR as variants_title,
-    variants.VALUE:price::NUMERIC as variants_price,
-    coalesce(variants.VALUE:sku::VARCHAR,'') as variants_sku,
-    variants.VALUE:position::VARCHAR as variants_position,
-    variants.VALUE:inventory_policy::VARCHAR as variants_inventory_policy,
-    variants.VALUE:fulfillment_service::VARCHAR as variants_fulfillment_service,
-    variants.VALUE:inventory_management::VARCHAR as variants_inventory_management,
-    variants.VALUE:option1::VARCHAR as variants_option1,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.VALUE:created_at::TIMESTAMP") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.VALUE:updated_at::TIMESTAMP") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
-    variants.VALUE:taxable::VARCHAR as variants_taxable,
-    variants.VALUE:barcode::VARCHAR as variants_barcode,
-    variants.VALUE:grams::VARCHAR as variants_grams,
-    variants.VALUE:image_id::VARCHAR as variants_image_id,
-    variants.VALUE:weight::NUMERIC as variants_weight,
-    variants.VALUE:weight_unit::VARCHAR as variants_weight_unit,
-    variants.VALUE:inventory_item_id::VARCHAR as variants_inventory_item_id,
-    variants.VALUE:inventory_quantity::NUMERIC as variants_inventory_quantity,
-    variants.VALUE:old_inventory_quantity::NUMERIC as variants_old_inventory_quantity,
-    variants.VALUE:presentment_prices as variants_presentment_prices,
+    variants.value:id::varchar as variant_id,
+    coalesce(variants.value:product_id::varchar,'N/A') as variants_product_id,
+    variants.value:title::varchar as variants_title,
+    variants.value:price::numeric as variants_price,
+    coalesce(variants.value:sku::varchar,'N/A') as variants_sku,
+    variants.value:position::varchar as variants_position,
+    variants.value:inventory_policy::varchar as variants_inventory_policy,
+    variants.value:fulfillment_service::varchar as variants_fulfillment_service,
+    variants.value:inventory_management::varchar as variants_inventory_management,
+    variants.value:option1::varchar as variants_option1,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.value:created_at::timestamp") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.value:updated_at::timestamp") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
+    variants.value:taxable::varchar as variants_taxable,
+    variants.value:barcode::varchar as variants_barcode,
+    variants.value:grams::varchar as variants_grams,
+    variants.value:image_id::varchar as variants_image_id,
+    variants.value:weight::numeric as variants_weight,
+    variants.value:weight_unit::varchar as variants_weight_unit,
+    variants.value:inventory_item_id::varchar as variants_inventory_item_id,
+    variants.value:inventory_quantity::numeric as variants_inventory_quantity,
+    variants.value:old_inventory_quantity::numeric as variants_old_inventory_quantity,
+    variants.value:presentment_prices as variants_presentment_prices,
     {% else %}
     cast(variants.id as string) as variant_id,
-    coalesce(cast(variants.product_id as string),'') as variants_product_id,
+    coalesce(cast(variants.product_id as string),'N/A') as variants_product_id,
     variants.title as variants_title,
     cast(variants.price as numeric) as variants_price,
-    coalesce(cast(variants.sku as string),'') as variants_sku,
+    coalesce(cast(variants.sku as string),'N/A') as variants_sku,
     variants.position as variants_position,
     variants.inventory_policy as variants_inventory_policy,
     variants.fulfillment_service as variants_fulfillment_service,
@@ -129,7 +129,7 @@ SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             where {{daton_batch_runtime()}}  >= {{max_loaded}} and variants.sku is not null
             {% endif %}
     qualify
-    dense_rank() over (partition by by a.id order by _daton_batch_runtime desc) row_num = 1
+    dense_rank() over (partition by a.id order by _daton_batch_runtime desc) = 1
         
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

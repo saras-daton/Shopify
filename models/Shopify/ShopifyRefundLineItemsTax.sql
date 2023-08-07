@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -77,7 +77,6 @@ with unnested_refunds as(
         from (
         select
         cast(a.id as string) refund_id,
---        cast(a.id as string) order_id, 
         cast(a.order_id as string) order_id,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         a.note,
@@ -86,46 +85,46 @@ with unnested_refunds as(
         restock,
         a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
-        coalesce(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
-        refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
-        refund_line_items.VALUE:line_item_id::VARCHAR as refund_line_items_line_item_id,
-        refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
-        refund_line_items.VALUE:restock_type::VARCHAR as refund_line_items_restock_type,
-        refund_line_items.VALUE:subtotal::NUMERIC as refund_line_items_subtotal,
-        refund_line_items.VALUE:total_tax::NUMERIC as refund_line_items_total_tax,
-        presentment_money.VALUE:amount as subtotal_set_presentment_amount,
-        presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
-        shop_money.VALUE:amount as subtotal_set_shop_amount,
-        shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
-        line_item.VALUE:id::VARCHAR as line_item_id,
-        line_item.VALUE:variant_id::VARCHAR as line_item_variant_id,
-        line_item.VALUE:title::VARCHAR as line_item_title,
-        line_item.VALUE:quantity::NUMERIC as line_item_quantity,
-        line_item.VALUE:sku::VARCHAR as line_item_sku,
-        line_item.VALUE:variant_title::VARCHAR as line_item_variant_title,
-        line_item.VALUE:fulfillment_service::VARCHAR as line_item_fulfillment_service,
-        line_item.VALUE:product_id::VARCHAR as line_item_product_id,
-        line_item.VALUE:requires_shipping::VARCHAR as line_item_requires_shipping,
-        line_item.VALUE:taxable::VARCHAR as line_item_taxable,
-        line_item.VALUE:gift_card::VARCHAR as line_item_gift_card,
-        line_item.VALUE:name::VARCHAR as line_item_name,
-        line_item.VALUE:variant_inventory_management::VARCHAR as line_item_variant_inventory_management,
-        line_item.VALUE:product_exists::VARCHAR as line_item_product_exists,
-        line_item.VALUE:fulfillable_quantity::NUMERIC as line_item_fulfillable_quantity,
-        line_item.VALUE:grams::VARCHAR as line_item_grams,
-        line_item.VALUE:price::NUMERIC as line_item_price,
-        line_item.VALUE:total_discount::NUMERIC as line_item_total_discount,
-        line_item.VALUE:admin_graphql_api_id as line_item_admin_graphql_api_id,
-        line_item.VALUE:vendor as line_item_vendor,
-        line_item.VALUE:tax_code as line_item_tax_code,
-        line_item.VALUE:pre_tax_price::NUMERIC as line_item_pre_tax_price,
-        line_item.VALUE:fulfillment_status::VARCHAR as line_item_fulfillment_status,
-        tax_lines.VALUE:title::VARCHAR as tax_lines_title,
-        tax_lines.VALUE:price::NUMERIC as tax_lines_price,
-        tax_lines.VALUE:rate::NUMERIC as tax_lines_rate,
-        tax_lines.VALUE:channel_liable as tax_lines_channel_liable,
+        coalesce(refund_line_items.value:id::varchar,'N/A') as refund_line_items_id,
+        refund_line_items.value:quantity::numeric as refund_line_items_quantity,
+        refund_line_items.value:line_item_id::varchar as refund_line_items_line_item_id,
+        refund_line_items.value:location_id::varchar as refund_line_items_location_id,
+        refund_line_items.value:restock_type::varchar as refund_line_items_restock_type,
+        refund_line_items.value:subtotal::numeric as refund_line_items_subtotal,
+        refund_line_items.value:total_tax::numeric as refund_line_items_total_tax,
+        presentment_money.value:amount as subtotal_set_presentment_amount,
+        presentment_money.value:currency_code as subtotal_set_presentment_currency_code,
+        shop_money.value:amount as subtotal_set_shop_amount,
+        shop_money.value:currency_code as subtotal_set_shop_currency_code,
+        line_item.value:id::varchar as line_item_id,
+        line_item.value:variant_id::varchar as line_item_variant_id,
+        line_item.value:title::varchar as line_item_title,
+        line_item.value:quantity::numeric as line_item_quantity,
+        line_item.value:sku::varchar as line_item_sku,
+        line_item.value:variant_title::varchar as line_item_variant_title,
+        line_item.value:fulfillment_service::varchar as line_item_fulfillment_service,
+        line_item.value:product_id::varchar as line_item_product_id,
+        line_item.value:requires_shipping::varchar as line_item_requires_shipping,
+        line_item.value:taxable::varchar as line_item_taxable,
+        line_item.value:gift_card::varchar as line_item_gift_card,
+        line_item.value:name::varchar as line_item_name,
+        line_item.value:variant_inventory_management::varchar as line_item_variant_inventory_management,
+        line_item.value:product_exists::varchar as line_item_product_exists,
+        line_item.value:fulfillable_quantity::numeric as line_item_fulfillable_quantity,
+        line_item.value:grams::varchar as line_item_grams,
+        line_item.value:price::numeric as line_item_price,
+        line_item.value:total_discount::numeric as line_item_total_discount,
+        line_item.value:admin_graphql_api_id as line_item_admin_graphql_api_id,
+        line_item.value:vendor as line_item_vendor,
+        line_item.value:tax_code as line_item_tax_code,
+        line_item.value:pre_tax_price::numeric as line_item_pre_tax_price,
+        line_item.value:fulfillment_status::varchar as line_item_fulfillment_status,
+        tax_lines.value:title::varchar as tax_lines_title,
+        tax_lines.value:price::numeric as tax_lines_price,
+        tax_lines.value:rate::numeric as tax_lines_rate,
+        tax_lines.value:channel_liable as tax_lines_channel_liable,
         {% else %}
-        coalesce(cast(refund_line_items.id as string),'') as refund_line_items_id,
+        coalesce(cast(refund_line_items.id as string),'N/A') as refund_line_items_id,
         refund_line_items.quantity as refund_line_items_quantity,
         cast(refund_line_items.line_item_id as string) as refund_line_items_line_item_id,
         cast(refund_line_items.location_id as string) as refund_line_items_location_id,
@@ -194,7 +193,7 @@ dedup as (
 select *
 from unnested_refunds 
 qualify
-dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) row_num = 1
+dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) = 1
 )
 
 SELECT *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
