@@ -143,9 +143,13 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyAbandonedCheckouts
 
+|<nobr>Title</nobr>|<nobr>Title</nobr>|
+|----|---------|
+|<nobr>Value</nobr>|<nobr>Value</nobr>|
+
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes | <div style="width:400px">property</div> | Yes | <div style="width:400px">property</div> |
+| brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
 | email | Yes |  |  |  |
