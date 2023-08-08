@@ -148,6 +148,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
-        qualify dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) row_num = 1
+        qualify dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

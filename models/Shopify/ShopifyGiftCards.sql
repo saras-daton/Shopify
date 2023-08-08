@@ -59,7 +59,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(id as string) as id,
         balance,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         currency,
         initial_value,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="disabled_at") }} as {{ dbt.type_timestamp() }}) as disabled_at,

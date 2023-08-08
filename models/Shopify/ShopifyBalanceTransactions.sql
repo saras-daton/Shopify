@@ -95,6 +95,6 @@
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-        qualify dense_rank() over (partition by id order by a.{{daton_batch_runtime()}} desc) =1    
+        qualify dense_rank() over (partition by id order by a.{{daton_batch_runtime()}} desc) = 1    
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

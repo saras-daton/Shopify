@@ -56,7 +56,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         '{{brand}}' as brand,
         '{{store}}' as store,
         cast(id as string) as id,
-        cast(prder_id as string) as order_id,
+        cast(order_id as string) as order_id,
         type,
         amount,
         currency,

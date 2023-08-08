@@ -114,7 +114,6 @@ with unnested_refunds as(
             transactions.authorization as transactions_authorization,
             cast(transactions.parent_id as string) as transactions_parent_id,
             cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.processed_at") }} as {{ dbt.type_timestamp() }}) as transactions_processed_at,
-            transactions.processed_at as transactions_processed_at,
             transactions.source_name as transactions_source_name,
             cast(transactions.amount as numeric) as transactions_amount,
             transactions.currency as transactions_currency,

@@ -101,8 +101,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     variants.fulfillment_service as variants_fulfillment_service,
     variants.inventory_management as variants_inventory_management,
     variants.option1 as variants_option1,
-    variants.created_at as variants_created_at,
-    variants.updated_at as variants_updated_at,
     cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.created_at") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
     cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.updated_at") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
     variants.taxable as variants_taxable,

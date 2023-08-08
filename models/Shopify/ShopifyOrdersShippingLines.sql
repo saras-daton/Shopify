@@ -72,7 +72,7 @@
         cast(current_subtotal_price as numeric) as current_subtotal_price,
         cast(current_total_discounts as numeric) as current_total_discounts,
         cast(current_total_price as numeric) as current_total_price,
-        cast(current_total_tax as numeric) as current_total_tax
+        cast(current_total_tax as numeric) as current_total_tax,
     {% if target.type =='snowflake' %}
         discount_codes.value:code::varchar as discount_code,
         discount_codes.value:amount::numeric as discount_amount,
