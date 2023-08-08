@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -47,13 +47,11 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        id,
-        customer_id,
+        cast(id as string) as id,
+        cast(customer_id as string) as customer_id,
         address1,
         address2,
         city,
@@ -74,14 +72,12 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}}, {{daton_batch_id()}} desc) row_num
-        FROM  {{i}} a
+        from  {{i}} a
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+                where {{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-        )
-        where row_num = 1
+        qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}}, {{daton_batch_id()}} desc) = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

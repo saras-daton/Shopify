@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -46,29 +46,32 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
+        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+        {% set hr = 0 %}
+    {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        COALESCE(cast(a.id as string),'') as customers_id,
+        coalesce(cast(a.id as string),'n/a') as customers_id,
         email,
         accepts_marketing,
-        CAST(a.created_at as {{ dbt.type_timestamp() }}) created_at,
-        CAST(a.updated_at as {{ dbt.type_timestamp() }}) as updated_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(a.created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(a.updated_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as updated_at,
         a.first_name,
         a.last_name,
         orders_count,
         a.state,
-        total_spent,
+        cast(total_spent as numeric) as total_spent,
         verified_email,
         tax_exempt,
         tags,
         currency,
         a.phone,
-        addresses,
         accepts_marketing_updated_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="accepts_marketing_updated_at") }} as {{ dbt.type_timestamp() }}) as accepts_marketing_updated_at,
         a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
         default_address.VALUE:id::VARCHAR as default_address_id,
@@ -107,26 +110,29 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         default_address.address2 as default_address_address2,
         default_address.company as default_address_company,
         {% endif %}
-        email_marketing_consent,
         last_order_id,
         last_order_name,
         marketing_opt_in_level,
         note,
-        sms_marketing_consent,
+        {% if var('currency_conversion_flag') %}
+            case when c.value is null then 1 else c.value end as exchange_currency_rate,
+            case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
+        {% else %}
+            cast(1 as decimal) as exchange_currency_rate,
+            currency as exchange_currency_code, 
+        {% endif %} 
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
-        FROM  {{i}} a
+        from  {{i}} a
                 {{unnesting("default_address")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+                where {{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-        )
-        where row_num = 1
+        qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

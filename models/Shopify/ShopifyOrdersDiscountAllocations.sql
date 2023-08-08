@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -50,33 +50,27 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        coalesce(cast(a.id as string),'') as order_id, 
+        coalesce(cast(a.id as string),'N/A') as order_id, 
         a.admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
         cart_token,
-        checkout_id,
+        cast(checkout_id as string) as checkout_id,
         checkout_token,
         client_details,
         confirmed,
         contact_email,
-        cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         currency,
-        current_subtotal_price,
-        current_subtotal_price_set,
-        current_total_discounts,
-        current_total_discounts_set,
-        current_total_price,
-        current_total_price_set,
-        current_total_tax,
-        current_total_tax_set,
+        cast(current_subtotal_price as numeric) as current_subtotal_price,
+        cast(current_total_discounts as numeric) as current_total_discounts,
+        cast(current_total_price as numeric) as current_total_price,
+        cast(current_total_tax as numeric) as current_total_tax,
         discount_codes,
-        coalesce(email,'') as email,
+        coalesce(email,'N/A') as email,
         estimated_taxes,
         financial_status,
         gateway,
@@ -90,37 +84,27 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         payment_gateway_names,
         phone,
         presentment_currency,
-        CAST(a.processed_at as timestamp) processed_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         processing_method,
         reference,
         referring_site,
         source_identifier,
         source_name,
-        subtotal_price,
-        subtotal_price_set,
+        cast(subtotal_price as numeric) as subtotal_price,
         tags,
         a.tax_lines,
         taxes_included,
         test,
         token,
-        total_discounts,
-        total_discounts_set,
-        total_line_items_price,
-        total_line_items_price_set,
-        total_outstanding,
-        total_price,
-        total_price_set,
-        total_price_usd,
-        total_shipping_price_set,
-        total_tax,
-        total_tax_set,
-        total_tip_received,
+        cast(total_discounts as numeric) as total_discounts,
+        cast(total_line_items_price as numeric) as total_line_items_price,
+        cast(total_outstanding as numeric) as total_outstanding,
+        cast(total_price as numeric) as total_price,
+        cast(total_price_usd as numeric) as total_price_usd,
+        cast(total_tax as numeric) as total_tax,
+        cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
-        CAST(a.updated_at as timestamp) updated_at,
-        billing_address,
-        customer,
-        discount_applications,
-        fulfillments,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         {% if target.type =='snowflake' %}
         line_items.VALUE:id::VARCHAR as line_items_id,
         line_items.VALUE:admin_graphql_api_id::VARCHAR as line_items_admin_graphql_api_id,
@@ -192,20 +176,16 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         line_items.vendor as vendor,
         line_items.fulfillment_status as line_items_fulfillment_status,
         {% endif %}
-        payment_details,
-        refunds,
-        shipping_address,
-        shipping_lines,
-        app_id,
+        cast(app_id as string) as app_id,
         customer_locale,
         note,
-        closed_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
         a.fulfillment_status,
-        location_id,
+        cast(location_id as string) as location_id,
         cancel_reason,
-        cancelled_at,
-        user_id,
-        device_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
+        cast(user_id as string) as user_id,
+        cast(device_id as string) as device_id,
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
             case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
@@ -218,22 +198,19 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        Dense_Rank() OVER (PARTITION BY a.id order by a.{{daton_batch_runtime()}} desc) row_num
-            from {{i}} a
-                {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
-                {% endif %}
+        from {{i}} a
+            {% if var('currency_conversion_flag') %}
+                left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+            {% endif %}
                 {{unnesting("line_items")}}
                 {{multi_unnesting("line_items","discount_allocations")}}
                 {{multi_unnesting("discount_allocations","amount_set")}}
                 {{multi_unnesting("amount_set","shop_money")}}
                 {{multi_unnesting("amount_set","presentment_money")}}
-                {% if is_incremental() %}
+            {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
-                {% endif %}
-
-        )
-        where row_num = 1
+            {% endif %}
+        qualify dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
