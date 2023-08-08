@@ -154,10 +154,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% endif %}
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
-        a.{{daton_batch_id()}} as _daton_batch_id,
-        current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
-    
+        a.{{daton_batch_id()}} as _daton_batch_id
         from {{i}} a
             {{unnesting("refund_line_items")}}
             {{multi_unnesting("refund_line_items","line_item")}}
@@ -176,7 +173,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
-            
+
         ) b
         {% if var('currency_conversion_flag') %}
             left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.subtotal_set_presentment_currency_code = c.to_currency_code

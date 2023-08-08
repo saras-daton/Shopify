@@ -110,10 +110,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% endif %}
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
-        a.{{daton_batch_id()}} as _daton_batch_id,
-        current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
-    
+        a.{{daton_batch_id()}} as _daton_batch_id
         from {{i}} a
             {{unnesting("refund_line_items")}}
             {{multi_unnesting("refund_line_items","subtotal_set")}}
@@ -126,7 +123,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {% else %}
             row_number() over (partition by order_id, a.id, refund_line_items.id order by _daton_batch_runtime desc) = 1
             {% endif %}
-            
+
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
