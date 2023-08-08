@@ -57,14 +57,14 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.tax_name,
         a.tax,
         {% if target.type =='snowflake' %}
-        provinces.VALUE:id::varchar as provinces_id,
-        provinces.VALUE:country_id as provinces_country_id,
-        provinces.VALUE:name as provinces_name,
-        provinces.VALUE:code as provinces_code,
-        provinces.VALUE:shipping_zone_id as provinces_shipping_zone_id,
-        provinces.VALUE:tax as provinces_tax,
-        provinces.VALUE:tax_percentage as provinces_tax_percentage,
-        provinces.VALUE:tax_name as provinces_tax_name,
+        provinces.value:id::varchar as provinces_id,
+        provinces.value:country_id as provinces_country_id,
+        provinces.value:name as provinces_name,
+        provinces.value:code as provinces_code,
+        provinces.value:shipping_zone_id as provinces_shipping_zone_id,
+        provinces.value:tax as provinces_tax,
+        provinces.value:tax_percentage as provinces_tax_percentage,
+        provinces.value:tax_name as provinces_tax_name,
         {% else %}
         provinces.id as provinces_id,
         provinces.country_id as provinces_country_id,
@@ -88,7 +88,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
                 where {{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
         {% if target.type =='snowflake' %}
-        qualify dense_rank() over (partition by a.id,provinces.VALUE:id order by {{daton_batch_runtime()}} desc) row_num=1
+        qualify dense_rank() over (partition by a.id,provinces.value:id order by {{daton_batch_runtime()}} desc) row_num=1
         {% else %}
         qualify dense_rank() over (partition by a.id,provinces.id order by {{daton_batch_runtime()}} desc) =1
         {% endif %}

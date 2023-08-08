@@ -78,23 +78,23 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="accepts_marketing_updated_at") }} as {{ dbt.type_timestamp() }}) as accepts_marketing_updated_at,
         a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
-        default_address.VALUE:id::VARCHAR as default_address_id,
-        default_address.VALUE:customer_id::VARCHAR as default_address_customer_id,
-        default_address.VALUE:first_name::VARCHAR as default_address_first_name,
-        default_address.VALUE:last_name::VARCHAR as default_address_last_name,
-        default_address.VALUE:address1::VARCHAR as default_address_address1,
-        default_address.VALUE:city::VARCHAR as default_address_city,
-        default_address.VALUE:province::VARCHAR as default_address_province,
-        default_address.VALUE:country::VARCHAR as default_address_country,
-        default_address.VALUE:zip::VARCHAR as default_address_zip,
-        default_address.VALUE:phone::VARCHAR as default_address_phone,
-        default_address.VALUE:name::VARCHAR as default_address_name,
-        default_address.VALUE:province_code::VARCHAR as default_address_province_code,
-        default_address.VALUE:country_code::VARCHAR as default_address_country_code,
-        default_address.VALUE:country_name::VARCHAR as default_address_country_name,
-        default_address.VALUE:default::VARCHAR as default_address_default,
-        default_address.VALUE:address2::VARCHAR as default_address_address2,
-        default_address.VALUE:company::VARCHAR as default_address_company,
+        default_address.value:id::VARCHAR as default_address_id,
+        default_address.value:customer_id::VARCHAR as default_address_customer_id,
+        default_address.value:first_name::VARCHAR as default_address_first_name,
+        default_address.value:last_name::VARCHAR as default_address_last_name,
+        default_address.value:address1::VARCHAR as default_address_address1,
+        default_address.value:city::VARCHAR as default_address_city,
+        default_address.value:province::VARCHAR as default_address_province,
+        default_address.value:country::VARCHAR as default_address_country,
+        default_address.value:zip::VARCHAR as default_address_zip,
+        default_address.value:phone::VARCHAR as default_address_phone,
+        default_address.value:name::VARCHAR as default_address_name,
+        default_address.value:province_code::VARCHAR as default_address_province_code,
+        default_address.value:country_code::VARCHAR as default_address_country_code,
+        default_address.value:country_name::VARCHAR as default_address_country_name,
+        default_address.value:default::VARCHAR as default_address_default,
+        default_address.value:address2::VARCHAR as default_address_address2,
+        default_address.value:company::VARCHAR as default_address_company,
         {% else %}
         default_address.id as default_address_id,
         default_address.customer_id as default_address_customer_id,
@@ -133,7 +133,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         from  {{i}} a
                 {{unnesting("default_address")}} 
                 {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code
+                    left join {{ref('ExchangeRates')}} c on date(a.updated_at) = c.date and a.currency = c.to_currency_code
                 {% endif %}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}

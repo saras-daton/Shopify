@@ -105,7 +105,7 @@
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
     from  {{i}} a
             {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.processed_at) = c.date and a.currency = c.to_currency_code
+                    left join {{ref('ExchangeRates')}} c on date(a.updated_at) = c.date and a.currency = c.to_currency_code
             {% endif %}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}

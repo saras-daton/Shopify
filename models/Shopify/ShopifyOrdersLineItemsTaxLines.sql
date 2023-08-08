@@ -55,7 +55,7 @@
         {% set hr = 0 %}
     {% endif %}
 
-    select *, ROW_NUMBER() over (partition by order_id order by _daton_batch_runtime desc) _seq_id
+    select *, row_number() over (partition by order_id order by _daton_batch_runtime desc) _seq_id
     from (
         select 
             '{{ brand }}' as brand,

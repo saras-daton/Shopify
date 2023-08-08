@@ -76,9 +76,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(current_total_price as numeric) as current_total_price,
         cast(current_total_tax as numeric) as current_total_tax,
         {% if target.type =='snowflake' %}
-        discount_codes.VALUE:code::VARCHAR as discount_code,
-        discount_codes.VALUE:amount::NUMERIC as discount_amount,
-        discount_codes.VALUE:type::VARCHAR as discount_type,
+        discount_codes.VALUE:code::varchar as discount_code,
+        discount_codes.VALUE:amount::numeric as discount_amount,
+        discount_codes.VALUE:type::varchar as discount_type,
         {% else %}
         discount_codes.code as discount_code,
         discount_codes.amount as discount_amount,

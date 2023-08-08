@@ -230,10 +230,10 @@
     {% if var('currency_conversion_flag') %}
         left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
     {% endif %}
-    {{ unnesting("FULFILLMENTS") }}
-    {{ multi_unnesting("FULFILLMENTS", "RECEIPT") }}
+    {{ unnesting("fulfillments") }}
+    {{ multi_unnesting("fulfillments", "receipt") }}
     {% if target.type == 'snowflake' %}
-        , LATERAL FLATTEN(input => PARSE_JSON(fulfillments.value:"line_items")) as fulfillments_line_items
+        , lateral flatten(input => parse_json(fulfillments.value:"line_items")) as fulfillments_line_items
     {% else %}
         left join unnest(fulfillments.line_items) as fulfillments_line_items
     {% endif %}
