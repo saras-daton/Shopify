@@ -147,14 +147,14 @@ The tests property defines assertions about a column, table, or view. The proper
 |----|---------|
 |<nobr>Value</nobr>|<nobr>Value</nobr>|
 
-| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| <nobr>Columns</nobr>  | <nobr>Not Null Test</nobr> | <nobr>Data Recency Test</nobr> | <nobr>Accepted Value Test</nobr> | <nobr>Uniqueness Test</nobr> |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| email | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| brand | <nobr>Yes</nobr> | <nobr></nobr> | <nobr>Yes</nobr> | <nobr></nobr> |
+| store | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr></nobr> |
+| id | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr>Yes</nobr> |
+| email | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr></nobr> |
+| created_at | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr></nobr> |
+| updated_at | <nobr>Yes</nobr> | <nobr>Yes (1 day)</nobr> | <nobr></nobr> | <nobr></nobr> |
 
 ### Table Name: ShopifyBalanceTransactions
 
