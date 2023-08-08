@@ -4,6 +4,10 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
+{% if var('currency_conversion_flag') %}
+-- depends_on: {{ ref('ExchangeRates') }}
+{% endif %}
+
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
 select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}

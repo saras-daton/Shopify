@@ -74,7 +74,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         tags,
         currency,
         a.phone,
-        accepts_marketing_updated_at,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="accepts_marketing_updated_at") }} as {{ dbt.type_timestamp() }}) as accepts_marketing_updated_at,
         a.admin_graphql_api_id,
         {% if target.type =='snowflake' %}
@@ -125,9 +124,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             cast(1 as decimal) as exchange_currency_rate,
             currency as exchange_currency_code, 
         {% endif %} 
-        {{daton_user_id()}} as _daton_user_id,
-        {{daton_batch_runtime()}} as _daton_batch_runtime,
-        {{daton_batch_id()}} as _daton_batch_id,
+        a.{{daton_user_id()}} as _daton_user_id,
+        a.{{daton_batch_runtime()}} as _daton_batch_runtime,
+        a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
         from  {{i}} a
