@@ -145,7 +145,7 @@ The tests property defines assertions about a column, table, or view. The proper
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes | <div style="width:290px">property</div> | Yes |  |
+| brand | Yes | <div style="width:400px">property</div> | Yes | <div style="width:400px">property</div> |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
 | email | Yes |  |  |  |
