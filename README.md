@@ -143,25 +143,30 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyAbandonedCheckouts
 
-|  **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-|       :--     |        :-:        |          :-:          |           :-:           |         :-:         |
-|     brand     |        Yes        |          Yes          |           Yes           |                     |
-|     store     |        Yes        |                       |                         |                     |
-|       id      |        Yes        |                       |                         |         Yes         |
-|     email     |        Yes        |                       |                         |                     |
-|   created_at  |        Yes        |                       |                         |                     |
-|   updated_at  |        Yes        |      Yes (1 day)      |                         |                     |
+|   **Columns**    | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+|       :--        |        :-:        |          :-:          |           :-:           |         :-:         |
+| `    brand      `|        Yes        |          Yes          |           Yes           |                     |
+| `    store      `|        Yes        |                       |                         |                     |
+| `      id       `|        Yes        |                       |                         |         Yes         |
+| `    email      `|        Yes        |                       |                         |                     |
+| `  created_at   `|        Yes        |                       |                         |                     |
+| `  updated_at   `|        Yes        |      Yes (1 day)      |                         |                     |
+
+incremental_strategy: merge
+unique_key: ['id','order_id']
+partition_by: { 'field': 'initiated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+cluster_by: ['id','order_id']
 
 ### Table Name: ShopifyBalanceTransactions
 
-| **Columns**   | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+|   **Columns**    | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| payout_id | Yes |  |  |  |
-| payout_status | Yes |  | Yes |  |
-| processed_at | Yes | Yes (1 day) |  |  |
+| `    brand      `| Yes |  | Yes |  |
+| `    store      `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `   payout_id   `| Yes |  |  |  |
+| ` payout_status `| Yes |  | Yes |  |
+| ` processed_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyCarrierServices
 
