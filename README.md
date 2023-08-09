@@ -143,28 +143,24 @@ The tests property defines assertions about a column, table, or view. The proper
 
 ### Table Name: ShopifyAbandonedCheckouts
 
-|<nobr>Title</nobr>|<nobr>Title</nobr>|
-|----|---------|
-|<nobr>Value</nobr>|<nobr>Value</nobr>|
-
-| <nobr>Columns</nobr>  | <nobr>Not Null Test</nobr> | <nobr>Data Recency Test</nobr> | <nobr>Accepted Value Test</nobr> | <nobr>Uniqueness Test</nobr> |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | <nobr>Yes</nobr> | <nobr></nobr> | <nobr>Yes</nobr> | <nobr></nobr> |
-| store | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr></nobr> |
-| id | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr>Yes</nobr> |
-| email | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr></nobr> |
-| created_at | <nobr>Yes</nobr> | <nobr></nobr> | <nobr></nobr> | <nobr></nobr> |
-| updated_at | <nobr>Yes</nobr> | <nobr>Yes (1 day)</nobr> | <nobr></nobr> | <nobr></nobr> |
+|  **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+|       :--     |        :-:        |          :-:          |           :-:           |         :-:         |
+|     brand     |        Yes        |          Yes          |           Yes           |                     |
+|     store     |        Yes        |                       |                         |                     |
+|       id      |        Yes        |                       |                         |         Yes         |
+|     email     |        Yes        |                       |                         |                     |
+|   created_at  |        Yes        |                       |                         |                     |
+|   updated_at  |        Yes        |      Yes (1 day)      |                         |                     |
 
 ### Table Name: ShopifyBalanceTransactions
 
-| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| **Columns**   | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
 | payout_id | Yes |  |  |  |
-| payout_status | Yes |  | Yes ['in_transit', 'pending', 'paid'] |  |
+| payout_status | Yes |  | Yes |  |
 | processed_at | Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyCarrierServices
@@ -174,7 +170,7 @@ The tests property defines assertions about a column, table, or view. The proper
 | brand | Yes |  | Yes |  |
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
-| active | Yes |  | Yes ['true', 'false'] |  |
+| active | Yes |  | Yes |  |
 
 ### Table Name: ShopifyCollects
 
@@ -264,7 +260,7 @@ The tests property defines assertions about a column, table, or view. The proper
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
 | fulfillment_id | Yes |  |  | Yes |
-| status | Yes |  | Yes ['status', 'in_transit', 'confirmed', 'out_for_delivery', 'label_printed', 'delivered', 'label_purchased', 'attempted_delivery', 'failure'] |  |
+| status | Yes |  | Yes  |  |
 | created_at | Yes |  |  |  |
 | updated_at | Yes | Yes (1 day) |  |  |
 | order_id | Yes |  |  |  |
@@ -277,8 +273,8 @@ The tests property defines assertions about a column, table, or view. The proper
 | store | Yes |  |  |  |
 | id | Yes |  |  | Yes |
 | order_id | Yes |  |  | Yes |
-| request_status | Yes |  | Yes ['unsubmitted', 'submitted'] |  |
-| status | Yes |  | Yes ['open', 'closed'] |  |
+| request_status | Yes |  | Yes  |  |
+| status | Yes |  | Yes  |  |
 | destination_email | Yes |  |  |  |
 | line_items_id | Yes |  |  | Yes |
 | created_at | Yes |  |  |  |
@@ -304,8 +300,8 @@ The tests property defines assertions about a column, table, or view. The proper
 | sku | Yes |  |  | Yes |
 | created_at | Yes |  |  |  |
 | updated_at | Yes | Yes (1 day) |  |  |
-| requires_shipping | Yes |  | Yes ['true', 'false'] |  |
-| tracked | Yes |  | Yes ['true', 'false'] |  |
+| requires_shipping | Yes |  | Yes  |  |
+| tracked | Yes |  | Yes  |  |
 | inventory_item_id | Yes |  |  |  |
 
 ### Table Name: ShopifyInventoryLevels
