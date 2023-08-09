@@ -23,8 +23,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%refunds')}}
---{{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 
@@ -79,51 +78,35 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         CAST(a.processed_at as timestamp) processed_at,
         restock,
         admin_graphql_api_id,
-
-        {{extract_nested_value('refund_line_items','id','string')}} as refund_line_items_id,
-        {{extract_nested_value("refund_line_items","quantity","numeric")}} as refund_line_items_quantity,
-        {{extract_nested_value("refund_line_items","line_item_id","string")}} as refund_line_items_line_item_id,
-        {{extract_nested_value("refund_line_items","location_id","string")}} as refund_line_items_location_id,
-        {{extract_nested_value("refund_line_items","restock_type","string")}} as refund_line_items_restock_type,
-        {{extract_nested_value("refund_line_items","subtotal","numeric")}} as refund_line_items_subtotal,
-        {{extract_nested_value("refund_line_items","total_tax","numeric")}} as refund_line_items_total_tax,
-        {{extract_nested_value("presentment_money","amount","string")}} as subtotal_set_presentment_amount,
-        {{extract_nested_value("presentment_money","currency_code","string")}} as subtotal_set_presentment_currency_code,
-        {{extract_nested_value("shop_money","amount","string")}} as subtotal_set_shop_amount,
-        {{extract_nested_value("shop_money","currency_code","string")}} as subtotal_set_currency_code,
-        {{extract_nested_value("refund_line_items","total_tax_set","string")}} as refund_line_items_total_tax_set,
-        {{extract_nested_value("refund_line_items","line_item","string")}} as refund_line_items_line_item,
-
-        -- {% if target.type =='snowflake' %}
-        -- COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
-        -- refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
-        -- COALESCE(refund_line_items.VALUE:line_item_id::VARCHAR,'') as refund_line_items_line_item_id,
-        -- refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
-        -- refund_line_items.VALUE:restock_type::VARCHAR as refund_line_items_restock_type,
-        -- refund_line_items.VALUE:subtotal::NUMERIC as refund_line_items_subtotal,
-        -- refund_line_items.VALUE:total_tax::NUMERIC as refund_line_items_total_tax,
-        -- presentment_money.VALUE:amount as subtotal_set_presentment_amount,
-        -- presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
-        -- shop_money.VALUE:amount as subtotal_set_shop_amount,
-        -- shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
-        -- refund_line_items.VALUE:total_tax_set as refund_line_items_total_tax_set,
-        -- refund_line_items.VALUE:line_item as refund_line_items_line_item,
-        -- {% else %}
-        -- COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
-        -- refund_line_items.quantity as refund_line_items_quantity,
-        -- COALESCE(CAST(refund_line_items.line_item_id as string),'') as refund_line_items_line_item_id,
-        -- refund_line_items.location_id as refund_line_items_location_id,
-        -- refund_line_items.restock_type as refund_line_items_restock_type,
-        -- refund_line_items.subtotal as refund_line_items_subtotal,
-        -- refund_line_items.total_tax as refund_line_items_total_tax,
-        -- presentment_money.amount as subtotal_set_presentment_amount,
-        -- presentment_money.currency_code as subtotal_set_presentment_currency_code,
-        -- shop_money.amount as subtotal_set_shop_amount,
-        -- shop_money.currency_code as subtotal_set_shop_currency_code,
-        -- refund_line_items.total_tax_set as refund_line_items_total_tax_set,
-        -- refund_line_items.line_item as refund_line_items_line_item,
-        -- {% endif %}
-        
+        {% if target.type =='snowflake' %}
+        COALESCE(refund_line_items.VALUE:id::VARCHAR,'') as refund_line_items_id,
+        refund_line_items.VALUE:quantity::NUMERIC as refund_line_items_quantity,
+        COALESCE(refund_line_items.VALUE:line_item_id::VARCHAR,'') as refund_line_items_line_item_id,
+        refund_line_items.VALUE:location_id::VARCHAR as refund_line_items_location_id,
+        refund_line_items.VALUE:restock_type::VARCHAR as refund_line_items_restock_type,
+        refund_line_items.VALUE:subtotal::NUMERIC as refund_line_items_subtotal,
+        refund_line_items.VALUE:total_tax::NUMERIC as refund_line_items_total_tax,
+        presentment_money.VALUE:amount as subtotal_set_presentment_amount,
+        presentment_money.VALUE:currency_code as subtotal_set_presentment_currency_code,
+        shop_money.VALUE:amount as subtotal_set_shop_amount,
+        shop_money.VALUE:currency_code as subtotal_set_shop_currency_code,
+        refund_line_items.VALUE:total_tax_set as refund_line_items_total_tax_set,
+        refund_line_items.VALUE:line_item as refund_line_items_line_item,
+        {% else %}
+        COALESCE(CAST(refund_line_items.id as string),'') as refund_line_items_id,
+        refund_line_items.quantity as refund_line_items_quantity,
+        COALESCE(CAST(refund_line_items.line_item_id as string),'') as refund_line_items_line_item_id,
+        refund_line_items.location_id as refund_line_items_location_id,
+        refund_line_items.restock_type as refund_line_items_restock_type,
+        refund_line_items.subtotal as refund_line_items_subtotal,
+        refund_line_items.total_tax as refund_line_items_total_tax,
+        presentment_money.amount as subtotal_set_presentment_amount,
+        presentment_money.currency_code as subtotal_set_presentment_currency_code,
+        shop_money.amount as subtotal_set_shop_amount,
+        shop_money.currency_code as subtotal_set_shop_currency_code,
+        refund_line_items.total_tax_set as refund_line_items_total_tax_set,
+        refund_line_items.line_item as refund_line_items_line_item,
+        {% endif %}
         transactions,
         total_duties_set,
         order_adjustments,

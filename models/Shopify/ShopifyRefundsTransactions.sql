@@ -24,8 +24,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 with unnested_refunds as(
 {% set table_name_query %}
-{{set_table_name('%shopify%refunds')}}
---{{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -80,74 +79,51 @@ with unnested_refunds as(
         restock,
         a.admin_graphql_api_id,
         refund_line_items,
-
-        {{extract_nested_value("transactions","id","string")}} as transactions_id,
-        {{extract_nested_value("transactions","order_id","string")}} as transactions_order_id,
-        {{extract_nested_value("transactions","kind","string")}} as transactions_kind,
-        {{extract_nested_value("transactions","gateway","string")}} as transactions_gateway,
-        {{extract_nested_value("transactions","status","string")}} as transactions_status,
-        {{extract_nested_value("transactions","created_at","string")}} as transactions_created_at,
-        {{extract_nested_value("transactions","test","string")}} as transactions_test,
-        {{extract_nested_value("transactions","authorization","string")}} as transactions_authorization,
-        {{extract_nested_value("transactions","parent_id","string")}} as transactions_parent_id,
-        {{extract_nested_value("transactions","processed_at","string")}} as transactions_processed_at,
-        {{extract_nested_value("transactions","source_name","string")}} as transactions_source_name,
-        {{extract_nested_value("transactions","amount","string")}} as transactions_amount,
-        {{extract_nested_value("transactions","currency","string")}} as transactions_currency,
-        {{extract_nested_value("transactions","admin_graphql_api_id","string")}} as transactions_admin_graphql_api_id,
-        {{extract_nested_value("transactions","receipt","string")}} as transactions_receipt,
-        {{extract_nested_value("transactions","payment_refund_attributes","string")}} as transactions_payments_refund_attributes,
-        {{extract_nested_value("transactions","message","string")}} as  transactions_message,
-        {{extract_nested_value("transactions","user_id","string")}} as transactions_user_id,
-        {{extract_nested_value("transactions","payment_id","string")}} as transactions_payment_id,
-        {{extract_nested_value("transactions","error_code","string")}} as ttransactions_error_code,
-
-        -- {% if target.type =='snowflake' %}
-        --     COALESCE(transactions.VALUE:id::VARCHAR,'') as transactions_id,
-        --     transactions.VALUE:order_id::VARCHAR as transactions_order_id,
-        --     transactions.VALUE:kind::VARCHAR as transactions_kind,
-        --     transactions.VALUE:gateway::VARCHAR as transactions_gateway,
-        --     transactions.VALUE:status::VARCHAR as transactions_status,
-        --     transactions.VALUE:created_at::VARCHAR as transactions_created_at,
-        --     transactions.VALUE:test::VARCHAR as transactions_test,
-        --     transactions.VALUE:authorization::VARCHAR as transactions_authorization,
-        --     transactions.VALUE:parent_id::VARCHAR as transactions_parent_id,
-        --     transactions.VALUE:processed_at::TIMESTAMP as transactions_processed_at,
-        --     transactions.VALUE:source_name::VARCHAR as transactions_source_name,
-        --     transactions.VALUE:amount as transactions_amount,
-        --     transactions.VALUE:currency as transactions_currency,
-        --     transactions.VALUE:admin_graphql_api_id as transactions_admin_graphql_api_id,
-        --     transactions.VALUE:payment_details as transactions_payment_details,
-        --     transactions.VALUE:receipt::VARCHAR as transactions_receipt,
-        --     transactions.VALUE:payments_refund_attributes as transactions_payments_refund_attributes,
-        --     transactions.VALUE:message as transactions_message,
-        --     transactions.VALUE:user_id as transactions_user_id,
-        --     transactions.VALUE:payment_id as transactions_payment_id,
-        --     transactions.VALUE:error_code::VARCHAR as transactions_error_code,
-        -- {% else %}
-        --     COALESCE(CAST(transactions.id as string),'') as transactions_id,
-        --     transactions.order_id as transactions_order_id,
-        --     transactions.kind as transactions_kind,
-        --     transactions.gateway as transactions_gateway,
-        --     transactions.status as transactions_status,
-        --     transactions.created_at as transactions_created_at,
-        --     transactions.test as transactions_test,
-        --     transactions.authorization as transactions_authorization,
-        --     transactions.parent_id as transactions_parent_id,
-        --     transactions.processed_at as transactions_processed_at,
-        --     transactions.source_name as transactions_source_name,
-        --     transactions.amount as transactions_amount,
-        --     transactions.currency as transactions_currency,
-        --     transactions.admin_graphql_api_id as transactions_admin_graphql_api_id,
-        --     transactions.payment_details as transactions_payment_details,
-        --     transactions.receipt as transactions_receipt,
-        --     transactions.payments_refund_attributes as transactions_payments_refund_attributes,
-        --     transactions.message as transactions_message,
-        --     transactions.user_id as transactions_user_id,
-        --     transactions.payment_id as transactions_payment_id,
-        --     transactions.error_code as transactions_error_code,
-        -- {% endif %}
-
+        {% if target.type =='snowflake' %}
+            COALESCE(transactions.VALUE:id::VARCHAR,'') as transactions_id,
+            transactions.VALUE:order_id::VARCHAR as transactions_order_id,
+            transactions.VALUE:kind::VARCHAR as transactions_kind,
+            transactions.VALUE:gateway::VARCHAR as transactions_gateway,
+            transactions.VALUE:status::VARCHAR as transactions_status,
+            transactions.VALUE:created_at::VARCHAR as transactions_created_at,
+            transactions.VALUE:test::VARCHAR as transactions_test,
+            transactions.VALUE:authorization::VARCHAR as transactions_authorization,
+            transactions.VALUE:parent_id::VARCHAR as transactions_parent_id,
+            transactions.VALUE:processed_at::TIMESTAMP as transactions_processed_at,
+            transactions.VALUE:source_name::VARCHAR as transactions_source_name,
+            transactions.VALUE:amount as transactions_amount,
+            transactions.VALUE:currency as transactions_currency,
+            transactions.VALUE:admin_graphql_api_id as transactions_admin_graphql_api_id,
+            transactions.VALUE:payment_details as transactions_payment_details,
+            transactions.VALUE:receipt::VARCHAR as transactions_receipt,
+            transactions.VALUE:payments_refund_attributes as transactions_payments_refund_attributes,
+            transactions.VALUE:message as transactions_message,
+            transactions.VALUE:user_id as transactions_user_id,
+            transactions.VALUE:payment_id as transactions_payment_id,
+            transactions.VALUE:error_code::VARCHAR as transactions_error_code,
+        {% else %}
+            COALESCE(CAST(transactions.id as string),'') as transactions_id,
+            transactions.order_id as transactions_order_id,
+            transactions.kind as transactions_kind,
+            transactions.gateway as transactions_gateway,
+            transactions.status as transactions_status,
+            transactions.created_at as transactions_created_at,
+            transactions.test as transactions_test,
+            transactions.authorization as transactions_authorization,
+            transactions.parent_id as transactions_parent_id,
+            transactions.processed_at as transactions_processed_at,
+            transactions.source_name as transactions_source_name,
+            transactions.amount as transactions_amount,
+            transactions.currency as transactions_currency,
+            transactions.admin_graphql_api_id as transactions_admin_graphql_api_id,
+            transactions.payment_details as transactions_payment_details,
+            transactions.receipt as transactions_receipt,
+            transactions.payments_refund_attributes as transactions_payments_refund_attributes,
+            transactions.message as transactions_message,
+            transactions.user_id as transactions_user_id,
+            transactions.payment_id as transactions_payment_id,
+            transactions.error_code as transactions_error_code,
+        {% endif %}
         total_duties_set,
         order_adjustments,
         a.{{daton_user_id()}} as _daton_user_id,
@@ -169,15 +145,14 @@ with unnested_refunds as(
 {% endfor %}
 ),
 
--- dedup as (
--- select *,
--- DENSE_RANK() OVER (PARTITION BY refund_id order by _daton_batch_runtime desc) row_num
--- from unnested_refunds 
--- )
-
-SELECT *, ROW_NUMBER() OVER (PARTITION BY refund_id order by _daton_batch_runtime desc) _seq_id
-from (
+dedup as (
 select *,
 DENSE_RANK() OVER (PARTITION BY refund_id order by _daton_batch_runtime desc) row_num
 from unnested_refunds 
 )
+
+SELECT *, ROW_NUMBER() OVER (PARTITION BY refund_id order by _daton_batch_runtime desc) _seq_id
+from (
+select * {{exclude()}} (row_num)
+from dedup 
+where row_num = 1)
