@@ -25,7 +25,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}}
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -75,15 +75,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(current_total_discounts as numeric) as current_total_discounts,
         cast(current_total_price as numeric) as current_total_price,
         cast(current_total_tax as numeric) as current_total_tax,
-        {% if target.type =='snowflake' %}
-        discount_codes.VALUE:code::varchar as discount_code,
-        discount_codes.VALUE:amount::numeric as discount_amount,
-        discount_codes.VALUE:type::varchar as discount_type,
-        {% else %}
-        discount_codes.code as discount_code,
-        discount_codes.amount as discount_amount,
-        discount_codes.type as discount_type,
-        {% endif %}
+        {{extract_nested_value("discount","code","string")}} as discount_code,
+        {{extract_nested_value("discount","amount","numeric")}} as discount_amount,
+        {{extract_nested_value("discount","type","string")}} as discount_type,
         email,
         estimated_taxes,
         financial_status,
@@ -138,7 +132,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from {{i}} a
             {% if var('currency_conversion_flag') %}
             left join {{ref('ExchangeRates')}} b on date(created_at) = b.date and currency = b.to_currency_code
