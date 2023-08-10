@@ -23,7 +23,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%refunds')}}
 {% endset %}  
 
 
@@ -83,31 +83,19 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         restock,
         admin_graphql_api_id,
-        {% if target.type =='snowflake' %}
-        coalesce(refund_line_items.value:id::varchar,'N/A') as refund_line_items_id,
-        refund_line_items.value:quantity::numeric as refund_line_items_quantity,
-        coalesce(refund_line_items.value:line_item_id::varchar,'N/A') as refund_line_items_line_item_id,
-        refund_line_items.value:location_id::varchar as refund_line_items_location_id,
-        refund_line_items.value:restock_type::varchar as refund_line_items_restock_type,
-        refund_line_items.value:subtotal::numeric as refund_line_items_subtotal,
-        refund_line_items.value:total_tax::numeric as refund_line_items_total_tax,
-        presentment_money.value:amount as subtotal_set_presentment_amount,
-        presentment_money.value:currency_code as subtotal_set_presentment_currency_code,
-        shop_money.value:amount as subtotal_set_shop_amount,
-        shop_money.value:currency_code as subtotal_set_shop_currency_code,
-        {% else %}
-        coalesce(cast(refund_line_items.id as string),'N/A') as refund_line_items_id,
-        refund_line_items.quantity as refund_line_items_quantity,
-        coalesce(cast(refund_line_items.line_item_id as string),'N/A') as refund_line_items_line_item_id,
-        cast(refund_line_items.location_id as string) as refund_line_items_location_id,
-        refund_line_items.restock_type as refund_line_items_restock_type,
-        refund_line_items.subtotal as refund_line_items_subtotal,
-        refund_line_items.total_tax as refund_line_items_total_tax,
-        presentment_money.amount as subtotal_set_presentment_amount,
-        presentment_money.currency_code as subtotal_set_presentment_currency_code,
-        shop_money.amount as subtotal_set_shop_amount,
-        shop_money.currency_code as subtotal_set_shop_currency_code,
-        {% endif %}
+        {{extract_nested_value('refund_line_items','id','string')}} as refund_line_items_id,
+        {{extract_nested_value("refund_line_items","quantity","numeric")}} as refund_line_items_quantity,
+        {{extract_nested_value("refund_line_items","line_item_id","string")}} as refund_line_items_line_item_id,
+        {{extract_nested_value("refund_line_items","location_id","string")}} as refund_line_items_location_id,
+        {{extract_nested_value("refund_line_items","restock_type","string")}} as refund_line_items_restock_type,
+        {{extract_nested_value("refund_line_items","subtotal","numeric")}} as refund_line_items_subtotal,
+        {{extract_nested_value("refund_line_items","total_tax","numeric")}} as refund_line_items_total_tax,
+        {{extract_nested_value("presentment_money","amount","string")}} as subtotal_set_presentment_amount,
+        {{extract_nested_value("presentment_money","currency_code","string")}} as subtotal_set_presentment_currency_code,
+        {{extract_nested_value("shop_money","amount","string")}} as subtotal_set_shop_amount,
+        {{extract_nested_value("shop_money","currency_code","string")}} as subtotal_set_currency_code,
+        {{extract_nested_value("refund_line_items","total_tax_set","string")}} as refund_line_items_total_tax_set,
+        {{extract_nested_value("refund_line_items","line_item","string")}} as refund_line_items_line_item,
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id
