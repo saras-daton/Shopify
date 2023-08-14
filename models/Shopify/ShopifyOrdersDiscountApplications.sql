@@ -23,7 +23,7 @@
 {% endif %}
 
 {% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%' 
+    {{ set_table_name('%shopify%orders') }}
 {% endset %}
 
 {% set results = run_query(table_name_query) %}
@@ -148,7 +148,8 @@
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{daton_batch_runtime()}} >= {{max_loaded}}
         {% endif %}
-    )
+    
     qualify dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) = 1
+    )
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
