@@ -50,6 +50,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
     {% else %}
         {% set hr = 0 %}
 
+    {% if execute %}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
@@ -101,7 +102,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
-    from {{i}} a
+        from {{i}} a
         {{unnesting("destination")}}
         {{unnesting("line_items")}}
         {{unnesting("assigned_location")}}
@@ -109,8 +110,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
-            {% endif %}                
-    qualify row_number() over (partition by a.id order by _daton_batch_runtime desc) row_num = 1
+        {% endif %}                
+        qualify row_number() over (partition by a.id order by _daton_batch_runtime desc) row_num = 1
         
-    {% if not loop.last %} union all {% endif %}
+        {% if not loop.last %} union all {% endif %}
+    {% endif %}
 {% endfor %}
