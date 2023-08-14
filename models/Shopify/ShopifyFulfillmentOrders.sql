@@ -50,7 +50,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
     {% else %}
         {% set hr = 0 %}
 
-    {% if execute %}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
@@ -61,7 +60,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         request_status,
         status,
         supported_actions,
-        {% if target.type =='snowflake' %}
         {{extract_nested_value("destination","id","string")}} as destination_id,
         {{extract_nested_value("destination","address1","string")}} as destination_address1,
         {{extract_nested_value("destination","address2","string")}} as destination_address2,
@@ -114,5 +112,4 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         qualify row_number() over (partition by a.id order by _daton_batch_runtime desc) row_num = 1
         
         {% if not loop.last %} union all {% endif %}
-    {% endif %}
 {% endfor %}
