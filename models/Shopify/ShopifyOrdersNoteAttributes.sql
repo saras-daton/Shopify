@@ -78,11 +78,11 @@
         current_total_price_set,
         current_total_tax,
         current_total_tax_set,
-        {{extract_nested_value("discount_codes","code","varchar")}} as discount_code,
+        {{extract_nested_value("discount_codes","code","string")}} as discount_code,
         {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
-        {{extract_nested_value("discount_codes","type","varchar")}} as discount_type,
-        {{extract_nested_value("note_attributes","name","varchar")}} as note_attributes_name,
-        {{extract_nested_value("note_attributes","value","varchar")}} as note_attributes_value,
+        {{extract_nested_value("discount_codes","type","string")}} as discount_type,
+        {{extract_nested_value("note_attributes","name","string")}} as note_attributes_name,
+        {{extract_nested_value("note_attributes","value","string")}} as note_attributes_value,
         email,
         estimated_taxes,
         financial_status,
@@ -165,6 +165,6 @@
         where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
     {% endif %}
 
-    qualify dense_rank() over (partition by a.id, {{extract_nested_value("note_attributes","name","varchar")}} order by a.{{ daton_batch_runtime() }} desc) = 1
+    qualify dense_rank() over (partition by a.id, {{extract_nested_value("note_attributes","name","string")}} order by a.{{ daton_batch_runtime() }} desc) = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
