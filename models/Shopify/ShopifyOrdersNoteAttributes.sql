@@ -89,7 +89,7 @@
         gateway,
         landing_site,
         landing_site_ref,
-        name,
+        a.name,
         number,
         order_number,
         order_status_url,
