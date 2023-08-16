@@ -51,6 +51,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
         {% set hr = 0 %}
+    {% endif %}
 
         select 
         '{{brand}}' as brand,
@@ -77,11 +78,11 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from  {{i}} a
-                {% if is_incremental() %}
-                {# /* -- this filter will only be applied on an incremental run */ #}
-                where {{daton_batch_runtime()}}  >= {{max_loaded}}
-                {% endif %}
-        qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) row_num = 1
+            {% if is_incremental() %}
+            {# /* -- this filter will only be applied on an incremental run */ #}
+            where {{daton_batch_runtime()}}  >= {{max_loaded}}
+            {% endif %}
+        qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) = 1
 
-    {% if not loop.last %} union all {% endif %}
+        {% if not loop.last %} union all {% endif %}
 {% endfor %}
