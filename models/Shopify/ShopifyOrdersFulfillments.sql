@@ -106,9 +106,15 @@
         cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        {% if target.type == 'snowflake' %}
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.value:created_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.value:updated_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,
+        {% else %}
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.created_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.updated_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,
+        {% endif %}
         {{extract_nested_value("fulfillments","id","string")}} as fulfillments_id,
         {{extract_nested_value("fulfillments","admin_graphql_api_id","string")}} as fulfillments_admin_graphql_api_id,
-        --{{extract_nested_value("fulfillments","created_at","timestamp")}} as fulfillments_created_at,
         {{extract_nested_value("fulfillments","location_id","string")}} as fulfillments_location_id,
         {{extract_nested_value("fulfillments","name","string")}} as fulfillments_name,
         {{extract_nested_value("fulfillments","orders_id","string")}} as fulfillments_orders_id,
@@ -124,7 +130,6 @@
         {{extract_nested_value("fulfillments","tracking_numbers","string")}} as fulfillments_tracking_numbers,
         {{extract_nested_value("fulfillments","tracking_url","string")}} as fulfillments_tracking_url,
         {{extract_nested_value("fulfillments","tracking_urls","string")}} as fulfillments_tracking_urls,
-        --{{extract_nested_value("fulfillments","updated_at","timestamp")}} as fulfillments_updated_at,
         {{extract_nested_value("fulfillments_line_items","id","string")}} as line_items_id,
         {{extract_nested_value("fulfillments_line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
         {{extract_nested_value("fulfillments_line_items","fulfillable_quantity","string")}} as line_items_fulfillable_quantity,
