@@ -113,7 +113,7 @@
             {{extract_nested_value("line_items","fulfillable_quantity","string")}} as line_items_fulfillable_quantity,
             {{extract_nested_value("line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
             {{extract_nested_value("line_items","gift_card","string")}} as line_items_gift_card,
-            {{extract_nested_value("line_items","grams","string")}} as line_items_grams, 
+            {{extract_nested_value("line_items","grams","string")}} as line_items_grams,
             {{extract_nested_value("line_items","name","string")}} as line_items_name,
             {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
             {{extract_nested_value("line_items_price","amount","numeric")}} as line_items_price_shop_money_amount,
@@ -191,7 +191,7 @@
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
         {% endif %}
-    )
     qualify dense_rank() over (partition by a.id order by a.{{ daton_batch_runtime() }} desc) = 1
+    )
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
