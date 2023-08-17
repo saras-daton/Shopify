@@ -23,7 +23,7 @@
 {% endif %}
 
 {% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+    {{ set_table_name('%shopify%orders') }}
 {% endset %}
 
 {% set results = run_query(table_name_query) %}
@@ -73,15 +73,9 @@
         cast(current_total_discounts as numeric) as current_total_discounts,
         cast(current_total_price as numeric) as current_total_price,
         cast(current_total_tax as numeric) as current_total_tax,
-    {% if target.type =='snowflake' %}
-        discount_codes.value:code::varchar as discount_code,
-        discount_codes.value:amount::numeric as discount_amount,
-        discount_codes.value:type::varchar as discount_type,
-    {% else %}
-        discount_codes.code as discount_code,
-        discount_codes.amount as discount_amount,
-        discount_codes.type as discount_type,
-    {% endif %}
+        {{extract_nested_value("discount_codes","code","string")}} as discount_code,
+        {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
+        {{extract_nested_value("discount_codes","type","string")}} as discount_type,
         email,
         estimated_taxes,
         financial_status,
@@ -115,31 +109,23 @@
         cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-    {% if target.type =='snowflake' %}
-        coalesce(shipping_lines.value:id::varchar,'N/A') as shipping_lines_id,
-        shipping_lines.value:code::varchar as shipping_lines_code,
-        shipping_lines.value:discounted_price::numeric as shipping_lines_discounted_price,
-        shipping_lines.value:discounted_price_set as shipping_lines_discounted_price_set,
-        shipping_lines.value:price::numeric as shipping_lines_price,
-        shipping_lines.value:price_set as shipping_lines_price_set,
-        shipping_lines.value:source::varchar as shipping_lines_source,
-        shipping_lines.value:title::varchar as shipping_lines_title,
-        shipping_lines.value:tax_lines as shipping_lines_tax_lines,
-        shipping_lines.value:discount_allocations as shipping_lines_discount_allocations,
-        shipping_lines.value:carrier_identifier::varchar as shipping_lines_carrier_identifier,
-    {% else %}
-        coalesce(cast(shipping_lines.id as string),'N/A') as shipping_lines_id,
-        shipping_lines.code as shipping_lines_code,
-        cast(shipping_lines.discounted_price as numeric) as shipping_lines_discounted_price,
-        shipping_lines.discounted_price_set as shipping_lines_discounted_price_set,
-        cast(shipping_lines.price as numeric) as shipping_lines_price,
-        shipping_lines.price_set as shipping_lines_price_set,
-        shipping_lines.source as shipping_lines_source,
-        shipping_lines.title as shipping_lines_title,
-        shipping_lines.tax_lines as shipping_lines_tax_lines,
-        shipping_lines.discount_allocations as shipping_lines_discount_allocations,
-        shipping_lines.carrier_identifier as shipping_lines_carrier_identifier,
-    {% endif %}
+        {{extract_nested_value("shipping_lines","id","string")}} as shipping_lines_id,
+        {{extract_nested_value("shipping_lines","code","string")}} as shipping_lines_code,
+        {{extract_nested_value("shipping_lines","discounted_price","numeric")}} as shipping_lines_discounted_price,
+        {{extract_nested_value("shop_money","amount","numeric")}} as shipping_lines_discounted_price_shop_money_amount,
+        {{extract_nested_value("shop_money","currency_code","string")}} as shipping_lines_discounted_price_shop_money_currency_code,
+        {{extract_nested_value("presentment_money","amount","numeric")}} as shipping_lines_discounted_price_presentment_money_amount,
+        {{extract_nested_value("presentment_money","currency_code","string")}} as shipping_lines_discounted_price_presentment_money_currency_code,
+        {{extract_nested_value("shipping_lines","price","numeric")}} as shipping_lines_price,
+        {{extract_nested_value("shipping_lines","source","string")}} as shipping_lines_source,
+        {{extract_nested_value("shipping_lines","title","string")}} as shipping_lines_title,
+        {{extract_nested_value("tax_lines","channel_liable","boolean")}} as shipping_lines_tax_lines_channel_liable,
+        {{extract_nested_value("tax_lines","price","string")}} as shipping_lines_tax_lines_price,
+        {{extract_nested_value("tax_lines","rate","numeric")}} as shipping_lines_tax_lines_rate,
+        {{extract_nested_value("tax_lines","title","string")}} as shipping_lines_tax_lines_title,
+        {{extract_nested_value("discount_allocations","amount","numeric")}} as shipping_lines_discount_allocations_amount,
+        {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as shipping_lines_discount_allocations_discount_application_index,
+        {{extract_nested_value("shipping_lines","carrier_identifier","string")}} as shipping_lines_carrier_identifier,
         cast(app_id as string) as app_id,
         customer_locale,
         note,
@@ -168,6 +154,11 @@
     {% endif %}
     {{ unnesting("discount_codes") }}
     {{ unnesting("shipping_lines") }}
+    {{ multi_unnesting("shipping_lines", "discounted_price_set") }}
+    {{ multi_unnesting("discounted_price_set", "shop_money") }}
+    {{ multi_unnesting("discounted_price_set", "presentment_money") }}
+    {{ multi_unnesting("shipping_lines", "tax_lines") }}
+    {{ multi_unnesting("shipping_lines", "discount_allocations") }}
     {% if is_incremental() %}
         {# /* -- this filter will only be applied on an incremental run */ #}
         where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
