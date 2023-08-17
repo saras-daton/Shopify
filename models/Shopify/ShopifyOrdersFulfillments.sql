@@ -19,8 +19,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%fulfillment_orders%')}}
-{% endset %}  
+    {{ set_table_name('%shopify%orders') }}
+{% endset %}
+
 
 {% set results = run_query(table_name_query) %}
 {% if execute %}
@@ -51,66 +52,161 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set hr = 0 %}
     {% endif %}
 
-        select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
-        cast(a.id as string) as id,
-        cast(a.shop_id as string) as shop_id,
-        cast(order_id as string) as order_id,
-        cast(assigned_location_id as string) as assigned_location_id,
-        request_status,
-        status,
-        supported_actions,
-        {{extract_nested_value("destination","id","string")}} as destination_id,
-        {{extract_nested_value("destination","address1","string")}} as destination_address1,
-        {{extract_nested_value("destination","address2","string")}} as destination_address2,
-        {{extract_nested_value("destination","city","string")}} as destination_city,
-        {{extract_nested_value("destination","country","string")}} as destination_country,
-        {{extract_nested_value("destination","email","string")}} as destination_email,
-        {{extract_nested_value("destination","first_name","string")}} as destination_first_name,
-        {{extract_nested_value("destination","last_name","string")}} as destination_last_name,
-        {{extract_nested_value("destination","phone","string")}} as destination_phone,
-        {{extract_nested_value("destination","province","string")}} as destination_province,
-        {{extract_nested_value("destination","zip","string")}} as destination_zip,
-        {{extract_nested_value("destination","company","string")}} as destination_company,
-        coalesce(line_items.value:id::string,'N/A') as line_items_id,
-        {{extract_nested_value("line_items","shop_id","string")}} as line_items_shop_id,
-        {{extract_nested_value("line_items","fulfillment_order_id","string")}} as line_items_fulfillment_order_id
-        cast(line_items.value:quantity as int) as line_items_quantity,
-        {{extract_nested_value("line_items","item_id","string")}} as line_items_line_item_id,
-        {{extract_nested_value("line_items","inventory_item_id","string")}} as line_items_inventory_item_id,
+    select
+        '{{ brand }}' as brand,
+        '{{ store }}' as store,
+        cast(a.id as string) as order_id,
+        a.admin_graphql_api_id,
+        browser_ip,
+        buyer_accepts_marketing,
+        cart_token,
+        cast(checkout_id as string) as checkout_id,
+        checkout_token,
+        confirmed,
+        contact_email,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+        currency,
+        cast(current_subtotal_price as numeric) as current_subtotal_price,
+        cast(current_total_discounts as numeric) as current_total_discounts,
+        cast(current_total_price as numeric) as current_total_price,
+        cast(current_total_tax as numeric) as current_total_tax,
+        email,
+        estimated_taxes,
+        financial_status,
+        gateway,
+        landing_site,
+        landing_site_ref,
+        a.name,
+        number,
+        order_number,
+        order_status_url,
+        payment_gateway_names,
+        phone,
+        presentment_currency,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
+        processing_method,
+        reference,
+        referring_site,
+        source_identifier,
+        source_name,
+        cast(subtotal_price as numeric) as subtotal_price,
+        tags,
+        taxes_included,
+        test,
+        token,
+        cast(total_discounts as numeric) as total_discounts,
+        cast(total_line_items_price as numeric) as total_line_items_price,
+        cast(total_outstanding as numeric) as total_outstanding,
+        cast(total_price as numeric) as total_price,
+        cast(total_price_usd as numeric) as total_price_usd,
+        cast(total_tax as numeric) as total_tax,
+        cast(total_tip_received as numeric) as total_tip_received,
+        total_weight,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        {% if target.type == 'snowflake' %}
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.value:created_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.value:updated_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,
+        {% else %}
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.created_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.updated_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,
+        {% endif %}
+        {{extract_nested_value("fulfillments","id","string")}} as fulfillments_id,
+        {{extract_nested_value("fulfillments","admin_graphql_api_id","string")}} as fulfillments_admin_graphql_api_id,
+        {{extract_nested_value("fulfillments","location_id","string")}} as fulfillments_location_id,
+        {{extract_nested_value("fulfillments","name","string")}} as fulfillments_name,
+        {{extract_nested_value("fulfillments","order_id","string")}} as fulfillments_order_id,
+        {{extract_nested_value("receipt","testcase","boolean")}} as receipt_testcase,
+        {{extract_nested_value("receipt","authorization","string")}} as receipt_authorization,
+        {{extract_nested_value("gift_cards","id","string")}} as receipt_gift_cards_id,
+        {{extract_nested_value("gift_cards","line_item_id","string")}} as receipt_gift_cards_line_item_id,
+        {{extract_nested_value("gift_cards","masked_code","string")}} as receipt_gift_cards_masked_code,
+        {{extract_nested_value("fulfillments","service","string")}} as fulfillments_service,
+        {{extract_nested_value("fulfillments","status","string")}} as fulfillments_status,
+        {{extract_nested_value("fulfillments","tracking_company","string")}} as fulfillments_tracking_company,
+        {{extract_nested_value("fulfillments","tracking_number","string")}} as fulfillments_tracking_number,
+        {{extract_nested_value("fulfillments","tracking_numbers","string")}} as fulfillments_tracking_numbers,
+        {{extract_nested_value("fulfillments","tracking_url","string")}} as fulfillments_tracking_url,
+        {{extract_nested_value("fulfillments","tracking_urls","string")}} as fulfillments_tracking_urls,
+        {{extract_nested_value("line_items","id","string")}} as line_items_id,
+        {{extract_nested_value("line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
         {{extract_nested_value("line_items","fulfillable_quantity","string")}} as line_items_fulfillable_quantity,
+        {{extract_nested_value("line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
+        {{extract_nested_value("line_items","gift_card","string")}} as line_items_gift_card,
+        {{extract_nested_value("line_items","grams","string")}} as line_items_grams,
+        {{extract_nested_value("line_items","name","string")}} as line_items_name,
+        {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
+        {{extract_nested_value("shop_money","amount","numeric")}} as line_items_price_set_shop_money_amount,
+        {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_set_shop_money_currency_code,
+        {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_set_presentment_money_amount,
+        {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_set_presentment_money_currency_code,
+        {{extract_nested_value("line_items","product_exists","boolean")}} as line_items_product_exists,
+        {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
+        {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
+        {{extract_nested_value("properties","value","string")}} as line_items_properties_value,
+        {{extract_nested_value("line_items","quantity","numeric")}} as line_items_quantity,
+        {{extract_nested_value("line_items","requires_shipping","string")}} as line_items_requires_shipping,
+        {{extract_nested_value("line_items","sku","string")}} as line_items_sku,
+        {{extract_nested_value("line_items","taxable","string")}} as line_items_taxable,
+        {{extract_nested_value("line_items","title","string")}} as line_items_title,
+        {{extract_nested_value("line_items","total_discount","numeric")}} as line_items_total_discount,
         {{extract_nested_value("line_items","variant_id","string")}} as line_items_variant_id,
-        fulfillment_service_handle,
-        {{extract_nested_value("assigned_location","country_code","string")}} as assigned_location_country_code,
-        {{extract_nested_value("assigned_location","location_id","string")}} as assigned_location_location_id,
-        {{extract_nested_value("assigned_location","location_name","string")}} as assigned_location_name,
-        {{extract_nested_value("assigned_location","location_address1","string")}} as assigned_location_address1,
-        {{extract_nested_value("assigned_location","location_address2","string")}} as assigned_location_address2,
-        {{extract_nested_value("assigned_location","location_city","string")}} as assigned_location_city,
-        {{extract_nested_value("assigned_location","location_phone","string")}} as assigned_location_phone,
-        {{extract_nested_value("assigned_location","location_province","string")}} as assigned_location_province,
-        {{extract_nested_value("assigned_location","location_zip","string")}} as assigned_location_zip,
-        {{extract_nested_value("delivery_method","id","string")}} as delivery_method_id,
-        {{extract_nested_value("delivery_method","method_type","string")}} as delivery_method_method_type,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfill_at") }} as {{ dbt.type_timestamp() }}) as fulfill_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-        a.{{daton_user_id()}} as _daton_user_id,
-        a.{{daton_batch_runtime()}} as _daton_batch_runtime,
-        a.{{daton_batch_id()}} as _daton_batch_id,
+        {{extract_nested_value("line_items","variant_inventory_management","string")}} as line_items_variant_inventory_management,
+        {{extract_nested_value("line_items","variant_title","string")}} as line_items_variant_title,
+        {{extract_nested_value("tax_lines","channel_liable","boolean")}} as line_items_tax_lines_channel_liable,
+        {{extract_nested_value("tax_lines","price","string")}} as line_items_tax_lines_price,
+        {{extract_nested_value("tax_lines","rate","numeric")}} as line_items_tax_lines_rate,
+        {{extract_nested_value("tax_lines","title","string")}} as line_items_tax_lines_title,
+        {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount,
+        {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as line_items_discount_allocations_discount_application_index,
+        {{extract_nested_value("line_items","fulfillment_status","string")}} as line_items_fulfillment_status,
+        {{extract_nested_value("line_items","pre_tax_price","numeric")}} as line_items_pre_tax_price,
+        {{extract_nested_value("line_items","tax_code","string")}} as line_items_tax_code,
+        {{extract_nested_value("line_items","vendor","string")}} as line_items_vendor,
+        {{extract_nested_value("fulfillments","shipment_status","string")}} as fulfillments_shipment_status,
+        app_id,
+        customer_locale,
+        note,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
+        a.fulfillment_status,
+        a.location_id,
+        cancel_reason,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
+        user_id,
+        device_id,
+        {% if var('currency_conversion_flag') %}
+            case when c.value is null then 1 else c.value end as exchange_currency_rate,
+            case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
+        {% else %}
+            cast(1 as decimal) as exchange_currency_rate,
+            currency as exchange_currency_code,
+        {% endif %}
+        a.{{ daton_user_id() }} as _daton_user_id,
+        a.{{ daton_batch_runtime() }} as _daton_batch_runtime,
+        a.{{ daton_batch_id() }} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
-        from {{i}} a
-        {{unnesting("destination")}}
-        {{unnesting("line_items")}}
-        {{unnesting("assigned_location")}}
-        {{unnesting("delivery_method")}}
-        {% if is_incremental() %}
-            {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
-        {% endif %}               
-        qualify row_number() over (partition by a.id order by _daton_batch_runtime desc) row_num = 1
-        
-        {% if not loop.last %} union all {% endif %}
+        '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
+    from {{ i }} a
+    {% if var('currency_conversion_flag') %}
+        left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+    {% endif %}
+    {{ unnesting("fulfillments") }}
+    {{ multi_unnesting("fulfillments", "receipt") }}
+    {{ multi_unnesting("fulfillments", "line_items") }}
+    {{ multi_unnesting("receipt", "gift_cards") }}
+    {{ multi_unnesting("line_items", "price_set") }}
+    {{ multi_unnesting("price_set", "shop_money") }}
+    {{ multi_unnesting("price_set", "presentment_money") }}
+    {{ multi_unnesting("line_items", "properties") }}
+    {{ multi_unnesting("line_items", "total_discount_set") }}
+    {{ multi_unnesting("line_items", "discount_allocations") }}
+    {{ multi_unnesting("line_items", "tax_lines") }}
+    {{ multi_unnesting("line_items", "pre_tax_price_set") }}
+
+    {% if is_incremental() %}
+        {# /* -- this filter will only be applied on an incremental run */ #}
+        where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
+    {% endif %}
+
+    qualify dense_rank() over (partition by a.id order by a._daton_batch_runtime desc) = 1
+    {% if not loop.last %} union all {% endif %}
 {% endfor %}

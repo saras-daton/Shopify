@@ -19,7 +19,7 @@
 {% endif %}
 
 {% set table_name_query %}
-{{ set_table_name('%shopify%policies') }} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{ set_table_name('%shopify%policies') }}
 {% endset %}
 
 {% set results = run_query(table_name_query) %}
