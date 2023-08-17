@@ -23,7 +23,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}}
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}
 
 
@@ -68,7 +68,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         checkout_token,
         confirmed,
         contact_email,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         a.currency,
         cast(current_subtotal_price as numeric) as current_subtotal_price,
         cast(current_total_discounts as numeric) as current_total_discounts,
@@ -87,7 +87,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         payment_gateway_names,
         a.phone,
         presentment_currency,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         processing_method,
         reference,
         referring_site,
@@ -106,10 +106,10 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(total_tax as numeric) as total_tax,
         cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         {{extract_nested_value("customer","id","string")}} as customer_id,
         {{extract_nested_value("customer","email","string")}} as customer_email,
-        {{extract_nested_value("customer","accepts_marketing","string")}} as customer_accepts_marketing,
+        {{extract_nested_value("customer","accepts_marketing","boolean")}} as customer_accepts_marketing,
         {{extract_nested_value("customer","created_at","timestamp")}} as customer_created_at,
         {{extract_nested_value("customer","updated_at","timestamp")}} as customer_updated_at,
         {{extract_nested_value("customer","first_name","string")}} as customer_first_name,
@@ -118,14 +118,14 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {{extract_nested_value("customer","state","string")}} as customer_state,
         {{extract_nested_value("customer","total_spent","numeric")}} as customer_total_spent,
         {{extract_nested_value("customer","last_order_id","numeric")}} as customer_last_order_id,
-        {{extract_nested_value("customer","customer_verified_email","boolean")}} as customer_verified_email,
-        {{extract_nested_value("customer","customer_tax_exempt","boolean")}} as customer_tax_exempt,
+        {{extract_nested_value("customer","verified_email","boolean")}} as customer_verified_email,
+        {{extract_nested_value("customer","tax_exempt","boolean")}} as customer_tax_exempt,
         {{extract_nested_value("customer","phone","string")}} as customer_phone,
         {{extract_nested_value("customer","tags","string")}} as customer_tags,
         {{extract_nested_value("customer","currency","string")}} as customer_currency,
         {{extract_nested_value("customer","last_order_name","string")}} as customer_last_order_name,
         {{extract_nested_value("customer","accepts_marketing_updated_at","timestamp")}} as customer_accepts_marketing_updated_at,
-        {{extract_nested_value("customer","admin_graphq1_api_id","string")}} as customer_admin_graphql_api_id,
+        {{extract_nested_value("customer","admin_graphql_api_id","string")}} as customer_admin_graphql_api_id,
         {{extract_nested_value("default_address","id","string")}} as default_address_id,
         {{extract_nested_value("default_address","customer_id","string")}} as default_address_customer_id,
         {{extract_nested_value("default_address","address1","string")}} as default_address_address1,
@@ -146,11 +146,11 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(app_id as string) as app_id,
         customer_locale,
         a.note,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
         fulfillment_status,
         cast(location_id as string) as location_id,
         cancel_reason,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
         cast(user_id as string) as user_id,
         cast(device_id as string) as device_id,
         {% if var('currency_conversion_flag') %}
@@ -182,5 +182,3 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% endif %}
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
-
-

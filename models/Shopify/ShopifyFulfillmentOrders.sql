@@ -19,7 +19,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%fulfillment_orders%')}}
+{{set_table_name('%shopify%fulfillment_orders%')}} and lower(table_name)
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -73,24 +73,24 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("destination","province","string")}} as destination_province,
         {{extract_nested_value("destination","zip","string")}} as destination_zip,
         {{extract_nested_value("destination","company","string")}} as destination_company,
-        coalesce(line_items.value:id::string,'N/A') as line_items_id,
+        {{extract_nested_value("line_items","id","string")}} as line_items_id,
         {{extract_nested_value("line_items","shop_id","string")}} as line_items_shop_id,
-        {{extract_nested_value("line_items","fulfillment_order_id","string")}} as line_items_fulfillment_order_id
-        cast(line_items.value:quantity as int) as line_items_quantity,
-        {{extract_nested_value("line_items","item_id","string")}} as line_items_line_item_id,
+        {{extract_nested_value("line_items","fulfillment_order_id","string")}} as line_items_fulfillment_order_id,
+        {{extract_nested_value("line_items","quantity","int")}} as line_items_quantity,
+        {{extract_nested_value("line_items","line_item_id","string")}} as line_items_line_item_id,
         {{extract_nested_value("line_items","inventory_item_id","string")}} as line_items_inventory_item_id,
         {{extract_nested_value("line_items","fulfillable_quantity","string")}} as line_items_fulfillable_quantity,
         {{extract_nested_value("line_items","variant_id","string")}} as line_items_variant_id,
         fulfillment_service_handle,
         {{extract_nested_value("assigned_location","country_code","string")}} as assigned_location_country_code,
         {{extract_nested_value("assigned_location","location_id","string")}} as assigned_location_location_id,
-        {{extract_nested_value("assigned_location","location_name","string")}} as assigned_location_name,
-        {{extract_nested_value("assigned_location","location_address1","string")}} as assigned_location_address1,
-        {{extract_nested_value("assigned_location","location_address2","string")}} as assigned_location_address2,
-        {{extract_nested_value("assigned_location","location_city","string")}} as assigned_location_city,
-        {{extract_nested_value("assigned_location","location_phone","string")}} as assigned_location_phone,
-        {{extract_nested_value("assigned_location","location_province","string")}} as assigned_location_province,
-        {{extract_nested_value("assigned_location","location_zip","string")}} as assigned_location_zip,
+        {{extract_nested_value("assigned_location","name","string")}} as assigned_location_name,
+        {{extract_nested_value("assigned_location","address1","string")}} as assigned_location_address1,
+        {{extract_nested_value("assigned_location","address2","string")}} as assigned_location_address2,
+        {{extract_nested_value("assigned_location","city","string")}} as assigned_location_city,
+        {{extract_nested_value("assigned_location","phone","string")}} as assigned_location_phone,
+        {{extract_nested_value("assigned_location","province","string")}} as assigned_location_province,
+        {{extract_nested_value("assigned_location","zip","string")}} as assigned_location_zip,
         {{extract_nested_value("delivery_method","id","string")}} as delivery_method_id,
         {{extract_nested_value("delivery_method","method_type","string")}} as delivery_method_method_type,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfill_at") }} as {{ dbt.type_timestamp() }}) as fulfill_at,

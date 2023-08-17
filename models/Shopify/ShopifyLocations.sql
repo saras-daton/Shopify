@@ -21,7 +21,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 {% set table_name_query %}
 {{set_table_name('%shopify%locations')}}
-{% endset %}  
+{% endset %}
 
 
 {% set results = run_query(table_name_query) %}

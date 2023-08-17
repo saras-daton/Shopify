@@ -25,7 +25,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}}
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -76,7 +76,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(current_total_price as numeric) as current_total_price,
         cast(current_total_tax as numeric) as current_total_tax,
         {{extract_nested_value("discount_codes","code","string")}} as discount_code,
-        {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
+        {{extract_nested_value("discount_codes","amount","string")}} as discount_amount,
         {{extract_nested_value("discount_codes","type","string")}} as discount_type,
         email,
         estimated_taxes,
@@ -135,7 +135,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from {{i}} a
             {% if var('currency_conversion_flag') %}
-            left join {{ref('ExchangeRates')}} b on date(created_at) = b.date and a.currency = b.to_currency_code
+            left join {{ref('ExchangeRates')}} b on date(created_at) = b.date and currency = b.to_currency_code
             {% endif %}
             {{unnesting("discount_codes")}}
             {% if is_incremental() %}
