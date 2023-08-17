@@ -20,7 +20,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%carrier_services')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%carrier_services')}} 
 {% endset %}  
 
 
@@ -48,19 +48,19 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     {% endif %}
 
         select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
-        cast(id as string) as id,
-        name,
-        active,
-        service_discovery,
-        carrier_service_type,
-        admin_graphql_api_id,
-        {{daton_user_id()}} as _daton_user_id,
-        {{daton_batch_runtime()}} as _daton_batch_runtime,
-        {{daton_batch_id()}} as _daton_batch_id,
-        current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+            '{{brand}}' as brand,
+            '{{store}}' as store,
+            cast(id as string) as id,
+            name,
+            active,
+            service_discovery,
+            carrier_service_type,
+            admin_graphql_api_id,
+            {{daton_user_id()}} as _daton_user_id,
+            {{daton_batch_runtime()}} as _daton_batch_runtime,
+            {{daton_batch_id()}} as _daton_batch_id,
+            current_timestamp() as _last_updated,
+            '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from  {{i}} a
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
