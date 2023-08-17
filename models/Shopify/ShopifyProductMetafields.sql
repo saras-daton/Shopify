@@ -77,4 +77,4 @@
     {% endif %}
     qualify dense_rank() over (partition by id order by _daton_batch_runtime desc) = 1
     {% if not loop.last %} union all {% endif %}
-{% endfor %} 
+{% endfor %}
