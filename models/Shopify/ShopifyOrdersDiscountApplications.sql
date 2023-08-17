@@ -23,7 +23,8 @@
 {% endif %}
 
 {% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }}
+    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders'
+    and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}
 
 {% set results = run_query(table_name_query) %}
@@ -108,15 +109,27 @@
             cast(total_tip_received as numeric) as total_tip_received,
             total_weight,
             cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-            {{extract_nested_value("discount_applications","target_type","string")}} as discount_applications_target_type,
-            {{extract_nested_value("discount_applications","type","string")}} as discount_applications_type,
-            {{extract_nested_value("discount_applications","value","string")}} as discount_applications_value,
-            {{extract_nested_value("discount_applications","value_type","string")}} as discount_applications_value_type,
-            {{extract_nested_value("discount_applications","allocation_method","string")}} as discount_applications_allocation_method,
-            {{extract_nested_value("discount_applications","target_selection","string")}} as discount_applications_target_selection,
-            {{extract_nested_value("discount_applications","code","string")}} as discount_applications_code,
-            {{extract_nested_value("discount_applications","title","string")}} as discount_applications_title,
-            {{extract_nested_value("discount_applications","description","string")}} as discount_applications_description,
+            {% if target.type == 'snowflake' %}
+                discount_applications.value:target_type::varchar as discount_applications_target_type,
+                discount_applications.value:type::varchar as discount_applications_type,
+                discount_applications.value:value::varchar as discount_applications_value,
+                discount_applications.value:value_type::varchar as discount_applications_value_type,
+                discount_applications.value:allocation_method::varchar as discount_applications_allocation_method,
+                discount_applications.value:target_selection::varchar as discount_applications_target_selection,
+                discount_applications.value:code::varchar as discount_applications_code,
+                discount_applications.value:title::varchar as discount_applications_title,
+                discount_applications.value:description::varchar as discount_applications_description,
+            {% else %}
+                discount_applications.target_type as discount_applications_target_type,
+                discount_applications.type as discount_applications_type,
+                discount_applications.value as discount_applications_value,
+                discount_applications.value_type as discount_applications_value_type,
+                discount_applications.allocation_method as discount_applications_allocation_method,
+                discount_applications.target_selection as discount_applications_target_selection,
+                discount_applications.code as discount_applications_code,
+                discount_applications.title as discount_applications_title,
+                discount_applications.description as discount_applications_description,
+            {% endif %}
             cast(app_id as string) as app_id,
             customer_locale,
             note,
@@ -148,7 +161,6 @@
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{daton_batch_runtime()}} >= {{max_loaded}}
         {% endif %}
-    
     qualify dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) = 1
     )
     {% if not loop.last %} union all {% endif %}
