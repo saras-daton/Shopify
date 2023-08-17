@@ -75,7 +75,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(current_total_discounts as numeric) as current_total_discounts,
         cast(current_total_price as numeric) as current_total_price,
         cast(current_total_tax as numeric) as current_total_tax,
-        discount_code,
+        discount_codes,
         cast(discount_amount as numeric) as discount_amount,
         discount_type,
         email,
