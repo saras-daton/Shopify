@@ -23,7 +23,7 @@
 {% endif %}
 
 {% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }}
+    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}
 
 {% set results = run_query(table_name_query) %}
@@ -78,11 +78,19 @@
         current_total_price_set,
         current_total_tax,
         current_total_tax_set,
-        {{extract_nested_value("discount_codes","code","string")}} as discount_code,
-        {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
-        {{extract_nested_value("discount_codes","type","string")}} as discount_type,
-        {{extract_nested_value("note_attributes","name","string")}} as note_attributes_name,
-        {{extract_nested_value("note_attributes","value","string")}} as note_attributes_value,
+    {% if target.type =='snowflake' %}
+        discount_codes.value:code::varchar as discount_code,
+        discount_codes.value:amount::numeric as discount_amount,
+        discount_codes.value:type::varchar as discount_type,
+        note_attributes.value:name::varchar as note_attributes_name,
+        note_attributes.value:value::varchar as note_attributes_value,
+    {% else %}
+        discount_codes.code as discount_code,
+        discount_codes.amount as discount_amount,
+        discount_codes.type as discount_type,
+        note_attributes.name as note_attributes_name,
+        note_attributes.value as note_attributes_value,
+    {% endif %}
         email,
         estimated_taxes,
         financial_status,
