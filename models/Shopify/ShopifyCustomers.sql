@@ -24,7 +24,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%customers')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%customers')}}
 {% endset %}  
 
 
@@ -72,47 +72,27 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         verified_email,
         tax_exempt,
         tags,
-        currency,
+        a.currency,
         a.phone,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="accepts_marketing_updated_at") }} as {{ dbt.type_timestamp() }}) as accepts_marketing_updated_at,
         a.admin_graphql_api_id,
-        {% if target.type =='snowflake' %}
-        default_address.value:id::VARCHAR as default_address_id,
-        default_address.value:customer_id::VARCHAR as default_address_customer_id,
-        default_address.value:first_name::VARCHAR as default_address_first_name,
-        default_address.value:last_name::VARCHAR as default_address_last_name,
-        default_address.value:address1::VARCHAR as default_address_address1,
-        default_address.value:city::VARCHAR as default_address_city,
-        default_address.value:province::VARCHAR as default_address_province,
-        default_address.value:country::VARCHAR as default_address_country,
-        default_address.value:zip::VARCHAR as default_address_zip,
-        default_address.value:phone::VARCHAR as default_address_phone,
-        default_address.value:name::VARCHAR as default_address_name,
-        default_address.value:province_code::VARCHAR as default_address_province_code,
-        default_address.value:country_code::VARCHAR as default_address_country_code,
-        default_address.value:country_name::VARCHAR as default_address_country_name,
-        default_address.value:default::VARCHAR as default_address_default,
-        default_address.value:address2::VARCHAR as default_address_address2,
-        default_address.value:company::VARCHAR as default_address_company,
-        {% else %}
-        default_address.id as default_address_id,
-        default_address.customer_id as default_address_customer_id,
-        default_address.first_name as default_address_first_name,
-        default_address.last_name as default_address_last_name,
-        default_address.address1 as default_address_address1,
-        default_address.city as default_address_city,
-        default_address.province as default_address_province,
-        default_address.country as default_address_country,
-        default_address.zip as default_address_zip,
-        default_address.phone as default_address_phone,
-        default_address.name as default_address_name,
-        default_address.province_code as default_address_province_code,
-        default_address.country_code as default_address_country_code,
-        default_address.country_name as default_address_country_name,
-        default_address.default as default_address_default,
-        default_address.address2 as default_address_address2,
-        default_address.company as default_address_company,
-        {% endif %}
+        {{extract_nested_value("default_address","id","numeric")}} as default_address_id,
+        {{extract_nested_value("default_address","customer_id","numeric")}} as default_address_customer_id,
+        {{extract_nested_value("default_address","first_name","string")}} as default_address_first_name,
+        {{extract_nested_value("default_address","last_name","string")}} as default_address_last_name,
+        {{extract_nested_value("default_address","address1","string")}} as default_address_address1,
+        {{extract_nested_value("default_address","city","string")}} as default_address_city,
+        {{extract_nested_value("default_address","province","string")}} as default_address_province,
+        {{extract_nested_value("default_address","country","string")}} as default_address_country,
+        {{extract_nested_value("default_address","zip","string")}} as default_address_zip,
+        {{extract_nested_value("default_address","phone","string")}} as default_address_phone,
+        {{extract_nested_value("default_address","name","string")}} as default_address_name,
+        {{extract_nested_value("default_address","province_code","string")}} as default_address_province_code,
+        {{extract_nested_value("default_address","country_code","string")}} as default_address_country_code,
+        {{extract_nested_value("default_address","country_name","string")}} as default_address_country_name,
+        {{extract_nested_value("default_address","default","boolean")}} as default_address_default,
+        {{extract_nested_value("default_address","address2","string")}} as default_address_address2,
+        {{extract_nested_value("default_address","company","string")}} as default_address_company,
         last_order_id,
         last_order_name,
         marketing_opt_in_level,
@@ -128,7 +108,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from  {{i}} a
                 {{unnesting("default_address")}} 
                 {% if var('currency_conversion_flag') %}
