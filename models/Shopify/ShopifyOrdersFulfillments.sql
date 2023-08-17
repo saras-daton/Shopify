@@ -1,21 +1,25 @@
-{% if var('ShopifyFulfillmentOrders') %}
-{{ config( enabled = True ) }}
+{% if var('ShopifyOrdersFulfillments') %}
+    {{ config(enabled=True) }}
 {% else %}
-{{ config( enabled = False ) }}
+    {{ config(enabled=False) }}
+{% endif %}
+
+{% if var('currency_conversion_flag') %}
+    -- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
 {% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
-{% endset %}
+    {%- set max_loaded_query -%}
+    select coalesce(max(_daton_batch_runtime) - 2592000000, 0) from {{ this }}
+    {% endset %}
 
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
+    {%- set max_loaded_results = run_query(max_loaded_query) -%}
 
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
+    {%- if execute -%}
+        {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
+    {% else %}
+        {% set max_loaded = 0 %}
+    {%- endif -%}
 {% endif %}
 
 {% set table_name_query %}
@@ -23,26 +27,25 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
     and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}
 
-
 {% set results = run_query(table_name_query) %}
 {% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
+    {# Return the first column #}
+    {% set results_list = results.columns[0].values() %}
+    {% set tables_lowercase_list = results.columns[1].values() %}
 {% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
+    {% set results_list = [] %}
+    {% set tables_lowercase_list = [] %}
 {% endif %}
 
 {% for i in results_list %}
     {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+        {% set brand = i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
     {% endif %}
 
     {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+        {% set store = i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}

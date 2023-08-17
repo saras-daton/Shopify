@@ -24,7 +24,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 with unnested_refunds as(
 {% set table_name_query %}
-{{set_table_name('%shopify%refunds')}} 
+{{set_table_name('%shopify%refunds')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -84,24 +84,45 @@ with unnested_refunds as(
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         restock,
         a.admin_graphql_api_id,
-        {{extract_nested_value("transactions","id","numeric")}} as transactions_id,
-        {{extract_nested_value("transactions","order_id","numeric")}} as transactions_order_id,
-        {{extract_nested_value("transactions","kind","string")}} as transactions_kind,
-        {{extract_nested_value("transactions","gateway","string")}} as transactions_gateway,
-        {{extract_nested_value("transactions","status","string")}} as transactions_status,
-        {{extract_nested_value("transactions","created_at","timestamp")}} as transactions_created_at,
-        {{extract_nested_value("transactions","test","boolean")}} as transactions_test,
-        {{extract_nested_value("transactions","authorization","string")}} as transactions_authorization,
-        {{extract_nested_value("transactions","parent_id","numeric")}} as transactions_parent_id,
-        {{extract_nested_value("transactions","processed_at","timestamp")}} as transactions_processed_at,
-        {{extract_nested_value("transactions","source_name","string")}} as transactions_source_name,
-        {{extract_nested_value("transactions","amount","string")}} as transactions_amount,
-        {{extract_nested_value("transactions","currency","string")}} as transactions_currency,
-        {{extract_nested_value("transactions","admin_graphql_api_id","string")}} as transactions_admin_graphql_api_id,
-        {{extract_nested_value("transactions","message","string")}} as  transactions_message,
-        {{extract_nested_value("transactions","user_id","numeric")}} as transactions_user_id,
-        {{extract_nested_value("transactions","payment_id","string")}} as transactions_payment_id,
-        {{extract_nested_value("transactions","error_code","string")}} as ttransactions_error_code,
+        {% if target.type =='snowflake' %}
+            coalesce(transactions.value:id::varchar,'N/A') as transactions_id,
+            transactions.value:order_id::varchar as transactions_order_id,
+            transactions.value:kind::varchar as transactions_kind,
+            transactions.value:gateway::varchar as transactions_gateway,
+            transactions.value:status::varchar as transactions_status,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.value:created_at::timestamp") }} as {{ dbt.type_timestamp() }}) as transactions_created_at,
+            transactions.value:test::varchar as transactions_test,
+            transactions.value:authorization::varchar as transactions_authorization,
+            transactions.value:parent_id::varchar as transactions_parent_id,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.value:processed_at::timestamp") }} as {{ dbt.type_timestamp() }}) as transactions_processed_at,
+            transactions.value:source_name::varchar as transactions_source_name,
+            transactions.value:amount::numeric as transactions_amount,
+            transactions.value:currency as transactions_currency,
+            transactions.value:admin_graphql_api_id as transactions_admin_graphql_api_id,
+            transactions.value:message as transactions_message,
+            transactions.value:user_id::varchar as transactions_user_id,
+            transactions.value:payment_id as transactions_payment_id,
+            transactions.value:error_code::varchar as transactions_error_code,
+        {% else %}
+            coalesce(cast(transactions.id as string),'N/A') as transactions_id,
+            cast(transactions.order_id as string) as transactions_order_id,
+            transactions.kind as transactions_kind,
+            transactions.gateway as transactions_gateway,
+            transactions.status as transactions_status,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.created_at") }} as {{ dbt.type_timestamp() }}) as transactions_created_at,
+            transactions.test as transactions_test,
+            transactions.authorization as transactions_authorization,
+            cast(transactions.parent_id as string) as transactions_parent_id,
+            cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="transactions.processed_at") }} as {{ dbt.type_timestamp() }}) as transactions_processed_at,
+            transactions.source_name as transactions_source_name,
+            cast(transactions.amount as numeric) as transactions_amount,
+            transactions.currency as transactions_currency,
+            transactions.admin_graphql_api_id as transactions_admin_graphql_api_id,
+            transactions.message as transactions_message,
+            cast(transactions.user_id as string) as transactions_user_id,
+            transactions.payment_id as transactions_payment_id,
+            transactions.error_code as transactions_error_code,
+        {% endif %}
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id
@@ -119,12 +140,14 @@ with unnested_refunds as(
         )
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
-)
+),
 
-SELECT *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
-from (
+dedup as (
 select *
 from unnested_refunds 
 qualify
 dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) = 1
 )
+
+SELECT *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
+from dedup
