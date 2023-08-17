@@ -19,7 +19,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%products')}}
+{{set_table_name('%shopify%products')}} 
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -88,7 +88,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     {{extract_nested_value("variants","inventory_item_id","string")}} as variants_inventory_item_id,
     {{extract_nested_value("variants","inventory_quantity","numeric")}} as variants_inventory_quantity,
     {{extract_nested_value("variants","old_inventory_quantity","numeric")}} as variants_old_inventory_quantity,
-    {{extract_nested_value("variants","presentment_prices","string")}} as variants_presentment_prices,
+    {{extract_nested_value("price","amount","string")}} as price_amount,
+    {{extract_nested_value("price","currency_code","string")}} as price_currency_code,
     template_suffix,
     status,
     {{daton_user_id()}} as _daton_user_id,
@@ -98,6 +99,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
     from {{i}} a
             {{unnesting("variants")}}
+            {{multi_unnesting('variants','presentment_prices')}}
+            {{multi_unnesting('presentment_prices','price')}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where {{daton_batch_runtime()}}  >= {{max_loaded}} 
