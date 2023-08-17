@@ -50,16 +50,16 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
-        {% set hr = 0 %}
+            {% set hr = 0 %}
     {% endif %}
 
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        coalesce(cast(a.id as string),'N/A') as order_id, 
+        coalesce(cast(a.id as string),'N/A') as id, 
         a.admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
@@ -111,41 +111,77 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-        {{extract_nested_value("line_items","id","string")}} as line_items_id,
-        {{extract_nested_value("line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
-        {{extract_nested_value("line_items","fulfillable_quantity","int")}} as line_items_fulfillable_quantity,
-        {{extract_nested_value("line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
-        {{extract_nested_value("line_items","gift_card","boolean")}} as line_items_gift_card,
-        {{extract_nested_value("line_items","grams","numeric")}} as line_items_grams, 
-        {{extract_nested_value("line_items","name","string")}} as line_items_name,
-        {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
-        {{extract_nested_value("shop_money","amount","numeric")}} as line_items_price_shop_money_amount,
-        {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_shop_money_currency_code,
-        {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_presentment_money_amount,
-        {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_presentment_money_currency_code,
-        {{extract_nested_value("line_items","product_exists","boolean")}} as line_items_product_exists,
-        {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
-        {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
-        {{extract_nested_value("properties","value","numeric")}} as line_items_properties_value,
-        {{extract_nested_value("line_items","quantity","int")}} as line_items_quantity,
-        {{extract_nested_value("line_items","requires_shipping","boolean")}} as line_items_requires_shipping,
-        {{extract_nested_value("line_items","sku","string")}} as line_items_sku,
-        {{extract_nested_value("line_items","taxable","boolean")}} as line_items_taxable,
-        {{extract_nested_value("line_items","title","string")}} as line_items_title,
-        {{extract_nested_value("line_items","total_discount","numeric")}} as line_items_total_discount,
-        {{extract_nested_value("line_items","variant_id","string")}} as line_items_variant_id,
-        {{extract_nested_value("line_items","variant_inventory_management","string")}} as line_items_variant_inventory_management,
-        {{extract_nested_value("line_items","variant_title","string")}} as line_items_variant_title,
-        {{extract_nested_value("tax_lines","price","numeric")}} as line_items_tax_lines_price,
-        {{extract_nested_value("tax_lines","rate","numeric")}} as line_items_tax_lines_rate,
-        {{extract_nested_value("tax_lines","title","string")}} as line_items_tax_lines_title,
-        {{extract_nested_value("tax_lines","channel_liable","boolean")}} as line_items_tax_lines_channel_liable,
-        {{extract_nested_value("discount_allocations","amount","numeric")}} as discount_allocations_amount,
-        {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as discount_allocations_discount_application_index,
-        {{extract_nested_value("line_items","pre_tax_price","string")}} as line_items_pre_tax_price,
-        {{extract_nested_value("line_items","tax_code","string")}} as line_items_tax_code,
-        {{extract_nested_value("line_items","vendor","string")}} as vendor,
-        {{extract_nested_value("line_items","fulfillment_status","string")}} as line_items_fulfillment_status,
+        {% if target.type =='snowflake' %}
+        line_items.value:id::varchar as line_items_id,
+        line_items.value:admin_graphql_api_id::varchar as line_items_admin_graphql_api_id,
+        line_items.value:fulfillable_quantity::varchar as line_items_fulfillable_quantity,
+        line_items.value:fulfillment_service::varchar as line_items_fulfillment_service,
+        line_items.value:gift_card::varchar as line_items_gift_card,
+        line_items.value:grams::varchar as line_items_grams, 
+        line_items.value:name::varchar as line_items_name,
+        line_items.value:price::FLOAT as line_items_price,
+        line_items.value:price_set as line_items_price_set,
+        line_items.value:product_exists::varchar as line_items_product_exists,
+        line_items.value:product_id::varchar as line_items_product_id,
+        line_items.value:properties::varchar as line_items_properties,
+        line_items.value:quantity::FLOAT as line_items_quantity,
+        line_items.value:requires_shipping::varchar as line_items_requires_shipping,
+        line_items.value:sku::varchar as line_items_sku,
+        line_items.value:taxable::varchar as line_items_taxable,
+        line_items.value:title::varchar as line_items_title,
+        line_items.value:total_discount::numeric as line_items_total_discount,
+        line_items.value:total_discount_set as line_items_total_discount_set,
+        line_items.value:variant_id::varchar as line_items_variant_id,
+        line_items.value:variant_inventory_management::varchar as line_items_variant_inventory_management,
+        line_items.value:variant_title::varchar as line_items_variant_title,
+        line_items.value:tax_lines as line_items_tax_lines,
+        cast(discount_allocations.value:amount as numeric) as discount_allocations_amount,
+        cast(shop_money.value:amount as numeric) as shop_money_amount,
+        shop_money.value:currency_code as shop_money_currency_code,
+        cast(presentment_money.value:amount as numeric) as presentment_money_amount,
+        presentment_money.value:currency_code as presentment_money_currency_code,
+        discount_allocations.value:discount_application_index::varchar as discount_application_index,
+        line_items.value:pre_tax_price_set as line_items_pre_tax_price_set,
+        line_items.value:pre_tax_price as line_items_pre_tax_price,
+        line_items.value:tax_code as line_items_tax_code,
+        line_items.value:vendor::varchar as vendor,
+        line_items.value:fulfillment_status::varchar as line_items_fulfillment_status,
+        {% else %}
+        line_items.id as line_items_id,
+        line_items.admin_graphql_api_id as line_items_admin_graphql_api_id,
+        line_items.fulfillable_quantity as line_items_fulfillable_quantity,
+        line_items.fulfillment_service as line_items_fulfillment_service,
+        line_items.gift_card as line_items_gift_card,
+        line_items.grams as line_items_grams, 
+        line_items.name as line_items_name,
+        cast(line_items.price as numeric) line_items_price,
+        line_items.price_set as line_items_price_set,
+        line_items.product_exists as line_items_product_exists,
+        line_items.product_id as line_items_product_id,
+        line_items.properties as line_items_properties,
+        line_items.quantity as line_items_quantity,
+        line_items.requires_shipping as line_items_requires_shipping,
+        line_items.sku as line_items_sku,
+        line_items.taxable as line_items_taxable,
+        line_items.title as line_items_title,
+        cast(line_items.total_discount as numeric) line_items_total_discount,
+        line_items.total_discount_set as line_items_total_discount_set,
+        line_items.variant_id as line_items_variant_id,
+        line_items.variant_inventory_management as line_items_variant_inventory_management,
+        line_items.variant_title as line_items_variant_title,
+        line_items.tax_lines as line_items_tax_lines,
+        cast(discount_allocations.amount as numeric) as discount_allocations_amount,
+        cast(shop_money.amount as numeric) as shop_money_amount,
+        shop_money.currency_code as shop_money_currency_code,
+        cast(presentment_money.amount as numeric) as presentment_money_amount,
+        presentment_money.currency_code as presentment_money_currency_code,
+        discount_allocations.discount_application_index as discount_application_index,
+        line_items.pre_tax_price_set as line_items_pre_tax_price_set,
+        line_items.pre_tax_price as line_items_pre_tax_price,
+        line_items.tax_code as line_items_tax_code,
+        line_items.vendor as vendor,
+        line_items.fulfillment_status as line_items_fulfillment_status,
+        {% endif %}
         cast(app_id as string) as app_id,
         customer_locale,
         note,
@@ -167,7 +203,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
         from {{i}} a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
@@ -175,12 +211,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
                 {{unnesting("line_items")}}
                 {{multi_unnesting("line_items","discount_allocations")}}
                 {{multi_unnesting("discount_allocations","amount_set")}}
-                {{multi_unnesting("line_items","price_set")}}
-                {{multi_unnesting("price_set","shop_money")}}
-                {{multi_unnesting("price_set","presentment_money")}}
-                {{multi_unnesting("line_items","properties")}}
-                {{multi_unnesting("line_items","total_discount_set")}}
-                {{multi_unnesting("line_items","tax_lines")}}
+                {{multi_unnesting("amount_set","shop_money")}}
+                {{multi_unnesting("amount_set","presentment_money")}}
             {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}

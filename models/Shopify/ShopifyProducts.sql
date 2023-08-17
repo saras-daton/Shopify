@@ -19,7 +19,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%products')}} 
+{{set_table_name('%shopify%products')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
 {% endset %}  
 
 {% set results = run_query(table_name_query) %}
@@ -67,29 +67,52 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     published_scope,
     tags,
     a.admin_graphql_api_id,
-    {{extract_nested_value("variants","id","string")}} as variant_id,
-    {{extract_nested_value("variants","product_id","string")}} as variants_product_id,
-    {{extract_nested_value("variants","title","string")}} as variant_title,
-    {{extract_nested_value("variants","price","numeric")}} as variants_price,
-    {{extract_nested_value("variants","sku","string")}} as variants_sku,
-    {{extract_nested_value("variants","position","string")}} as variants_position,
-    {{extract_nested_value("variants","inventory_policy","string")}} as variants_inventory_policy,
-    {{extract_nested_value("variants","fulfillment_service","string")}} as variants_fulfillment_service,
-    {{extract_nested_value("variants","inventory_management","string")}} as variant_inventory_management,
-    {{extract_nested_value("variants","option1","string")}} as variants_option1,
-    {{extract_nested_value("variants","created_at","string")}} as variants_created_at,
-    {{extract_nested_value("variants","updated_at","string")}} as variants_updated_at,
-    {{extract_nested_value("variants","taxable","string")}} as variants_taxable,
-    {{extract_nested_value("variants","barcode","string")}} as variants_barcode,
-    {{extract_nested_value("variants","grams","string")}} as variants_grams,
-    {{extract_nested_value("variants","image_id","string")}} as variants_image_id,
-    {{extract_nested_value("variants","weight","numeric")}} as variants_weight,
-    {{extract_nested_value("variants","weight_unit","string")}} as variants_weight_unit,
-    {{extract_nested_value("variants","inventory_item_id","string")}} as variants_inventory_item_id,
-    {{extract_nested_value("variants","inventory_quantity","numeric")}} as variants_inventory_quantity,
-    {{extract_nested_value("variants","old_inventory_quantity","numeric")}} as variants_old_inventory_quantity,
-    {{extract_nested_value("price","amount","string")}} as price_amount,
-    {{extract_nested_value("price","currency_code","string")}} as price_currency_code,
+    {% if target.type =='snowflake' %}
+    variants.value:id::varchar as variant_id,
+    coalesce(variants.value:product_id::varchar,'N/A') as variants_product_id,
+    variants.value:title::varchar as variants_title,
+    variants.value:price::numeric as variants_price,
+    coalesce(variants.value:sku::varchar,'N/A') as variants_sku,
+    variants.value:position::varchar as variants_position,
+    variants.value:inventory_policy::varchar as variants_inventory_policy,
+    variants.value:fulfillment_service::varchar as variants_fulfillment_service,
+    variants.value:inventory_management::varchar as variants_inventory_management,
+    variants.value:option1::varchar as variants_option1,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.value:created_at::timestamp") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.value:updated_at::timestamp") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
+    variants.value:taxable::varchar as variants_taxable,
+    variants.value:barcode::varchar as variants_barcode,
+    variants.value:grams::varchar as variants_grams,
+    variants.value:image_id::varchar as variants_image_id,
+    variants.value:weight::numeric as variants_weight,
+    variants.value:weight_unit::varchar as variants_weight_unit,
+    variants.value:inventory_item_id::varchar as variants_inventory_item_id,
+    variants.value:inventory_quantity::numeric as variants_inventory_quantity,
+    variants.value:old_inventory_quantity::numeric as variants_old_inventory_quantity,
+    variants.value:presentment_prices as variants_presentment_prices,
+    {% else %}
+    cast(variants.id as string) as variant_id,
+    coalesce(cast(variants.product_id as string),'N/A') as variants_product_id,
+    variants.title as variants_title,
+    cast(variants.price as numeric) as variants_price,
+    coalesce(cast(variants.sku as string),'N/A') as variants_sku,
+    variants.position as variants_position,
+    variants.inventory_policy as variants_inventory_policy,
+    variants.fulfillment_service as variants_fulfillment_service,
+    variants.inventory_management as variants_inventory_management,
+    variants.option1 as variants_option1,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.created_at") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.updated_at") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
+    variants.taxable as variants_taxable,
+    variants.barcode as variants_barcode,
+    variants.grams as variants_grams,
+    variants.image_id as variants_image_id,
+    variants.weight as variants_weight,
+    variants.weight_unit as variants_weight_unit,
+    variants.inventory_item_id as variants_inventory_item_id,
+    variants.inventory_quantity as variants_inventory_quantity,
+    variants.old_inventory_quantity as variants_old_inventory_quantity,
+    {% endif %}
     template_suffix,
     status,
     {{daton_user_id()}} as _daton_user_id,
@@ -99,8 +122,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
     from {{i}} a
             {{unnesting("variants")}}
-            {{multi_unnesting('variants','presentment_prices')}}
-            {{multi_unnesting('presentment_prices','price')}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where {{daton_batch_runtime()}}  >= {{max_loaded}} 
