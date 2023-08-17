@@ -54,7 +54,7 @@
         {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
         {% set hr = 0 %}
-    {% endif %}
+    {% endif %} 
 
     select *, ROW_NUMBER() over (partition by order_id order by _daton_batch_runtime desc) _seq_id
     from (

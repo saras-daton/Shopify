@@ -39,7 +39,7 @@
 {% endif %}
 
 {% for i in results_list %}
-    {% if var('get_brandname_from_tablename_flag') %}
+    {% if var('get_brandname_from_tablename_flag') %} 
         {% set brand = i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
