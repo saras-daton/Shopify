@@ -135,7 +135,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from {{i}} a
             {% if var('currency_conversion_flag') %}
-            left join {{ref('ExchangeRates')}} b on date(created_at) = b.date and currency = b.to_currency_code
+            left join {{ref('ExchangeRates')}} b on date(created_at) = b.date and a.currency = b.to_currency_code
             {% endif %}
             {{unnesting("discount_codes")}}
             {% if is_incremental() %}
