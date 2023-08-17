@@ -116,10 +116,10 @@
             {{extract_nested_value("line_items","grams","string")}} as line_items_grams,
             {{extract_nested_value("line_items","name","string")}} as line_items_name,
             {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
-            {{extract_nested_value("price","amount","numeric")}} as line_items_price_shop_money_amount,
-            {{extract_nested_value("price","currency_code","string")}} as line_items_price_shop_money_currency_code,
-            {{extract_nested_value("price","amount","numeric")}} as line_items_price_presentment_money_amount,
-            {{extract_nested_value("price","currency_code","string")}} as line_items_price_presentment_money_currency_code,
+            {{extract_nested_value("shop_money","amount","numeric")}} as line_items_price_set_shop_money_amount,
+            {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_set_shop_money_currency_code,
+            {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_set_presentment_money_amount,
+            {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_set_presentment_money_currency_code,
             {{extract_nested_value("line_items","product_exists","string")}} as line_items_product_exists,
             {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
             {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
@@ -130,31 +130,15 @@
             {{extract_nested_value("line_items","taxable","string")}} as line_items_taxable,
             {{extract_nested_value("line_items","title","string")}} as line_items_title,
             {{extract_nested_value("line_items","total_discount","numeric")}} as line_items_total_discount,
-            {{extract_nested_value("total_discount","amount","numeric")}} as line_items_total_discount_shop_money_amount,
-            {{extract_nested_value("total_discount","currency_code","string")}} as line_items_total_discount_shop_money_currency_code,
-            {{extract_nested_value("total_discount","amount","numeric")}} as line_items_total_discount_presentment_money_amount,
-            {{extract_nested_value("total_discount","currency_code","string")}} as line_items_total_discount_presentment_money_currency_code,
             {{extract_nested_value("line_items","variant_id","string")}} as line_items_variant_id,
             {{extract_nested_value("line_items","variant_inventory_management","string")}} as line_items_variant_inventory_management,
             {{extract_nested_value("line_items","variant_title","string")}} as line_items_variant_title,
             {{extract_nested_value("tax_lines","price","numeric")}} as tax_lines_price,
-            {{extract_nested_value("price","amount","numeric")}} as tax_lines_price_shop_money_amount,
-            {{extract_nested_value("price","currency_code","string")}} as tax_lines_price_shop_money_currency_code,
-            {{extract_nested_value("price","amount","numeric")}} as tax_lines_price_presentment_money_amount,
-            {{extract_nested_value("price","currency_code","string")}} as tax_lines_price_presentment_money_currency_code,
             {{extract_nested_value("tax_lines","rate","numeric")}} as tax_lines_rate,
             {{extract_nested_value("tax_lines","title","string")}} as tax_lines_title,
             {{extract_nested_value("tax_lines","channel_liable","boolean")}} as tax_lines_channel_liable,
             {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount,
-            {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount_set_shop_money_amount,
-            {{extract_nested_value("discount_allocations","currency_code","string")}} as line_items_discount_allocations_amount_set_shop_money_currency_code,
-            {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount_set_presentment_money_amount,
-            {{extract_nested_value("discount_allocations","currency_code","string")}} as line_items_discount_allocations_amount_set_presentment_money_currency_code,
             {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as line_items_discount_allocations_discount_application_index,
-            {{extract_nested_value("pre_tax_price","amount","numeric")}} as line_items_pre_tax_price_shop_money_amount,
-            {{extract_nested_value("pre_tax_price","currency_code","string")}} as line_items_pre_tax_price_shop_money_currency_code,
-            {{extract_nested_value("pre_tax_price","amount","numeric")}} as line_items_pre_tax_price_presentment_money_amount,
-            {{extract_nested_value("pre_tax_price","currency_code","string")}} as line_items_pre_tax_price_presentment_money_currency_code,
             {{extract_nested_value("line_items","pre_tax_price","numeric")}} as line_items_pre_tax_price,
             {{extract_nested_value("line_items","tax_code","string")}} as line_items_tax_code,
             {{extract_nested_value("line_items","vendor","string")}} as line_items_vendor,
@@ -187,12 +171,11 @@
         {% endif %}
         {{ unnesting("line_items") }}
         {{ multi_unnesting("line_items", "tax_lines") }}
-        {{ multi_unnesting("line_items", "price") }}
+        {{ multi_unnesting("line_items", "price_set") }}
+        {{ multi_unnesting("price_set", "shop_money") }}
+        {{ multi_unnesting("price_set", "presentment_money") }}
         {{ multi_unnesting("line_items", "properties") }}
-        {{ multi_unnesting("line_items", "total_discount") }}
-        {{ multi_unnesting("tax_lines", "price") }}
         {{ multi_unnesting("line_items", "discount_allocations") }}
-        {{ multi_unnesting("line_items", "pre_tax_price") }}
         {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
