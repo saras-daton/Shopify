@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -45,28 +45,31 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-select * {{exclude()}} (row_num)
-FROM (
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
+        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+        {% set hr = 0 %}
+    {% endif %}
+
     select 
     '{{brand}}' as brand,
     '{{store}}' as store,
-    inventory_item_id,
-    location_id,
+    cast(inventory_item_id as string) as inventory_item_id,
+    cast(location_id as string) as location_id,
     available as inventory_levels_available,
-    CAST(updated_at as {{ dbt.type_timestamp() }}) as updated_at,
+    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
     admin_graphql_api_id,
     {{daton_user_id()}} as _daton_user_id,
     {{daton_batch_runtime()}} as _daton_batch_runtime,
     {{daton_batch_id()}} as _daton_batch_id,
     current_timestamp() as _last_updated,
     '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-    DENSE_RANK() OVER (PARTITION BY inventory_item_id order by {{daton_batch_runtime()}}, {{daton_batch_id()}} desc) row_num
-    FROM  {{i}} a
+    from  {{i}} a
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
-            {% endif %}
-        )  
-        where row_num =1
+            where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
+            {% endif %}  
+    qualify dense_rank() over (partition by inventory_item_id order by {{daton_batch_runtime()}}, {{daton_batch_id()}} desc) = 1
+
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

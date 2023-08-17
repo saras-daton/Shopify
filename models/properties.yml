@@ -829,9 +829,9 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['order_id','line_items_id','discount_application_index']
+      unique_key: ['id','line_items_id','discount_application_index']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id','discount_application_index']
+      cluster_by: ['id','line_items_id','discount_application_index']
     columns:
       - name: brand
         tests:
@@ -841,7 +841,7 @@ models:
       - name: store
         tests:
           - not_null
-      - name: order_id
+      - name: id
         tests:
           - not_null
       - name: created_at
@@ -871,7 +871,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - order_id
+            - id
             - line_items_id
             - discount_application_index
 

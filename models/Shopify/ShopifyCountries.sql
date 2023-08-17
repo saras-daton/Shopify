@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -20,7 +20,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%countries')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%countries')}} 
 {% endset %}  
 
 
@@ -47,53 +47,35 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
-        select 
+
+    select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        a.id,
+        cast(a.id as string) as id,
         a.name,
         a.code,
         a.tax_name,
         a.tax,
-        {% if target.type =='snowflake' %}
-        provinces.VALUE:id::VARCHAR as provinces_id,
-        provinces.VALUE:country_id as provinces_country_id,
-        provinces.VALUE:name as provinces_name,
-        provinces.VALUE:code as provinces_code,
-        provinces.VALUE:shipping_zone_id as provinces_shipping_zone_id,
-        provinces.VALUE:tax as provinces_tax,
-        provinces.VALUE:tax_percentage as provinces_tax_percentage,
-        provinces.VALUE:tax_name as provinces_tax_name,
-        {% else %}
-        provinces.id as provinces_id,
-        provinces.country_id as provinces_country_id,
-        provinces.name as provinces_name,
-        provinces.code as provinces_code,
-        provinces.shipping_zone_id as provinces_shipping_zone_id,
-        provinces.tax as provinces_tax,
-        provinces.tax_percentage as provinces_tax_percentage,
-        provinces.tax_name as provinces_tax_name,
-        {% endif %}
+        {{extract_nested_value("provinces","id","string")}} as provinces_id,
+        {{extract_nested_value("provinces","country_id","string")}} as provinces_country_id,
+        {{extract_nested_value("provinces","name","string")}} as provinces_name,
+        {{extract_nested_value("provinces","code","string")}} as provinces_code,
+        {{extract_nested_value("provinces","shipping_zone_id","string")}} as provinces_shipping_zone_id,
+        {{extract_nested_value("provinces","tax","string")}} as provinces_tax,
+        {{extract_nested_value("provinces","tax_percentage","string")}} as provinces_tax_percentage,
+        {{extract_nested_value("provinces","tax_name","string")}} as provinces_tax_name,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        {% if target.type =='snowflake' %}
-        DENSE_RANK() OVER (PARTITION BY a.id,provinces.VALUE:id order by {{daton_batch_runtime()}} desc) row_num
-        {% else %}
-        DENSE_RANK() OVER (PARTITION BY a.id,provinces.id order by {{daton_batch_runtime()}} desc) row_num
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id     
+    from  {{i}} a
+        {{unnesting("provinces")}} 
+        {% if is_incremental() %}
+        {# /* -- this filter will only be applied on an incremental run */ #}
+        where {{daton_batch_runtime()}}  >= {{max_loaded}}
         {% endif %}
-        FROM  {{i}} a
-                {{unnesting("provinces")}} 
-                {% if is_incremental() %}
-                {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
-                {% endif %}
-        )
-        where row_num = 1
+    qualify dense_rank() over (partition by a.id, {{extract_nested_value("provinces","id","string")}} order by {{daton_batch_runtime()}} desc) = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

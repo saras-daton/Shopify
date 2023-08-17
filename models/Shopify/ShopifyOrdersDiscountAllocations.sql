@@ -10,7 +10,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -50,33 +50,33 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+            {% set hr = 0 %}
+    {% endif %}
+
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        coalesce(cast(a.id as string),'') as order_id, 
+        coalesce(cast(a.id as string),'N/A') as id, 
         a.admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
         cart_token,
-        checkout_id,
+        cast(checkout_id as string) as checkout_id,
         checkout_token,
         client_details,
         confirmed,
         contact_email,
-        cast(a.created_at as {{ dbt.type_timestamp() }}) created_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         currency,
-        current_subtotal_price,
-        current_subtotal_price_set,
-        current_total_discounts,
-        current_total_discounts_set,
-        current_total_price,
-        current_total_price_set,
-        current_total_tax,
-        current_total_tax_set,
+        cast(current_subtotal_price as numeric) as current_subtotal_price,
+        cast(current_total_discounts as numeric) as current_total_discounts,
+        cast(current_total_price as numeric) as current_total_price,
+        cast(current_total_tax as numeric) as current_total_tax,
         discount_codes,
-        coalesce(email,'') as email,
+        coalesce(email,'N/A') as email,
         estimated_taxes,
         financial_status,
         gateway,
@@ -90,72 +90,62 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         payment_gateway_names,
         phone,
         presentment_currency,
-        CAST(a.processed_at as timestamp) processed_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         processing_method,
         reference,
         referring_site,
         source_identifier,
         source_name,
-        subtotal_price,
-        subtotal_price_set,
+        cast(subtotal_price as numeric) as subtotal_price,
         tags,
         a.tax_lines,
         taxes_included,
         test,
         token,
-        total_discounts,
-        total_discounts_set,
-        total_line_items_price,
-        total_line_items_price_set,
-        total_outstanding,
-        total_price,
-        total_price_set,
-        total_price_usd,
-        total_shipping_price_set,
-        total_tax,
-        total_tax_set,
-        total_tip_received,
+        cast(total_discounts as numeric) as total_discounts,
+        cast(total_line_items_price as numeric) as total_line_items_price,
+        cast(total_outstanding as numeric) as total_outstanding,
+        cast(total_price as numeric) as total_price,
+        cast(total_price_usd as numeric) as total_price_usd,
+        cast(total_tax as numeric) as total_tax,
+        cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
-        CAST(a.updated_at as timestamp) updated_at,
-        billing_address,
-        customer,
-        discount_applications,
-        fulfillments,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         {% if target.type =='snowflake' %}
-        line_items.VALUE:id::VARCHAR as line_items_id,
-        line_items.VALUE:admin_graphql_api_id::VARCHAR as line_items_admin_graphql_api_id,
-        line_items.VALUE:fulfillable_quantity::VARCHAR as line_items_fulfillable_quantity,
-        line_items.VALUE:fulfillment_service::VARCHAR as line_items_fulfillment_service,
-        line_items.VALUE:gift_card::VARCHAR as line_items_gift_card,
-        line_items.VALUE:grams::VARCHAR as line_items_grams, 
-        line_items.VALUE:name::VARCHAR as line_items_name,
-        line_items.VALUE:price::FLOAT as line_items_price,
-        line_items.VALUE:price_set as line_items_price_set,
-        line_items.VALUE:product_exists::VARCHAR as line_items_product_exists,
-        line_items.VALUE:product_id::VARCHAR as line_items_product_id,
-        line_items.VALUE:properties::VARCHAR as line_items_properties,
-        line_items.VALUE:quantity::FLOAT as line_items_quantity,
-        line_items.VALUE:requires_shipping::VARCHAR as line_items_requires_shipping,
-        line_items.VALUE:sku::VARCHAR as line_items_sku,
-        line_items.VALUE:taxable::VARCHAR as line_items_taxable,
-        line_items.VALUE:title::VARCHAR as line_items_title,
-        line_items.VALUE:total_discount::numeric as line_items_total_discount,
-        line_items.VALUE:total_discount_set as line_items_total_discount_set,
-        line_items.VALUE:variant_id::VARCHAR as line_items_variant_id,
-        line_items.VALUE:variant_inventory_management::VARCHAR as line_items_variant_inventory_management,
-        line_items.VALUE:variant_title::VARCHAR as line_items_variant_title,
-        line_items.VALUE:tax_lines as line_items_tax_lines,
-        cast(discount_allocations.VALUE:amount as numeric) as discount_allocations_amount,
-        cast(shop_money.VALUE:amount as numeric) as shop_money_amount,
-        shop_money.VALUE:currency_code as shop_money_currency_code,
-        cast(presentment_money.VALUE:amount as numeric) as presentment_money_amount,
-        presentment_money.VALUE:currency_code as presentment_money_currency_code,
-        discount_allocations.VALUE:discount_application_index::VARCHAR as discount_application_index,
-        line_items.VALUE:pre_tax_price_set as line_items_pre_tax_price_set,
-        line_items.VALUE:pre_tax_price as line_items_pre_tax_price,
-        line_items.VALUE:tax_code as line_items_tax_code,
-        line_items.VALUE:vendor::VARCHAR as vendor,
-        line_items.VALUE:fulfillment_status::VARCHAR as line_items_fulfillment_status,
+        line_items.value:id::varchar as line_items_id,
+        line_items.value:admin_graphql_api_id::varchar as line_items_admin_graphql_api_id,
+        line_items.value:fulfillable_quantity::varchar as line_items_fulfillable_quantity,
+        line_items.value:fulfillment_service::varchar as line_items_fulfillment_service,
+        line_items.value:gift_card::varchar as line_items_gift_card,
+        line_items.value:grams::varchar as line_items_grams, 
+        line_items.value:name::varchar as line_items_name,
+        line_items.value:price::FLOAT as line_items_price,
+        line_items.value:price_set as line_items_price_set,
+        line_items.value:product_exists::varchar as line_items_product_exists,
+        line_items.value:product_id::varchar as line_items_product_id,
+        line_items.value:properties::varchar as line_items_properties,
+        line_items.value:quantity::FLOAT as line_items_quantity,
+        line_items.value:requires_shipping::varchar as line_items_requires_shipping,
+        line_items.value:sku::varchar as line_items_sku,
+        line_items.value:taxable::varchar as line_items_taxable,
+        line_items.value:title::varchar as line_items_title,
+        line_items.value:total_discount::numeric as line_items_total_discount,
+        line_items.value:total_discount_set as line_items_total_discount_set,
+        line_items.value:variant_id::varchar as line_items_variant_id,
+        line_items.value:variant_inventory_management::varchar as line_items_variant_inventory_management,
+        line_items.value:variant_title::varchar as line_items_variant_title,
+        line_items.value:tax_lines as line_items_tax_lines,
+        cast(discount_allocations.value:amount as numeric) as discount_allocations_amount,
+        cast(shop_money.value:amount as numeric) as shop_money_amount,
+        shop_money.value:currency_code as shop_money_currency_code,
+        cast(presentment_money.value:amount as numeric) as presentment_money_amount,
+        presentment_money.value:currency_code as presentment_money_currency_code,
+        discount_allocations.value:discount_application_index::varchar as discount_application_index,
+        line_items.value:pre_tax_price_set as line_items_pre_tax_price_set,
+        line_items.value:pre_tax_price as line_items_pre_tax_price,
+        line_items.value:tax_code as line_items_tax_code,
+        line_items.value:vendor::varchar as vendor,
+        line_items.value:fulfillment_status::varchar as line_items_fulfillment_status,
         {% else %}
         line_items.id as line_items_id,
         line_items.admin_graphql_api_id as line_items_admin_graphql_api_id,
@@ -192,20 +182,16 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         line_items.vendor as vendor,
         line_items.fulfillment_status as line_items_fulfillment_status,
         {% endif %}
-        payment_details,
-        refunds,
-        shipping_address,
-        shipping_lines,
-        app_id,
+        cast(app_id as string) as app_id,
         customer_locale,
         note,
-        closed_at,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
         a.fulfillment_status,
-        location_id,
+        cast(location_id as string) as location_id,
         cancel_reason,
-        cancelled_at,
-        user_id,
-        device_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
+        cast(user_id as string) as user_id,
+        cast(device_id as string) as device_id,
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
             case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
@@ -218,22 +204,19 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        Dense_Rank() OVER (PARTITION BY a.id order by a.{{daton_batch_runtime()}} desc) row_num
-            from {{i}} a
-                {% if var('currency_conversion_flag') %}
-                    left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
-                {% endif %}
+        from {{i}} a
+            {% if var('currency_conversion_flag') %}
+                left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+            {% endif %}
                 {{unnesting("line_items")}}
                 {{multi_unnesting("line_items","discount_allocations")}}
                 {{multi_unnesting("discount_allocations","amount_set")}}
                 {{multi_unnesting("amount_set","shop_money")}}
                 {{multi_unnesting("amount_set","presentment_money")}}
-                {% if is_incremental() %}
+            {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
-                {% endif %}
-
-        )
-        where row_num = 1
+            {% endif %}
+        qualify dense_rank() over (partition by a.id order by a.{{daton_batch_runtime()}} desc) = 1
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -20,8 +20,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%events')}} and lower(table_name) not like '%shopify%fulfillment_events' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%events')}}
 {% endset %}  
+
+
 
 
 {% set results = run_query(table_name_query) %}
@@ -46,15 +48,18 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
+        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+        {% set hr = 0 %}
+    {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    FROM (
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        id,
-        subject_id,
-        cast(created_at as timestamp) as created_at,
+        cast(id as string) as id,
+        cast(subject_id as string) as subject_id,
+        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as created_at,
         subject_type,
         verb,
         arguments,
@@ -66,15 +71,14 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        DENSE_RANK() OVER (PARTITION BY a.id order by {{daton_batch_runtime()}} desc) row_num
-        FROM  {{i}} a
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
+        
+        from {{i}} a
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+                where {{daton_batch_runtime()}}  >= {{max_loaded}}
                 {% endif %}
-        )
-        where row_num = 1
+        qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc)  = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
