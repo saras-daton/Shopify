@@ -7,9 +7,9 @@ config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "Shopify" #equivalent to project_id in BigQuery
+  raw_database: "EDM" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "Daton" #equivalent to dataset in BigQuery
+  raw_schema: "EDM" #equivalent to dataset in BigQuery
     # Example Schema name
 
   get_brandname_from_tablename_flag: True
@@ -27,8 +27,30 @@ vars:
   currency_conversion_flag: False
   timezone_conversion_flag: False
   raw_table_timezone_offset_hours: {
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ABANDONED_CHECKOUTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_BALANCE_TRANSACTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_COLLECTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_CUSTOM_COLLECTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_CUSTOMERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_DISPUTES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_EVENTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_FULFILLMENT_EVENTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_FULFILLMENT_ORDERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_GIFT_CARDS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_INVENTORY_ITEMS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_INVENTORY_LEVELS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_LOCATIONS":-7,
     "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERS":-7,
-    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCTS":-7
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_POLICIES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRICE_RULES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCT_METAFIELDS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_REFUNDS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_SHOP":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_SMART_COLLECTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_TENDER_TRANSACTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_TRANSACTIONS":-7,
   }
 
   # Variables used for dbt-tests
