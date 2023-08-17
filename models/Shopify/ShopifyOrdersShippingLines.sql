@@ -112,29 +112,17 @@
         {{extract_nested_value("shipping_lines","id","string")}} as shipping_lines_id,
         {{extract_nested_value("shipping_lines","code","string")}} as shipping_lines_code,
         {{extract_nested_value("shipping_lines","discounted_price","numeric")}} as shipping_lines_discounted_price,
-        {{extract_nested_value("discounted_price","amount","numeric")}} as shipping_lines_discounted_price_shop_money_amount,
-        {{extract_nested_value("discounted_price","currency_code","string")}} as shipping_lines_discounted_price_shop_money_currency_code,
-        {{extract_nested_value("discounted_price","amount","numeric")}} as shipping_lines_discounted_price_presentment_money_amount,
-        {{extract_nested_value("discounted_price","currency_code","string")}} as shipping_lines_discounted_price_presentment_money_currency_code,
+        {{extract_nested_value("shop_money","amount","numeric")}} as shipping_lines_discounted_price_shop_money_amount,
+        {{extract_nested_value("shop_money","currency_code","string")}} as shipping_lines_discounted_price_shop_money_currency_code,
+        {{extract_nested_value("presentment_money","amount","numeric")}} as shipping_lines_discounted_price_presentment_money_amount,
+        {{extract_nested_value("presentment_money","currency_code","string")}} as shipping_lines_discounted_price_presentment_money_currency_code,
         {{extract_nested_value("shipping_lines","price","numeric")}} as shipping_lines_price,
-        {{extract_nested_value("price","amount","numeric")}} as shipping_lines_price_shop_money_amount,
-        {{extract_nested_value("price","currency_code","string")}} as shipping_lines_price_shop_money_currency_code,
-        {{extract_nested_value("price","amount","numeric")}} as shipping_lines_price_presentment_money_amount,
-        {{extract_nested_value("price","currency_code","string")}} as shipping_lines_price_presentment_money_currency_code,
         {{extract_nested_value("shipping_lines","source","string")}} as shipping_lines_source,
         {{extract_nested_value("shipping_lines","title","string")}} as shipping_lines_title,
-        {{extract_nested_value("tax_lines","amount","numeric")}} as shipping_lines_tax_lines_price_set_shop_money_amount,
-        {{extract_nested_value("tax_lines","currency_code","string")}} as shipping_lines_tax_lines_price_set_shop_money_currency_code,
-        {{extract_nested_value("tax_lines","amount","numeric")}} as shipping_lines_tax_lines_price_set_presentment_money_amount,
-        {{extract_nested_value("tax_lines","currency_code","string")}} as shipping_lines_tax_lines_price_set_presentment_money_currency_code,
         {{extract_nested_value("tax_lines","channel_liable","boolean")}} as shipping_lines_tax_lines_channel_liable,
         {{extract_nested_value("tax_lines","price","string")}} as shipping_lines_tax_lines_price,
         {{extract_nested_value("tax_lines","rate","numeric")}} as shipping_lines_tax_lines_rate,
         {{extract_nested_value("tax_lines","title","string")}} as shipping_lines_tax_lines_title,
-        {{extract_nested_value("discount_allocations","amount","numeric")}} as shipping_lines_discount_allocations_amount_set_shop_money_amount,
-        {{extract_nested_value("discount_allocations","currency_code","string")}} as shipping_lines_discount_allocations_amount_set_shop_money_currency_code,
-        {{extract_nested_value("discount_allocations","amount","numeric")}} as shipping_lines_discount_allocations_amount_set_presentment_money_amount,
-        {{extract_nested_value("discount_allocations","currency_code","string")}} as shipping_lines_discount_allocations_amount_set_presentment_money_currency_code,
         {{extract_nested_value("discount_allocations","amount","numeric")}} as shipping_lines_discount_allocations_amount,
         {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as shipping_lines_discount_allocations_discount_application_index,
         {{extract_nested_value("shipping_lines","carrier_identifier","string")}} as shipping_lines_carrier_identifier,
@@ -166,8 +154,9 @@
     {% endif %}
     {{ unnesting("discount_codes") }}
     {{ unnesting("shipping_lines") }}
-    {{ multi_unnesting("shipping_lines", "discounted_price") }}
-    {{ multi_unnesting("shipping_lines", "price") }}
+    {{ multi_unnesting("shipping_lines", "discounted_price_set") }}
+    {{ multi_unnesting("discounted_price_set", "shop_money") }}
+    {{ multi_unnesting("discounted_price_set", "presentment_money") }}
     {{ multi_unnesting("shipping_lines", "tax_lines") }}
     {{ multi_unnesting("shipping_lines", "discount_allocations") }}
     {% if is_incremental() %}
