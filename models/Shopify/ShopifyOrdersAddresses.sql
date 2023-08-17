@@ -50,16 +50,16 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% set store = var('default_storename') %}
     {% endif %}
 
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
+        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
-            {% set hr = 0 %}
+        {% set hr = 0 %}
     {% endif %}
 
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        coalesce(cast(a.id as string),'') as order_id, 
+        coalesce(cast(a.id as string),'N/A') as order_id, 
         admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
@@ -109,80 +109,40 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-        {% if target.type =='snowflake' %}
-        billing_address.value:first_name::varchar as billing_address_first_name,
-        billing_address.value:address1::varchar as billing_address_address1,
-        billing_address.value:phone::varchar as billing_address_phone,
-        billing_address.value:city::varchar as billing_address_city,
-        billing_address.value:zip::varchar as billing_address_zip,
-        billing_address.value:province::varchar as billing_address_province,
-        billing_address.value:country::varchar as billing_address_country,
-        billing_address.value:last_name::varchar as billing_address_last_name,
-        billing_address.value:address2::varchar as billing_address_address2,
-        billing_address.value:latitude::varchar as billing_address_latitude,
-        billing_address.value:longitude::varchar as billing_address_longitude,
-        billing_address.value:name::varchar as billing_address_name,
-        billing_address.value:country_code::varchar as billing_address_country_code,
-        billing_address.value:province_code::varchar as billing_address_provinceas_code,
-        billing_address.value:longitude_bn as billing_address_longitude_bn,
-        billing_address.value:latitude_bn as billing_address_latitude_bn,
-        billing_address.value:company::varchar as billing_address_company,
-        {% else %}
-        billing_address.first_name as billing_address_first_name,
-        billing_address.address1 as billing_address_address1,
-        billing_address.phone as billing_address_phone,
-        billing_address.city as billing_address_city,
-        billing_address.zip as billing_address_zip,
-        billing_address.province as billing_address_province,
-        billing_address.country as billing_address_country,
-        billing_address.last_name as billing_address_last_name,
-        billing_address.address2 as billing_address_address2,
-        billing_address.latitude as billing_address_latitude,
-        billing_address.longitude as billing_address_longitude,
-        billing_address.name as billing_address_name,
-        billing_address.country_code as billing_address_country_code,
-        billing_address.province_code as billing_address_province_code,
-        billing_address.longitude_bn as billing_address_longitude_bn,
-        billing_address.latitude_bn as billing_address_latitude_bn,
-        billing_address.company as billing_address_company,
-        {% endif %}
-        {% if target.type =='snowflake' %}
-        shipping_address.value:first_name::varchar as shipping_address_first_name,
-        shipping_address.value:address1::varchar as shipping_address_address1,
-        shipping_address.value:phone::varchar as shipping_address_phone,
-        shipping_address.value:city::varchar as shipping_address_city,
-        shipping_address.value:zip::varchar as shipping_address_zip,
-        shipping_address.value:province::varchar as shipping_address_province,
-        shipping_address.value:country::varchar as shipping_address_country,
-        shipping_address.value:last_name::varchar as shipping_address_last_name,
-        shipping_address.value:address2::varchar as shipping_address_address2,
-        shipping_address.value:latitude::varchar as shipping_address_latitude,
-        shipping_address.value:longitude::varchar as shipping_address_longitude,
-        shipping_address.value:name::varchar as shipping_address_name,
-        shipping_address.value:country_code::varchar as shipping_address_country_code,
-        shipping_address.value:province_code::varchar as shipping_address_province_code,
-        shipping_address.value:latitude_bn as shipping_address_latitude_bn,
-        shipping_address.value:longitude_bn as shipping_address_longitude_bn,
-        shipping_address.value:company::varchar as shipping_address_company,
-        {% else %}
-        shipping_address.first_name as shipping_address_first_name,
-        shipping_address.address1 as shipping_address_address1,
-        shipping_address.phone as shipping_address_phone,
-        shipping_address.city as shipping_address_city,
-        shipping_address.zip as shipping_address_zip,
-        shipping_address.province as shipping_address_province,
-        shipping_address.country as shipping_address_country,
-        shipping_address.last_name as shipping_address_last_name,
-        shipping_address.address2 as shipping_address_address2,
-        shipping_address.latitude as shipping_address_latitude,
-        shipping_address.longitude as shipping_address_longitude,
-        shipping_address.name as shipping_address_name,
-        shipping_address.country_code as shipping_address_country_code,
-        shipping_address.province_code as shipping_address_province_code,
-        shipping_address.latitude_bn as shipping_address_latitude_bn,
-        shipping_address.longitude_bn as shipping_address_longitude_bn,
-        shipping_address.company as shipping_address_company,
-        {% endif %}
+        {{extract_nested_value("billing_address","first_name","string")}} as billing_address_first_name,
+        {{extract_nested_value("billing_address","address1","string")}} as billing_address_address1,
+        {{extract_nested_value("billing_address","phone","string")}} as billing_address_phone,
+        {{extract_nested_value("billing_address","city","string")}} as billing_address_city,
+        {{extract_nested_value("billing_address","zip","string")}} as billing_address_zip,
+        {{extract_nested_value("billing_address","province","string")}} as billing_address_province,
+        {{extract_nested_value("billing_address","country","string")}} as billing_address_country,
+        {{extract_nested_value("billing_address","last_name","string")}} as billing_address_last_name,
+        {{extract_nested_value("billing_address","address2","string")}} as billing_address_address2,
+        {{extract_nested_value("billing_address","latitude","numeric")}} as billing_address_latitude,
+        {{extract_nested_value("billing_address","longitude","numeric")}} as billing_address_longitude,
+        {{extract_nested_value("billing_address","name","string")}} as billing_address_name,
+        {{extract_nested_value("billing_address","country_code","string")}} as billing_address_country_code,
+        {{extract_nested_value("billing_address","province_code","string")}} as billing_address_province_code,
+        {{extract_nested_value("billing_address","longitude_bn","bignumeric")}} as billing_address_longitude_bn,
+        {{extract_nested_value("billing_address","latitude_bn","bignumeric")}} as billing_address_latitude_bn,
+        {{extract_nested_value("billing_address","company","string")}} as billing_address_company,
+        {{extract_nested_value("shipping_address","first_name","string")}} as shipping_address_first_name,
+        {{extract_nested_value("shipping_address","address1","string")}} as shipping_address_address1,
+        {{extract_nested_value("shipping_address","phone","string")}} as shipping_address_phone,
+        {{extract_nested_value("shipping_address","city","string")}} as shipping_address_city,
+        {{extract_nested_value("shipping_address","zip","string")}} as shipping_address_zip,
+        {{extract_nested_value("shipping_address","province","string")}} as shipping_address_province,
+        {{extract_nested_value("shipping_address","country","string")}} as shipping_address_country,
+        {{extract_nested_value("shipping_address","last_name","string")}} as shipping_address_last_name,
+        {{extract_nested_value("shipping_address","address2","string")}} as shipping_address_address2,
+        {{extract_nested_value("shipping_address","latitude","numeric")}} as shipping_address_latitude,
+        {{extract_nested_value("shipping_address","longitude","numeric")}} as shipping_address_longitude,
+        {{extract_nested_value("shipping_address","name","string")}} as shipping_address_name,
+        {{extract_nested_value("shipping_address","country_code","string")}} as shipping_address_country_code,
+        {{extract_nested_value("shipping_address","province_code","string")}} as shipping_address_province_code,
+        {{extract_nested_value("shipping_address","longitude_bn","bignumeric")}} as shipping_address_latitude_bn,
+        {{extract_nested_value("shipping_address","latitude_bn","bignumeric")}} as shipping_address_longitude_bn,
+        {{extract_nested_value("shipping_address","company","string")}} as shipping_address_company,
         cast(app_id as string) as app_id,
         customer_locale,
         note,
@@ -204,14 +164,13 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from {{i}} a
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
                 {% endif %}
-                {{unnesting("billing_address")}} 
-                {{unnesting("shipping_address")}} 
+                {{unnesting("BILLING_ADDRESS")}} 
+                {{unnesting("SHIPPING_ADDRESS")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
