@@ -829,9 +829,9 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['id','line_items_id','discount_application_index']
+      unique_key: ['order_id','line_items_id','discount_allocations_discount_application_index']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id','line_items_id','discount_application_index']
+      cluster_by: ['order_id','line_items_id','discount_allocations_discount_application_index']
     columns:
       - name: brand
         tests:
@@ -841,7 +841,7 @@ models:
       - name: store
         tests:
           - not_null
-      - name: id
+      - name: order_id
         tests:
           - not_null
       - name: created_at
@@ -865,15 +865,15 @@ models:
       - name: line_items_id
         tests:
           - not_null
-      - name: discount_application_index
+      - name: discount_allocations_discount_application_index
         tests:
           - not_null
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - id
+            - order_id
             - line_items_id
-            - discount_application_index
+            - discount_allocations_discount_application_index
 
   - name: ShopifyOrdersDiscountApplications
     description: A list of order and line item discounts with their coupon codes.

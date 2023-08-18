@@ -103,6 +103,11 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {{multi_unnesting("subtotal_set","shop_money")}}
             {{multi_unnesting("subtotal_set","presentment_money")}}
             
+            {% if is_incremental() %}
+            {# /* -- this filter will only be applied on an incremental run */ #}
+            where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
+            {% endif %}
+
             qualify
             {% if target.type =='snowflake' %}
             row_number() over (partition by order_id, a.id, refund_line_items.value:id order by _daton_batch_runtime desc) = 1
@@ -110,10 +115,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             row_number() over (partition by order_id, a.id, refund_line_items.id order by _daton_batch_runtime desc) = 1
             {% endif %}
 
-            {% if is_incremental() %}
-            {# /* -- this filter will only be applied on an incremental run */ #}
-            where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
-            {% endif %}
         ) b
         {% if var('currency_conversion_flag') %}
             left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.subtotal_set_presentment_currency_code = c.to_currency_code

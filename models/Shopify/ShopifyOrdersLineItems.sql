@@ -23,7 +23,7 @@
 {% endif %}
 
 {% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }}
+    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders'
 {% endset %}
 
 {% set results = run_query(table_name_query) %}

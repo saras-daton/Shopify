@@ -4,6 +4,10 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
+{% if var('currency_conversion_flag') %}
+-- depends_on: {{ ref('ExchangeRates') }}
+{% endif %}
+
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
 select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
@@ -19,7 +23,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }}
+    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders'
 {% endset %}
 
 
