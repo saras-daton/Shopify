@@ -109,9 +109,9 @@
             {% endif %}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            where {{daton_batch_runtime()}}  >= {{max_loaded}}
+            where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
-    qualify row_number() over (partition by a.id order by {{daton_batch_runtime()}} desc)= 1
+    qualify row_number() over (partition by a.id order by a.{{daton_batch_runtime()}} desc)= 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
