@@ -20,7 +20,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
 
 {% set table_name_query %}
-{{set_table_name('%shopify%events')}}
+{{set_table_name('%shopify%events')}} and lower(table_name) not like '%shopify%fulfillment_events'
 {% endset %}  
 
 
