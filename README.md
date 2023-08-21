@@ -130,7 +130,7 @@ This package contains models from the Shopify API which includes reports on {{sa
 |Payouts | [ShopifyPayouts](models/Shopify/ShopifyPayouts.sql)| lists all of your payouts and their current status. |
 
 
-
+## DBT Tests
 
 The tests property defines assertions about a column, table, or view. The property contains a list of generic tests, referenced by name, which can include the four built-in generic tests available in dbt. For example, you can add tests that ensure a column contains no duplicates and zero null values. Any arguments or configurations passed to those tests should be nested below the test name.
 
@@ -672,40 +672,6 @@ models:
       unique_key: ['order_id','note_attributes_name']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
-    columns:
-      - name: brand
-        tests:
-          - not_null
-          - accepted_values:
-              values: ["B"]
-      - name: store
-        tests:
-          - not_null
-      - name: order_id
-        tests:
-          - not_null
-      - name: created_at
-        tests:
-          - not_null
-      - name: email
-        tests:
-          - not_null
-      - name: order_number
-        tests:
-          - not_null
-      - name: processed_at
-        tests:
-          - not_null
-      - name: updated_at
-        tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - order_id
 
   - name: ShopifyCountries
     description: A list of countries.

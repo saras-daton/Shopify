@@ -60,20 +60,20 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        cast(id as string) id,
-        cast(order_id as string) order_id,
-        cast(amount as numeric) amount,
+        safe_cast(id as string) id,
+        safe_cast(order_id as string) order_id,
+        safe_cast(amount as numeric) amount,
         currency,
         test,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         remote_reference,
         payment_method,
-        cast(user_id as string) user_id,
+        safe_cast(user_id as string) user_id,
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
             case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
         {% else %}
-            cast(1 as decimal) as exchange_currency_rate,
+            safe_cast(1 as decimal) as exchange_currency_rate,
             currency as exchange_currency_code,
         {% endif %}
         a.{{daton_user_id()}} as _daton_user_id,

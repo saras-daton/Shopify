@@ -57,9 +57,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        cast(id as string) as id,
-        cast(subject_id as string) as subject_id,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cast(created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as created_at,
+        safe_cast(id as string) as id,
+        safe_cast(subject_id as string) as subject_id,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="safe_cast(created_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as created_at,
         subject_type,
         verb,
         arguments,

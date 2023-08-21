@@ -66,7 +66,7 @@ with unnested_refunds as(
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
             case when c.from_currency_code is null then b.subtotal_set_presentment_currency_code else c.from_currency_code end as exchange_currency_code,
         {% else %}
-            cast(1 as decimal) as exchange_currency_rate,
+            safe_cast(1 as decimal) as exchange_currency_rate,
             b.subtotal_set_presentment_currency_code as exchange_currency_code, 
         {% endif %}
         b._daton_user_id,
@@ -76,12 +76,12 @@ with unnested_refunds as(
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from (
         select
-        cast(a.id as string) refund_id,
-        cast(a.order_id as string) order_id,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+        safe_cast(a.id as string) refund_id,
+        safe_cast(a.order_id as string) order_id,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         a.note,
-        cast(user_id as string) user_id,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
+        safe_cast(user_id as string) user_id,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
         restock,
         a.admin_graphql_api_id,
         {{extract_nested_value('refund_line_items','id','numeric')}} as refund_line_items_id,

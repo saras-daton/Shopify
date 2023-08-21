@@ -54,10 +54,10 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     select 
     '{{brand}}' as brand,
     '{{store}}' as store,
-    cast(inventory_item_id as string) as inventory_item_id,
-    cast(location_id as string) as location_id,
+    safe_cast(inventory_item_id as string) as inventory_item_id,
+    safe_cast(location_id as string) as location_id,
     available as inventory_levels_available,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
     admin_graphql_api_id,
     {{daton_user_id()}} as _daton_user_id,
     {{daton_batch_runtime()}} as _daton_batch_runtime,

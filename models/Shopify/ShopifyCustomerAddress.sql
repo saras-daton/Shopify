@@ -50,8 +50,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         select 
             '{{brand}}' as brand,
             '{{store}}' as store,
-            cast(id as string) as id,
-            cast(customer_id as string) as customer_id,
+            safe_cast(id as string) as id,
+            safe_cast(customer_id as string) as customer_id,
             address1,
             address2,
             city,
