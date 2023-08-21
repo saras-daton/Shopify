@@ -161,466 +161,466 @@ cluster_by: ['id','order_id']
 
 |   **Columns**    | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| `    brand      `| Yes |  | Yes |  |
-| `    store      `| Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
 | `      id       `| Yes |  |  | Yes |
 | `   payout_id   `| Yes |  |  |  |
 | ` payout_status `| Yes |  | Yes |  |
-| ` processed_at  `| Yes | Yes (1 day) |  |  |
+| `  processed_at `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyCarrierServices
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| active | Yes |  | Yes |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     active    `| Yes |  | Yes |  |
 
 ### Table Name: ShopifyCollects
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| collection_id | Yes |  |  |  |
-| product_id | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| ` collection_id `| Yes |  |  |  |
+| `   product_id  `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyCountries
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| name | Yes |  |  |  |
-| code | Yes |  |  |  |
-| provinces_id | Yes |  |  | Yes |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     name      `| Yes |  |  |  |
+| `     code      `| Yes |  |  |  |
+| `  provinces_id `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyCustomCollections
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| handle | Yes |  |  |  |
-| title | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| published_at | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     handle    `| Yes |  |  |  |
+| `     title     `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `  published_at `| Yes |  |  |  |
 
 ### Table Name: ShopifyCustomerAddress
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| customer_id | Yes |  |  | Yes |
-| country | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  customer_id  `| Yes |  |  | Yes |
+| `    country    `| Yes |  |  |  |
 
 ### Table Name: ShopifyCustomers
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| customers_id | Yes |  |  |  |
-| email | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  customers_id `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyDisputes
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| order_id | Yes |  |  | Yes |
-| type | Yes |  |  |  |
-| status | Yes |  |  |  |
-| initiated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  | Yes |
+| `     type      `| Yes |  |  |  |
+| `    status     `| Yes |  |  |  |
+| `  initiated_at `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyEvents
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| subject_type | Yes |  |  |  |
-| verb | Yes |  |  |  |
-| created_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  subject_type `| Yes |  |  |  |
+| `     verb      `| Yes |  |  |  |
+| `   created_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyFulfillmentEvents
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| fulfillment_id | Yes |  |  | Yes |
-| status | Yes |  | Yes  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| order_id | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| ` fulfillment_id`| Yes |  |  | Yes |
+| `    status     `| Yes |  | Yes  |  |
+| `   created_at  `| Yes |  |  |  |
+| `  updated_at   `| Yes | Yes (1 day) |  |  |
+| `   order_id    `| Yes |  |  |  |
 
 ### Table Name: ShopifyFulfillmentOrders
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| order_id | Yes |  |  | Yes |
-| request_status | Yes |  | Yes  |  |
-| status | Yes |  | Yes  |  |
-| destination_email | Yes |  |  |  |
-| line_items_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| :----------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `       id        `| Yes |  |  | Yes |
+| `    order_id     `| Yes |  |  | Yes |
+| `  request_status `| Yes |  | Yes  |  |
+| `     status      `| Yes |  | Yes  |  |
+| `destination_email`| Yes |  |  |  |
+| `  line_items_id  `| Yes |  |  | Yes |
+| `    created_at   `| Yes |  |  |  |
+| `    updated_at   `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyGiftCards
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyInventoryItems
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| sku | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| requires_shipping | Yes |  | Yes  |  |
-| tracked | Yes |  | Yes  |  |
-| inventory_item_id | Yes |  |  |  |
+| :----------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `       id        `| Yes |  |  | Yes |
+| `       sku       `| Yes |  |  | Yes |
+| `    created_at   `| Yes |  |  |  |
+| `    updated_at   `| Yes | Yes (1 day) |  |  |
+| `requires_shipping`| Yes |  | Yes  |  |
+| `     tracked     `| Yes |  | Yes  |  |
+| `inventory_item_id`| Yes |  |  |  |
 
 ### Table Name: ShopifyInventoryLevels
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| inventory_item_id | Yes |  |  | Yes |
-| location_id | Yes |  |  | Yes |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `inventory_item_id`| Yes |  |  | Yes |
+| `   location_id   `| Yes |  |  | Yes |
+| `   updated_at    `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyLocations
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| zip | Yes |  |  | Yes |
-| country | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `      zip      `| Yes |  |  | Yes |
+| `    country    `| Yes |  |  |  |
 
 ### Table Name: ShopifyOrders
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyOrdersAddresses
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  | Yes |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  | Yes |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyOrdersCustomer
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  | Yes |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| customer_id | Yes |  |  |  |
-| customer_created_at | Yes |  |  |  |
-| customer_email | Yes |  |  |  |
-| customer_updated_at | Yes |  |  |  |
+| :------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `       brand       `| Yes |  | Yes |  |
+| `       store       `| Yes |  |  |  |
+| `      order_id     `| Yes |  |  | Yes |
+| `     created_at    `| Yes |  |  |  |
+| `       email       `| Yes |  |  | Yes |
+| `    order_number   `| Yes |  |  |  |
+| `    processed_at   `| Yes |  |  |  |
+| `     updated_at    `| Yes | Yes (1 day) |  |  |
+| `    customer_id    `| Yes |  |  |  |
+| `customer_created_at`| Yes |  |  |  |
+| `   customer_email  `| Yes |  |  |  |
+| `customer_updated_at`| Yes |  |  |  |
 
 ### Table Name: ShopifyOrdersDiscountAllocations
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| line_items_id | Yes |  |  | Yes |
-| discount_application_index | Yes |  |  | Yes |
+| :-------------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `          brand           `| Yes |  | Yes |  |
+| `          store           `| Yes |  |  |  |
+| `         order_id         `| Yes |  |  | Yes |
+| `        created_at        `| Yes |  |  |  |
+| `          email           `| Yes |  |  |  |
+| `       order_number       `| Yes |  |  |  |
+| `       processed_at       `| Yes |  |  |  |
+| `        updated_at        `| Yes | Yes (1 day) |  |  |
+| `       line_items_id      `| Yes |  |  | Yes |
+| `discount_application_index`| Yes |  |  | Yes |
 
 ### Table Name: ShopifyOrdersDiscountApplications
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| discount_applications_target_type | Yes |  |  | Yes |
-| discount_applications_type | Yes |  |  | Yes |
-| discount_applications_value_type | Yes |  |  | Yes |
-| _seq_id | Yes |  |  | Yes |
+| :--------------------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `             brand               `| Yes |  | Yes |  |
+| `             store               `| Yes |  |  |  |
+| `            order_id             `| Yes |  |  | Yes |
+| `           created_at            `| Yes |  |  |  |
+| `             email               `| Yes |  |  |  |
+| `          order_number           `| Yes |  |  |  |
+| `          processed_at           `| Yes |  |  |  |
+| `           updated_at            `| Yes | Yes (1 day) |  |  |
+| `discount_applications_target_type`| Yes |  |  | Yes |
+| `    discount_applications_type   `| Yes |  |  | Yes |
+| `discount_applications_value_type `| Yes |  |  | Yes |
+| `            _seq_id              `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyOrdersFulfillments
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| fulfillments_id | Yes |  |  | Yes |
-| line_items_id | Yes |  |  | Yes |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `fulfillments_id`| Yes |  |  | Yes |
+| ` line_items_id `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyOrdersLineItems
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| line_items_id | Yes |  |  | Yes |
-| line_items_variant_id | Yes |  |  |  |
+| :--------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand        `| Yes |  | Yes |  |
+| `        store        `| Yes |  |  |  |
+| `       order_id      `| Yes |  |  | Yes |
+| `      created_at     `| Yes |  |  |  |
+| `        email        `| Yes |  |  |  |
+| `     order_number    `| Yes |  |  |  |
+| `     processed_at    `| Yes |  |  |  |
+| `      updated_at     `| Yes | Yes (1 day) |  |  |
+| `    line_items_id    `| Yes |  |  | Yes |
+| `line_items_variant_id`| Yes |  |  |  |
 
 ### Table Name: ShopifyOrdersLineItemsTaxLines
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| line_items_id | Yes |  |  | Yes |
-| tax_lines_title | Yes |  |  | Yes |
-| _seq_id | Yes |  |  | Yes |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| ` line_items_id `| Yes |  |  | Yes |
+| `tax_lines_title`| Yes |  |  | Yes |
+| `    _seq_id    `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyOrdersShippingLines
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| order_id | Yes |  |  | Yes |
-| created_at | Yes |  |  |  |
-| email | Yes |  |  |  |
-| order_number | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| shipping_lines_id | Yes |  |  | Yes |
+| :----------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `     order_id    `| Yes |  |  | Yes |
+| `    created_at   `| Yes |  |  |  |
+| `      email      `| Yes |  |  |  |
+| `   order_number  `| Yes |  |  |  |
+| `   processed_at  `| Yes |  |  |  |
+| `    updated_at   `| Yes | Yes (1 day) |  |  |
+| `shipping_lines_id`| Yes |  |  | Yes |
 
 ### Table Name: ShopifyPayouts
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| status | Yes |  | Yes ['in_transit', 'paid'] |  |
-| date | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    status     `| Yes |  | Yes ['in_transit', 'paid'] |  |
+| `     date      `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyPolicies
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes |  |  |  |
-| title | Yes |  |  | Yes |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes |  |  |  |
+| `     title     `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyPriceRules
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| target_type | Yes |  |  |  |
-| starts_at | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| title | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  target_type  `| Yes |  |  |  |
+| `   starts_at   `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `     title     `| Yes |  |  |  |
 
 ### Table Name: ShopifyProductMetafields
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| owner_id | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    owner_id   `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyProducts
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| vendor | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| variant_id | Yes |  |  | Yes |
-| variants_sku | Yes |  |  | Yes |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     vendor    `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `   variant_id  `| Yes |  |  | Yes |
+| `  variants_sku `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyRefundLineItemsTax
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| refund_id | Yes |  |  | Yes |
-| order_id | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| user_id | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| refund_line_items_id | Yes |  |  | Yes |
-| line_item_id | Yes |  |  |  |
-| tax_lines_title | Yes |  |  | Yes |
-| _seq_id | Yes |  |  | Yes |
+| :-------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand       `| Yes |  | Yes |  |
+| `        store       `| Yes |  |  |  |
+| `      refund_id     `| Yes |  |  | Yes |
+| `       order_id     `| Yes |  |  |  |
+| `      created_at    `| Yes |  |  |  |
+| `       user_id      `| Yes |  |  |  |
+| `     processed_at   `| Yes |  |  |  |
+| `refund_line_items_id`| Yes |  |  | Yes |
+| `     line_item_id   `| Yes |  |  |  |
+| `   tax_lines_title  `| Yes |  |  | Yes |
+| `       _seq_id      `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyRefundsLineItems
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| refund_id | Yes |  |  | Yes |
-| order_id | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| user_id | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| refund_line_items_id | Yes |  |  | Yes |
-| line_item_id | Yes |  |  |  |
+| :-------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand       `| Yes |  | Yes |  |
+| `        store       `| Yes |  |  |  |
+| `      refund_id     `| Yes |  |  | Yes |
+| `      order_id      `| Yes |  |  |  |
+| `      created_at    `| Yes |  |  |  |
+| `       user_id      `| Yes |  |  |  |
+| `     processed_at   `| Yes |  |  |  |
+| `refund_line_items_id`| Yes |  |  | Yes |
+| `     line_item_id   `| Yes |  |  |  |
 
 ### Table Name: ShopifyRefundsRefundLineItems
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
-| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| refund_id | Yes |  |  | Yes |
-| order_id | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| user_id | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| refund_line_items_id | Yes |  |  | Yes |
+| :-------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand       `| Yes |  | Yes |  |
+| `        store       `| Yes |  |  |  |
+| `      refund_id     `| Yes |  |  | Yes |
+| `       order_id     `| Yes |  |  |  |
+| `      created_at    `| Yes |  |  |  |
+| `       user_id      `| Yes |  |  |  |
+| `     processed_at   `| Yes |  |  |  |
+| `refund_line_items_id`| Yes |  |  | Yes |
 
 ### Table Name: ShopifyRefundsTransactions
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| refund_id | Yes |  |  | Yes |
-| order_id | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| user_id | Yes |  |  |  |
-| processed_at | Yes |  |  |  |
-| transactions_id | Yes |  |  | Yes |
-| _seq_id | Yes |  |  | Yes |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `   refund_id   `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `    user_id    `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `transactions_id`| Yes |  |  | Yes |
+| `    _seq_id    `| Yes |  |  | Yes |
 
 ### Table Name: ShopifyShop
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| email | Yes |  |  |  |
-| created_at | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     email     `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifySmartCollections
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| updated_at | Yes | Yes (1 day) |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
 
 ### Table Name: ShopifyTenderTransactions
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| order_id | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| payment_method | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| ` payment_method`| Yes |  |  |  |
 
 ### Table Name: ShopifyTransactions
 
 | **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
 | :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
-| brand | Yes |  | Yes |  |
-| store | Yes |  |  |  |
-| id | Yes |  |  | Yes |
-| order_id | Yes |  |  |  |
-| updated_at | Yes | Yes (1 day) |  |  |
-| processed_at | Yes |  |  |  |
-| payment_id | Yes |  |  |  |
-| user_id | Yes |  |  |  |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   payment_id  `| Yes |  |  |  |
+| `    user_id    `| Yes |  |  |  |
 
 
 
