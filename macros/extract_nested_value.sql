@@ -3,7 +3,7 @@
 {% if target.type =='snowflake' %}
 {{variable1}}.value:{{variable2}}::{{variable3}}
 {% else %}
-cast( {{variable1}}.{{variable2}} as {{variable3}})
+safe_cast( {{variable1}}.{{variable2}} as {{variable3}})
 {% endif %}
 
 {% endmacro %}
