@@ -149,20 +149,20 @@
         current_timestamp() as _last_updated,
         '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
     from {{ i }} a
-    {% if var('currency_conversion_flag') %}
-        left join {{ ref('ExchangeRates') }} b on date(created_at) = b.date and currency = b.to_currency_code
-    {% endif %}
-    {{ unnesting("discount_codes") }}
-    {{ unnesting("shipping_lines") }}
-    {{ multi_unnesting("shipping_lines", "discounted_price_set") }}
-    {{ multi_unnesting("discounted_price_set", "shop_money") }}
-    {{ multi_unnesting("discounted_price_set", "presentment_money") }}
-    {{ multi_unnesting("shipping_lines", "tax_lines") }}
-    {{ multi_unnesting("shipping_lines", "discount_allocations") }}
-    {% if is_incremental() %}
-        {# /* -- this filter will only be applied on an incremental run */ #}
-        where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
-    {% endif %}
+        {% if var('currency_conversion_flag') %}
+            left join {{ ref('ExchangeRates') }} b on date(created_at) = b.date and currency = b.to_currency_code
+        {% endif %}
+        {{ unnesting("discount_codes") }}
+        {{ unnesting("shipping_lines") }}
+        {{ multi_unnesting("shipping_lines", "discounted_price_set") }}
+        {{ multi_unnesting("discounted_price_set", "shop_money") }}
+        {{ multi_unnesting("discounted_price_set", "presentment_money") }}
+        {{ multi_unnesting("shipping_lines", "tax_lines") }}
+        {{ multi_unnesting("shipping_lines", "discount_allocations") }}
+        {% if is_incremental() %}
+            {# /* -- this filter will only be applied on an incremental run */ #}
+            where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
+        {% endif %}
 
     qualify dense_rank() over (partition by a.id order by a.{{ daton_batch_runtime() }} desc) = 1
     {% if not loop.last %} union all {% endif %}

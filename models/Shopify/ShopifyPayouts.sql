@@ -70,11 +70,11 @@
         current_timestamp() as _last_updated,
         '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
     from  {{ i }} a
-    {{ unnesting("summary") }} 
-    {% if is_incremental() %}
-        {# /* -- this filter will only be applied on an incremental run */ #}
-        where {{ daton_batch_runtime() }} >= {{ max_loaded }}
-    {% endif %}
+        {{ unnesting("summary") }} 
+        {% if is_incremental() %}
+            {# /* -- this filter will only be applied on an incremental run */ #}
+            where {{ daton_batch_runtime() }} >= {{ max_loaded }}
+        {% endif %}
 
     qualify dense_rank() over (partition by a.id order by {{ daton_batch_runtime() }} desc) = 1
     {% if not loop.last %} union all {% endif %}

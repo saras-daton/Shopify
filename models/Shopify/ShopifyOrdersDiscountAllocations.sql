@@ -23,7 +23,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders'
 {% endset %}  
 
 
@@ -109,7 +109,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         {{extract_nested_value("line_items","id","string")}} as line_items_id,
         {{extract_nested_value("line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
-        {{extract_nested_value("line_items","fulfillable_quantity","int")}} as line_items_fulfillable_quantity,
+        {{extract_nested_value("line_items","fulfillable_quantity","numeric")}} as line_items_fulfillable_quantity,
         {{extract_nested_value("line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
         {{extract_nested_value("line_items","gift_card","boolean")}} as line_items_gift_card,
         {{extract_nested_value("line_items","grams","numeric")}} as line_items_grams, 

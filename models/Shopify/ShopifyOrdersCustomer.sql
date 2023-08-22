@@ -23,7 +23,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders'
 {% endset %}
 
 
@@ -169,16 +169,16 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
             {% endif %}
-                {{unnesting("CUSTOMER")}}
-                {{multi_unnesting("CUSTOMER","DEFAULT_ADDRESS")}}
+                {{unnesting("customer")}}
+                {{multi_unnesting("customer","default_address")}}
             {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
         {% if target.type =='snowflake' %}
-        qualify dense_rank() over (partition by a.id, CUSTOMER.VALUE:id order by a._daton_batch_runtime desc) = 1
+        qualify dense_rank() over (partition by a.id, customer.value:id order by a._daton_batch_runtime desc) = 1
         {% else %}
-        qualify dense_rank() over (partition by a.id, CUSTOMER.id order by a._daton_batch_runtime desc) = 1
+        qualify dense_rank() over (partition by a.id, customer.id order by a._daton_batch_runtime desc) = 1
         {% endif %}
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

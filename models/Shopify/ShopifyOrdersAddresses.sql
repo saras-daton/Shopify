@@ -23,7 +23,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endif %}
 
 {% set table_name_query %}
-{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
+{{set_table_name('%shopify%orders')}} and lower(table_name) not like '%shopify%fulfillment_orders'
 {% endset %}  
 
 
@@ -167,8 +167,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
                 {% if var('currency_conversion_flag') %}
                     left join {{ref('ExchangeRates')}} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
                 {% endif %}
-                {{unnesting("BILLING_ADDRESS")}} 
-                {{unnesting("SHIPPING_ADDRESS")}} 
+                {{unnesting("billing_address")}} 
+                {{unnesting("shipping_address")}} 
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 where a.{{daton_batch_runtime()}}  >= {{max_loaded}}

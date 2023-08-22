@@ -61,7 +61,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {{extract_nested_value("provinces","name","string")}} as provinces_name,
         {{extract_nested_value("provinces","code","string")}} as provinces_code,
         {{extract_nested_value("provinces","shipping_zone_id","string")}} as provinces_shipping_zone_id,
-        {{extract_nested_value("provinces","tax","string")}} as provinces_tax,
+        {{extract_nested_value("provinces","tax","numeric")}} as provinces_tax,
         {{extract_nested_value("provinces","tax_percentage","string")}} as provinces_tax_percentage,
         {{extract_nested_value("provinces","tax_name","string")}} as provinces_tax_name,
         {{daton_user_id()}} as _daton_user_id,

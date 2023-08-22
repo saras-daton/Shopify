@@ -121,7 +121,7 @@ with unnested_refunds as(
 {% endfor %}
 )
 
-SELECT *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
+select *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
 from (
 select *
 from unnested_refunds 

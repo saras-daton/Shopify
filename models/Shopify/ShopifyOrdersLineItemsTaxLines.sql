@@ -55,7 +55,7 @@
         {% set hr = 0 %}
     {% endif %}
 
-    select *, ROW_NUMBER() over (partition by order_id order by _daton_batch_runtime desc) _seq_id
+    select *, row_number() over (partition by order_id order by _daton_batch_runtime desc) _seq_id
     from (
         select 
             '{{ brand }}' as brand,
@@ -112,7 +112,7 @@
             {{extract_nested_value("line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
             {{extract_nested_value("line_items","fulfillable_quantity","numeric")}} as line_items_fulfillable_quantity,
             {{extract_nested_value("line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
-            {{extract_nested_value("line_items","gift_card","string")}} as line_items_gift_card,
+            {{extract_nested_value("line_items","gift_card","boolean")}} as line_items_gift_card,
             {{extract_nested_value("line_items","grams","numeric")}} as line_items_grams,
             {{extract_nested_value("line_items","name","string")}} as line_items_name,
             {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
@@ -120,7 +120,7 @@
             {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_set_shop_money_currency_code,
             {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_set_presentment_money_amount,
             {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_set_presentment_money_currency_code,
-            {{extract_nested_value("line_items","product_exists","string")}} as line_items_product_exists,
+            {{extract_nested_value("line_items","product_exists","boolean")}} as line_items_product_exists,
             {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
             {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
             {{extract_nested_value("properties","value","string")}} as line_items_properties_value,
@@ -166,21 +166,21 @@
             current_timestamp() as _last_updated,
             '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
         from {{ i }} a
-        {% if var('currency_conversion_flag') %}
-            left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
-        {% endif %}
-        {{ unnesting("line_items") }}
-        {{ multi_unnesting("line_items", "tax_lines") }}
-        {{ multi_unnesting("line_items", "price_set") }}
-        {{ multi_unnesting("price_set", "shop_money") }}
-        {{ multi_unnesting("price_set", "presentment_money") }}
-        {{ multi_unnesting("line_items", "properties") }}
-        {{ multi_unnesting("line_items", "discount_allocations") }}
-        {% if is_incremental() %}
-            {# /* -- this filter will only be applied on an incremental run */ #}
-            where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
-        {% endif %}
-    qualify dense_rank() over (partition by a.id order by a.{{ daton_batch_runtime() }} desc) = 1
+            {% if var('currency_conversion_flag') %}
+                left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+            {% endif %}
+            {{ unnesting("line_items") }}
+            {{ multi_unnesting("line_items", "tax_lines") }}
+            {{ multi_unnesting("line_items", "price_set") }}
+            {{ multi_unnesting("price_set", "shop_money") }}
+            {{ multi_unnesting("price_set", "presentment_money") }}
+            {{ multi_unnesting("line_items", "properties") }}
+            {{ multi_unnesting("line_items", "discount_allocations") }}
+            {% if is_incremental() %}
+                {# /* -- this filter will only be applied on an incremental run */ #}
+                where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
+            {% endif %}
+        qualify dense_rank() over (partition by a.id order by a.{{ daton_batch_runtime() }} desc) = 1
     )
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

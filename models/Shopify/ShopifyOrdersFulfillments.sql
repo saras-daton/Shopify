@@ -167,16 +167,16 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("line_items","tax_code","string")}} as line_items_tax_code,
         {{extract_nested_value("line_items","vendor","string")}} as line_items_vendor,
         {{extract_nested_value("fulfillments","shipment_status","string")}} as fulfillments_shipment_status,
-        app_id,
+        safe_cast(app_id as string) app_id,
         customer_locale,
         note,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
         a.fulfillment_status,
-        a.location_id,
+        safe_cast(a.location_id as string) location_id,
         cancel_reason,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
-        user_id,
-        device_id,
+        safe_cast(user_id as string) user_id,
+        safe_cast(device_id as string) device_id,
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
             case when c.from_currency_code is null then currency else c.from_currency_code end as exchange_currency_code,
@@ -190,26 +190,26 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         current_timestamp() as _last_updated,
         '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
     from {{ i }} a
-    {% if var('currency_conversion_flag') %}
-        left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
-    {% endif %}
-    {{ unnesting("fulfillments") }}
-    {{ multi_unnesting("fulfillments", "receipt") }}
-    {{ multi_unnesting("fulfillments", "line_items") }}
-    {{ multi_unnesting("receipt", "gift_cards") }}
-    {{ multi_unnesting("line_items", "price_set") }}
-    {{ multi_unnesting("price_set", "shop_money") }}
-    {{ multi_unnesting("price_set", "presentment_money") }}
-    {{ multi_unnesting("line_items", "properties") }}
-    {{ multi_unnesting("line_items", "total_discount_set") }}
-    {{ multi_unnesting("line_items", "discount_allocations") }}
-    {{ multi_unnesting("line_items", "tax_lines") }}
-    {{ multi_unnesting("line_items", "pre_tax_price_set") }}
+        {% if var('currency_conversion_flag') %}
+            left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
+        {% endif %}
+        {{ unnesting("fulfillments") }}
+        {{ multi_unnesting("fulfillments", "receipt") }}
+        {{ multi_unnesting("fulfillments", "line_items") }}
+        {{ multi_unnesting("receipt", "gift_cards") }}
+        {{ multi_unnesting("line_items", "price_set") }}
+        {{ multi_unnesting("price_set", "shop_money") }}
+        {{ multi_unnesting("price_set", "presentment_money") }}
+        {{ multi_unnesting("line_items", "properties") }}
+        {{ multi_unnesting("line_items", "total_discount_set") }}
+        {{ multi_unnesting("line_items", "discount_allocations") }}
+        {{ multi_unnesting("line_items", "tax_lines") }}
+        {{ multi_unnesting("line_items", "pre_tax_price_set") }}
 
-    {% if is_incremental() %}
-        {# /* -- this filter will only be applied on an incremental run */ #}
-        where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
-    {% endif %}
+        {% if is_incremental() %}
+            {# /* -- this filter will only be applied on an incremental run */ #}
+            where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
+        {% endif %}
 
     qualify dense_rank() over (partition by a.id order by a._daton_batch_runtime desc) = 1
     {% if not loop.last %} union all {% endif %}

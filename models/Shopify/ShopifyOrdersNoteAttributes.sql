@@ -63,17 +63,16 @@
         browser_ip,
         buyer_accepts_marketing,
         cart_token,
-        checkout_id,
+        safe_cast(checkout_id as string) checkout_id,
         checkout_token,
-        client_details,
         confirmed,
         contact_email,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         currency,
-        current_subtotal_price,
-        current_total_discounts,
-        current_total_price,
-        current_total_tax,
+        safe_cast(current_subtotal_price as numeric) current_subtotal_price,
+        safe_cast(current_total_discounts as numeric) current_total_discounts,
+        safe_cast(current_total_price as numeric) current_total_price,
+        safe_cast(current_total_tax as numeric) current_total_tax,
         {{extract_nested_value("discount_codes","code","string")}} as discount_code,
         {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
         {{extract_nested_value("discount_codes","type","string")}} as discount_type,
@@ -100,36 +99,26 @@
         source_name,
         subtotal_price,
         tags,
-        tax_lines,
         taxes_included,
         test,
         token,
-        total_discounts,
-        total_line_items_price,
-        total_outstanding,
-        total_price,
-        total_price_usd,
-        total_tax,
-        total_tip_received,
+        safe_cast(total_discounts as numeric) total_discounts,
+        safe_cast(total_line_items_price as numeric) total_line_items_price,
+        safe_cast(total_outstanding as numeric) total_outstanding,
+        safe_cast(total_price as numeric) total_price,
+        safe_cast(total_price_usd as numeric) total_price_usd,
+        safe_cast(total_tax as numeric) total_tax,
+        safe_cast(total_tip_received as numeric) total_tip_received,
         total_weight,
-        safe_cast(a.updated_at as {{ dbt.type_timestamp() }}) as updated_at,
-        billing_address,
-        customer,
-        discount_applications,
-        fulfillments,
-        line_items,
-        payment_details,
-        refunds,
-        shipping_address,
-        shipping_lines,
-        app_id,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        safe_cast(app_id as string) app_id,
         customer_locale,
         note,
-        closed_at,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
         fulfillment_status,
         cancel_reason,
-        cancelled_at,
-        user_id,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="cancelled_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
+        safe_cast(user_id as string) user_id,
     {% if var('currency_conversion_flag') %}
         case when b.value is null then 1 else b.value end as exchange_currency_rate,
         case when b.from_currency_code is null then currency else b.from_currency_code end as exchange_currency_code,
@@ -143,15 +132,15 @@
         current_timestamp() as _last_updated,
         '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
     from {{ i }} a
-    {% if var('currency_conversion_flag') %}
-        left join {{ ref('ExchangeRates') }} b on date(created_at) = b.date and currency = b.to_currency_code
-    {% endif %}
-    {{ unnesting("discount_codes") }}
-    {{ unnesting("note_attributes") }}
-    {% if is_incremental() %}
-        {# /* -- this filter will only be applied on an incremental run */ #}
-        where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
-    {% endif %}
+        {% if var('currency_conversion_flag') %}
+            left join {{ ref('ExchangeRates') }} b on date(created_at) = b.date and currency = b.to_currency_code
+        {% endif %}
+        {{ unnesting("discount_codes") }}
+        {{ unnesting("note_attributes") }}
+        {% if is_incremental() %}
+            {# /* -- this filter will only be applied on an incremental run */ #}
+            where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
+        {% endif %}
 
     qualify dense_rank() over (partition by a.id, {{extract_nested_value("note_attributes","name","string")}} order by a.{{ daton_batch_runtime() }} desc) = 1
     {% if not loop.last %} union all {% endif %}
