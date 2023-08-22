@@ -60,7 +60,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         select 
         '{{brand}}' as brand,
         '{{store}}' as store,
-        cast(a.id as string) as order_id,
+        a.id as order_id, 
         admin_graphql_api_id,
         browser_ip,
         buyer_accepts_marketing,
