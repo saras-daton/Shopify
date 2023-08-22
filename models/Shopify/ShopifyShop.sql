@@ -96,7 +96,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         password_enabled,
         has_storefront,
         finances,
-        primary_location_id,
+        cast(primary_location_id as string) primary_location_id,
         cookie_consent_level,
         visitor_tracking_consent_preference,
         checkout_api_supported,

@@ -62,7 +62,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         safe_cast(id as string) as id,
         safe_cast(order_id as string) as order_id,
         type,
-        amount,
+        safe_cast(amount as numeric) amount,
         currency,
         reason,
         network_reason_code,

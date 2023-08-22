@@ -120,7 +120,7 @@
         {{extract_nested_value("shipping_lines","source","string")}} as shipping_lines_source,
         {{extract_nested_value("shipping_lines","title","string")}} as shipping_lines_title,
         {{extract_nested_value("tax_lines","channel_liable","boolean")}} as shipping_lines_tax_lines_channel_liable,
-        {{extract_nested_value("tax_lines","price","string")}} as shipping_lines_tax_lines_price,
+        {{extract_nested_value("tax_lines","price","numeric")}} as shipping_lines_tax_lines_price,
         {{extract_nested_value("tax_lines","rate","numeric")}} as shipping_lines_tax_lines_rate,
         {{extract_nested_value("tax_lines","title","string")}} as shipping_lines_tax_lines_title,
         {{extract_nested_value("discount_allocations","amount","numeric")}} as shipping_lines_discount_allocations_amount,

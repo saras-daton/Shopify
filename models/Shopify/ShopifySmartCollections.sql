@@ -60,7 +60,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         handle,
         title,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-        published_at,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="published_at") }} as {{ dbt.type_timestamp() }}) as published_at,
         sort_order,
         disjunctive,
         published_scope,

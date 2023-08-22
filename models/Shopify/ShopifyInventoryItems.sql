@@ -73,7 +73,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     from  {{i}} a
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
+            where a.{{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %} 
     qualify row_number() over (partition by a.id order by _daton_batch_runtime desc) = 1
 

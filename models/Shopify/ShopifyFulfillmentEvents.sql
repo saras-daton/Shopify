@@ -6,7 +6,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -60,7 +60,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         safe_cast(fulfillment_id as string) as fulfillment_id,
         status,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="happened_at") }} as {{ dbt.type_timestamp() }}) as happened_at,
-        shop_id,
+        safe_cast(shop_id as string) as shop_id,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         safe_cast(order_id as string) as order_id,

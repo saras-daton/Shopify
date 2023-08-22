@@ -61,7 +61,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         title,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="safe_cast(updated_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as updated_at,
         body_html,
-        published_at,
+        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="safe_cast(published_at as timestamp)") }} as {{ dbt.type_timestamp() }}) as published_at,
         sort_order,
         published_scope,
         safe_cast(admin_graphql_api_id as string) as admin_graphql_api_id,

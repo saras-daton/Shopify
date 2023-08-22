@@ -67,7 +67,7 @@ select
     safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
     test,
     authorization,
-    parent_id,
+    cast(parent_id as string) parent_id,
     safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
     source_name,
     safe_cast(amount as numeric) amount,
