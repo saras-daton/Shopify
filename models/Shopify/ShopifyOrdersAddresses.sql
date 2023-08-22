@@ -95,7 +95,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         referring_site,
         source_identifier,
         source_name,
-        subtotal_price,
+        cast(subtotal_price as numeric) as subtotal_price,
         tags,
         taxes_included,
         test,
