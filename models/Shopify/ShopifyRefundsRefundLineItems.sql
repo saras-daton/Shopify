@@ -63,10 +63,10 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         b.* {{exclude()}} (_daton_user_id, _daton_batch_runtime, _daton_batch_id),
         {% if var('currency_conversion_flag') %}
             case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then b.subtotal_set_presentment_currency_code else c.from_currency_code end as exchange_currency_code,
+            case when c.from_currency_code is null then b.refund_line_items_subtotal_set_presentment_money_currency_code else c.from_currency_code end as exchange_currency_code,
         {% else %}
             safe_cast(1 as decimal) as exchange_currency_rate,
-            b.subtotal_set_presentment_currency_code as exchange_currency_code, 
+            b.refund_line_items_subtotal_set_presentment_money_currency_code as exchange_currency_code, 
         {% endif %}
         b._daton_user_id,
         b._daton_batch_runtime,
@@ -117,7 +117,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 
         ) b
         {% if var('currency_conversion_flag') %}
-            left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.subtotal_set_presentment_currency_code = c.to_currency_code
+            left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.refund_line_items_subtotal_set_presentment_money_currency_code = c.to_currency_code
         {% endif %}
         
 

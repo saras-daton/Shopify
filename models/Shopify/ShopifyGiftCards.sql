@@ -4,6 +4,10 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
+{% if var('currency_conversion_flag') %}
+    -- depends_on: {{ ref('ExchangeRates') }}
+{% endif %}
+
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
 select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
@@ -72,9 +76,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as expires_on,
         last_characters,
         safe_cast(order_id as string) as order_id,
-        {{daton_user_id()}} as _daton_user_id,
-        {{daton_batch_runtime()}} as _daton_batch_runtime,
-        {{daton_batch_id()}} as _daton_batch_id,
+        a.{{daton_user_id()}} as _daton_user_id,
+        a.{{daton_batch_runtime()}} as _daton_batch_runtime,
+        a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from  {{i}} a
