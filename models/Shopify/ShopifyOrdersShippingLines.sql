@@ -109,22 +109,12 @@
         safe_cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-        {{extract_nested_value("shipping_lines","id","string")}} as shipping_lines_id,
+        coalesce({{extract_nested_value("shipping_lines","id","string")}},'N/A') as shipping_lines_id,
         {{extract_nested_value("shipping_lines","code","string")}} as shipping_lines_code,
         {{extract_nested_value("shipping_lines","discounted_price","numeric")}} as shipping_lines_discounted_price,
-        {{extract_nested_value("shop_money","amount","numeric")}} as shipping_lines_discounted_price_shop_money_amount,
-        {{extract_nested_value("shop_money","currency_code","string")}} as shipping_lines_discounted_price_shop_money_currency_code,
-        {{extract_nested_value("presentment_money","amount","numeric")}} as shipping_lines_discounted_price_presentment_money_amount,
-        {{extract_nested_value("presentment_money","currency_code","string")}} as shipping_lines_discounted_price_presentment_money_currency_code,
         {{extract_nested_value("shipping_lines","price","numeric")}} as shipping_lines_price,
         {{extract_nested_value("shipping_lines","source","string")}} as shipping_lines_source,
         {{extract_nested_value("shipping_lines","title","string")}} as shipping_lines_title,
-        {{extract_nested_value("tax_lines","channel_liable","boolean")}} as shipping_lines_tax_lines_channel_liable,
-        {{extract_nested_value("tax_lines","price","numeric")}} as shipping_lines_tax_lines_price,
-        {{extract_nested_value("tax_lines","rate","numeric")}} as shipping_lines_tax_lines_rate,
-        {{extract_nested_value("tax_lines","title","string")}} as shipping_lines_tax_lines_title,
-        {{extract_nested_value("discount_allocations","amount","numeric")}} as shipping_lines_discount_allocations_amount,
-        {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as shipping_lines_discount_allocations_discount_application_index,
         {{extract_nested_value("shipping_lines","carrier_identifier","string")}} as shipping_lines_carrier_identifier,
         safe_cast(app_id as string) as app_id,
         customer_locale,
@@ -154,11 +144,6 @@
         {% endif %}
         {{ unnesting("discount_codes") }}
         {{ unnesting("shipping_lines") }}
-        {{ multi_unnesting("shipping_lines", "discounted_price_set") }}
-        {{ multi_unnesting("discounted_price_set", "shop_money") }}
-        {{ multi_unnesting("discounted_price_set", "presentment_money") }}
-        {{ multi_unnesting("shipping_lines", "tax_lines") }}
-        {{ multi_unnesting("shipping_lines", "discount_allocations") }}
         {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}

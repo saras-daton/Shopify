@@ -114,16 +114,13 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.created_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_created_at,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfillments.updated_at") }} as {{ dbt.type_timestamp() }}) as fulfillments_updated_at,
         {% endif %}
-        {{extract_nested_value("fulfillments","id","string")}} as fulfillments_id,
+        coalesce({{extract_nested_value("fulfillments","id","string")}},'N/A') as fulfillments_id,
         {{extract_nested_value("fulfillments","admin_graphql_api_id","string")}} as fulfillments_admin_graphql_api_id,
         {{extract_nested_value("fulfillments","location_id","string")}} as fulfillments_location_id,
         {{extract_nested_value("fulfillments","name","string")}} as fulfillments_name,
         {{extract_nested_value("fulfillments","order_id","string")}} as fulfillments_order_id,
         {{extract_nested_value("receipt","testcase","boolean")}} as receipt_testcase,
         {{extract_nested_value("receipt","authorization","string")}} as receipt_authorization,
-        {{extract_nested_value("gift_cards","id","string")}} as receipt_gift_cards_id,
-        {{extract_nested_value("gift_cards","line_item_id","string")}} as receipt_gift_cards_line_item_id,
-        {{extract_nested_value("gift_cards","masked_code","string")}} as receipt_gift_cards_masked_code,
         {{extract_nested_value("fulfillments","service","string")}} as fulfillments_service,
         {{extract_nested_value("fulfillments","status","string")}} as fulfillments_status,
         {{extract_nested_value("fulfillments","tracking_company","string")}} as fulfillments_tracking_company,
@@ -131,7 +128,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("fulfillments","tracking_numbers","string")}} as fulfillments_tracking_numbers,
         {{extract_nested_value("fulfillments","tracking_url","string")}} as fulfillments_tracking_url,
         {{extract_nested_value("fulfillments","tracking_urls","string")}} as fulfillments_tracking_urls,
-        {{extract_nested_value("line_items","id","string")}} as line_items_id,
+        coalesce({{extract_nested_value("line_items","id","string")}},'N/A') as line_items_id,
         {{extract_nested_value("line_items","admin_graphql_api_id","string")}} as line_items_admin_graphql_api_id,
         {{extract_nested_value("line_items","fulfillable_quantity","numeric")}} as line_items_fulfillable_quantity,
         {{extract_nested_value("line_items","fulfillment_service","string")}} as line_items_fulfillment_service,
@@ -139,14 +136,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("line_items","grams","numeric")}} as line_items_grams,
         {{extract_nested_value("line_items","name","string")}} as line_items_name,
         {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
-        {{extract_nested_value("shop_money","amount","numeric")}} as line_items_price_set_shop_money_amount,
-        {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_set_shop_money_currency_code,
-        {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_set_presentment_money_amount,
-        {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_set_presentment_money_currency_code,
         {{extract_nested_value("line_items","product_exists","boolean")}} as line_items_product_exists,
         {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
-        {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
-        {{extract_nested_value("properties","value","string")}} as line_items_properties_value,
         {{extract_nested_value("line_items","quantity","numeric")}} as line_items_quantity,
         {{extract_nested_value("line_items","requires_shipping","boolean")}} as line_items_requires_shipping,
         {{extract_nested_value("line_items","sku","string")}} as line_items_sku,
@@ -156,12 +147,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("line_items","variant_id","string")}} as line_items_variant_id,
         {{extract_nested_value("line_items","variant_inventory_management","string")}} as line_items_variant_inventory_management,
         {{extract_nested_value("line_items","variant_title","string")}} as line_items_variant_title,
-        {{extract_nested_value("tax_lines","channel_liable","boolean")}} as line_items_tax_lines_channel_liable,
-        {{extract_nested_value("tax_lines","price","numeric")}} as line_items_tax_lines_price,
-        {{extract_nested_value("tax_lines","rate","numeric")}} as line_items_tax_lines_rate,
-        {{extract_nested_value("tax_lines","title","string")}} as line_items_tax_lines_title,
-        {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount,
-        {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as line_items_discount_allocations_discount_application_index,
         {{extract_nested_value("line_items","fulfillment_status","string")}} as line_items_fulfillment_status,
         {{extract_nested_value("line_items","pre_tax_price","numeric")}} as line_items_pre_tax_price,
         {{extract_nested_value("line_items","tax_code","string")}} as line_items_tax_code,
@@ -196,15 +181,6 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{ unnesting("fulfillments") }}
         {{ multi_unnesting("fulfillments", "receipt") }}
         {{ multi_unnesting("fulfillments", "line_items") }}
-        {{ multi_unnesting("receipt", "gift_cards") }}
-        {{ multi_unnesting("line_items", "price_set") }}
-        {{ multi_unnesting("price_set", "shop_money") }}
-        {{ multi_unnesting("price_set", "presentment_money") }}
-        {{ multi_unnesting("line_items", "properties") }}
-        {{ multi_unnesting("line_items", "total_discount_set") }}
-        {{ multi_unnesting("line_items", "discount_allocations") }}
-        {{ multi_unnesting("line_items", "tax_lines") }}
-        {{ multi_unnesting("line_items", "pre_tax_price_set") }}
 
         {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}

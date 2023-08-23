@@ -116,14 +116,8 @@
             {{extract_nested_value("line_items","grams","numeric")}} as line_items_grams,
             {{extract_nested_value("line_items","name","string")}} as line_items_name,
             {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
-            {{extract_nested_value("shop_money","amount","numeric")}} as line_items_price_set_shop_money_amount,
-            {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_set_shop_money_currency_code,
-            {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_set_presentment_money_amount,
-            {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_set_presentment_money_currency_code,
             {{extract_nested_value("line_items","product_exists","boolean")}} as line_items_product_exists,
             {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
-            {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
-            {{extract_nested_value("properties","value","string")}} as line_items_properties_value,
             {{extract_nested_value("line_items","quantity","numeric")}} as line_items_quantity,
             {{extract_nested_value("line_items","requires_shipping","boolean")}} as line_items_requires_shipping,
             {{extract_nested_value("line_items","sku","string")}} as line_items_sku,
@@ -135,10 +129,8 @@
             {{extract_nested_value("line_items","variant_title","string")}} as line_items_variant_title,
             {{extract_nested_value("tax_lines","price","numeric")}} as tax_lines_price,
             {{extract_nested_value("tax_lines","rate","numeric")}} as tax_lines_rate,
-            {{extract_nested_value("tax_lines","title","string")}} as tax_lines_title,
+            coalesce({{extract_nested_value("tax_lines","title","string")}},'N/A') as tax_lines_title,
             {{extract_nested_value("tax_lines","channel_liable","boolean")}} as tax_lines_channel_liable,
-            {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount,
-            {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as line_items_discount_allocations_discount_application_index,
             {{extract_nested_value("line_items","pre_tax_price","numeric")}} as line_items_pre_tax_price,
             {{extract_nested_value("line_items","tax_code","string")}} as line_items_tax_code,
             {{extract_nested_value("line_items","vendor","string")}} as line_items_vendor,
@@ -171,11 +163,6 @@
             {% endif %}
             {{ unnesting("line_items") }}
             {{ multi_unnesting("line_items", "tax_lines") }}
-            {{ multi_unnesting("line_items", "price_set") }}
-            {{ multi_unnesting("price_set", "shop_money") }}
-            {{ multi_unnesting("price_set", "presentment_money") }}
-            {{ multi_unnesting("line_items", "properties") }}
-            {{ multi_unnesting("line_items", "discount_allocations") }}
             {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}

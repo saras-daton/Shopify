@@ -68,8 +68,7 @@
     checkout_token,
     confirmed,
     contact_email,
-    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} 
-        as {{ dbt.type_timestamp() }}) as created_at,
+    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
     currency,
     safe_cast(current_subtotal_price as numeric) as current_subtotal_price,
     safe_cast(current_total_discounts as numeric) as current_total_discounts,
@@ -88,8 +87,7 @@
     payment_gateway_names,
     a.phone,
     presentment_currency,
-    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} 
-        as {{ dbt.type_timestamp() }}) as processed_at,
+    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
     processing_method,
     reference,
     referring_site,
@@ -108,8 +106,7 @@
     safe_cast(total_tax as numeric) as total_tax,
     safe_cast(total_tip_received as numeric) as total_tip_received,
     total_weight,
-    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} 
-        as {{ dbt.type_timestamp() }}) as updated_at,
+    safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
     {{extract_nested_value("billing_address","first_name","string")}} as billing_address_first_name,
     {{extract_nested_value("billing_address","address1","string")}} as billing_address_address1,
     {{extract_nested_value("billing_address","phone","string")}} as billing_address_phone,
@@ -135,25 +132,13 @@
     {{extract_nested_value("line_items","grams","numeric")}} as line_items_grams, 
     {{extract_nested_value("line_items","name","string")}} as line_items_name,
     {{extract_nested_value("line_items","price","numeric")}} as line_items_price,
-    {{extract_nested_value("shop_money","amount","numeric")}} as line_items_price_set_shop_money_amount,
-    {{extract_nested_value("shop_money","currency_code","string")}} as line_items_price_set_shop_money_currency_code,
-    {{extract_nested_value("presentment_money","amount","numeric")}} as line_items_price_set_presentment_money_amount,
-    {{extract_nested_value("presentment_money","currency_code","string")}} as line_items_price_set_presentment_money_currency_code,
     {{extract_nested_value("line_items","product_exists","boolean")}} as line_items_product_exists,
     {{extract_nested_value("line_items","product_id","string")}} as line_items_product_id,
-    {{extract_nested_value("properties","name","string")}} as line_items_properties_name,
-    {{extract_nested_value("properties","value","string")}} as line_items_properties_value,
     {{extract_nested_value("line_items","quantity","numeric")}} as line_items_quantity,
     {{extract_nested_value("line_items","requires_shipping","boolean")}} as line_items_requires_shipping,
     {{extract_nested_value("line_items","sku","string")}} as line_items_sku,
     {{extract_nested_value("line_items","taxable","boolean")}} as line_items_taxable,
     {{extract_nested_value("line_items","title","string")}} as line_items_title,
-    {{extract_nested_value("tax_lines","channel_liable","boolean")}} as line_items_tax_lines_channel_liable,
-    {{extract_nested_value("tax_lines","price","numeric")}} as line_items_tax_lines_price,
-    {{extract_nested_value("tax_lines","rate","numeric")}} as line_items_tax_lines_rate,
-    {{extract_nested_value("tax_lines","title","string")}} as line_items_tax_lines_title,
-    {{extract_nested_value("discount_allocations","amount","numeric")}} as line_items_discount_allocations_amount,
-    {{extract_nested_value("discount_allocations","discount_application_index","numeric")}} as line_items_discount_allocations_discount_application_index,
     {{extract_nested_value("line_items","total_discount","numeric")}} as line_items_total_discount,
     {{extract_nested_value("line_items","variant_id","string")}} as line_items_variant_id,
     {{extract_nested_value("line_items","variant_inventory_management","string")}} as line_items_variant_inventory_management,
@@ -203,19 +188,13 @@
     a.{{ daton_batch_id() }} as _daton_batch_id,
     current_timestamp() as _last_updated,
     '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
-from {{ i }} a
+    from {{ i }} a
     {% if var('currency_conversion_flag') %}
         left join {{ ref('ExchangeRates') }} c on date(a.created_at) = c.date and a.currency = c.to_currency_code
     {% endif %}
     {{ unnesting("line_items") }}
     {{ unnesting("billing_address") }}
     {{ unnesting("shipping_address") }}
-    {{ multi_unnesting("line_items", "price_set") }}
-    {{ multi_unnesting("price_set", "shop_money") }}
-    {{ multi_unnesting("price_set", "presentment_money") }}
-    {{ multi_unnesting("line_items", "properties") }}
-    {{ multi_unnesting("line_items", "discount_allocations") }}
-    {{ multi_unnesting("line_items", "tax_lines") }}
     {% if is_incremental() %}
         {# /* -- this filter will only be applied on an incremental run */ #}
         where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
