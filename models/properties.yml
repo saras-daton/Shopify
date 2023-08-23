@@ -1289,7 +1289,7 @@ models:
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['variants_sku','id','variant_id']
+      unique_key: ['variants_sku','id','variants_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['variants_sku']
     columns:
@@ -1316,7 +1316,7 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
-      - name: variant_id
+      - name: variants_id
         tests:
           - not_null
       - name: variants_sku
@@ -1326,7 +1326,7 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - id
-            - variant_id
+            - variants_id
             - variants_sku
 
   - name: ShopifyRefundLineItemsTax
