@@ -1035,6 +1035,64 @@ models:
             - order_id
             - line_items_id
 
+  - name: ShopifyOrdersLineItemsProperties
+    description: A list of orders at product level properties.
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: ['order_id','line_items_id','line_items_properties_name','line_items_properties_value']
+      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      cluster_by: ['order_id','line_items_id','line_items_properties_name','line_items_properties_value']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: line_items_id
+        tests:
+          - not_null
+      - name: line_items_variant_id
+        tests:
+          - not_null
+      - name: line_items_properties_name
+        tests:
+          - not_null
+      - name: line_items_properties_value
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - line_items_id
+            - line_items_properties_name
+            - line_items_properties_value
+
   - name: ShopifyOrdersLineItemsTaxLines
     description: A list of orders with  product level taxes.
     config:
