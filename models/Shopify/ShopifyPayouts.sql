@@ -53,7 +53,6 @@
         status,
         safe_cast(date as date) as date,
         currency,
-        safe_cast(amount as numeric) as amount,
         {{extract_nested_value("summary","adjustments_fee_amount","numeric")}} as summary_adjustments_fee_amount,
         {{extract_nested_value("summary","adjustments_gross_amount","numeric")}} as summary_adjustments_gross_amount,
         {{extract_nested_value("summary","charges_fee_amount","numeric")}} as summary_charges_fee_amount,
