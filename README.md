@@ -134,9 +134,9 @@ Shopify_Customers: False
 
 This package contains models from the Shopify API which includes reports on {{sales, margin, inventory, product}}. The primary outputs of this package are described below.
 
-| **Category**                 | **Model**  | **Description** | **Unique Key** | **Partition Key** | **Cluster Key** |
-| ------------------------- | ---------------| ----------------------- |
-|Customer | [ShopifyCustomers](models/Shopify/ShopifyCustomers.sql)  | A detailed report which gives infomration about Customers | custome/'rs_id |  field: updated_at, data_type: timestamp, granularity: day | customers_id |
+| **Category**                 | **Model**  | **Description** | **Unique Key** |   **Partition Key**   | **Cluster Key** |
+| ----------------- | ---------------| ----------------------------------- | ----------- | ----------------------------- | ------------- |
+|Customer | [ShopifyCustomers](models/Shopify/ShopifyCustomers.sql)  | A detailed report which gives infomration about Customers | customers_id |  field: updated_at, data_type: timestamp, granularity: day | customers_id |
 |Addresses | [ShopifyCustomersAddress](models/Shopify/ShopifyCustomersAddress.sql)  | A detailed report which gives infomration about the addresses of each customer | customer_id, id | | customer_id |
 |Inventory | [ShopifyInventoryLevels](models/Shopify/ShopifyInventoryLevels.sql)  | A detailed report which gives infomration about inventory levels | inventory_item_id, location_id | field: updated_at, data_type: timestamp, granularity: day | inventory_item_id |
 |Inventory | [ShopifyInventoryItems](models/Shopify/ShopifyInventoryItems.sql)  | A detailed report which gives infomration about inventory Items | id, sku | field: created_at, data_type: timestamp, granularity: day | id, sku |
@@ -151,6 +151,7 @@ This package contains models from the Shopify API which includes reports on {{sa
 |Orders | [ShopifyOrdersDiscountAllocations](models/Shopify/ShopifyOrdersDiscountAllocations.sql)| A list of orders with discount allocations | id, line_items_id, discount_application_index | field: created_at, data_type: timestamp, granularity: day | id, line_items_id, discount_application_index |
 |Orders | [ShopifyOrdersDiscountApplications](models/Shopify/ShopifyOrdersDiscountApplications.sql)| A list of orders with discount applications | order_id, discount_applications_target_type, discount_applications_type, discount_applications_value_type, _seq_id | field: created_at, data_type: timestamp, granularity: day | order_id |
 |Product | [ShopifyProducts](models/Shopify/ShopifyProducts.sql)| A list of product summary, manufacturer & dimensions | variants_sku, id, variant_id | field: created_at, data_type: timestamp, granularity: day | variants_sku |
+|Product | [ShopifyProductMetafields](models/Shopify/ShopifyProductMetafields.sql)| A report of product metadata. | id | field: created_at, data_type: timestamp, granularity: day | id | 
 |Refunds | [ShopifyRefundsTransactions](models/Shopify/ShopifyRefundsTransactions.sql)| A list of refund transactions | refund_id, transactions_id, _seq_id | field: created_at, data_type: timestamp, granularity: day | refund_id |
 |Transactions | [ShopifyTransactions](models/Shopify/ShopifyTransactions.sql)| A report of transactions with transactions fees, sources and status. | id | field: created_at, data_type: timestamp, granularity: day | id |
 |Countries | [ShopifyCountries](models/Shopify/ShopifyCountries.sql)| A list of countries. | id, provinces_id | | provinces_id |
@@ -170,6 +171,11 @@ This package contains models from the Shopify API which includes reports on {{sa
 |Disputes | [ShopifyDisputes](models/Shopify/ShopifyDisputes.sql)| A list orders along with the customer details. | id, order_id | field: initiated_at, data_type: timestamp, granularity: day | id, order_id |
 |Fulfillment | [ShopifyFulfillmentEvents](models/Shopify/ShopifyFulfillmentEvents.sql)| A list of Fulfillment events. | id, fulfillment_id | field: created_at, data_type: timestamp, granularity: day | id |
 |Fulfillment | [ShopifyFulfillmentOrders](models/Shopify/ShopifyFulfillmentOrders.sql)| A report of orders with fulfillment details, destinations and assigned locations. | id, order_id, line_items_id | field: created_at, data_type: timestamp, granularity: day | order_id, line_items_id |
+|GiftCards | [ShopifyGiftCards](models/Shopify/ShopifyGiftCards.sql)| A report of gift cards. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Refund | [ShopifyRefundLineItemsTax](models/Shopify/ShopifyRefundLineItemsTax.sql)| A list of taxes associated with the refunded item. | refund_id, refund_line_items_id, tax_lines_title, _seq_id | field created_at, data_type: timestamp, granularity: day | refund_id |
+|Refund | [ShopifyRefundsLineItems](models/Shopify/ShopifyRefundsLineItems.sql)| A list of refunded orders which includes refund & product level revenue. | refund_id, refund_line_items_id, line_item_variant_id | field: created_at, data_type: timestamp, granularity: day | refund_id |
+|Refund | [ShopifyRefundsRefundLineItems](models/Shopify/ShopifyRefundsRefundLineItems.sql)| A list of refunded orders which includes refund & product level revenue. | refund_id, refund_line_items_id | field: created_at, data_type: timestamp, granularity: day | refund_id |
+
 
 ## DBT Tests
 
