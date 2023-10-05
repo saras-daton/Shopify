@@ -103,7 +103,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         gateway,
         landing_site,
         landing_site_ref,
-        name,
+        a.name,
         number,
         order_number,
         order_status_url,
