@@ -1,10 +1,10 @@
 # Shopify Data Unification
 
-This dbt package is for the Shopify data unification Ingested by [Daton](https://sarasanalytics.com/daton/). [Daton](https://sarasanalytics.com/daton/) is the Unified Data Platform for Global Commerce with 100+ pre-built connectors and data sets designed for accelerating the eCommerce data and analytics journey by [Saras Analytics](https://sarasanalytics.com).
+This dbt package is for the Shopify data unification Ingested by Daton. Daton is the Unified Data Platform for Global Commerce with 100+ pre-built connectors and data sets designed for accelerating the eCommerce data and analytics journey by [Saras Analytics](https://sarasanalytics.com).
 
 ### Supported Datawarehouses:
-- BigQuery
-- Snowflake
+- [BigQuery](https://sarasanalytics.com/blog/what-is-google-bigquery/)
+- [Snowflake](https://sarasanalytics.com/daton/snowflake/)
 
 #### Typical challanges with raw data are:
 - Array/Nested Array columns which makes queries for Data Analytics complex
