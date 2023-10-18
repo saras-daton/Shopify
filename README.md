@@ -1,10 +1,10 @@
 # Shopify Data Unification
 
-This dbt package is for the Shopify data unification Ingested by [Daton](https://sarasanalytics.com/daton/). [Daton](https://sarasanalytics.com/daton/) is the Unified Data Platform for Global Commerce with 100+ pre-built connectors and data sets designed for accelerating the eCommerce data and analytics journey by [Saras Analytics](https://sarasanalytics.com).
+This dbt package is for the Shopify data unification Ingested by Daton. Daton is the Unified Data Platform for Global Commerce with 100+ pre-built connectors and data sets designed for accelerating the eCommerce data and analytics journey by [Saras Analytics](https://sarasanalytics.com).
 
 ### Supported Datawarehouses:
-- BigQuery
-- Snowflake
+- [BigQuery](https://sarasanalytics.com/blog/what-is-google-bigquery/)
+- [Snowflake](https://sarasanalytics.com/daton/snowflake/)
 
 #### Typical challanges with raw data are:
 - Array/Nested Array columns which makes queries for Data Analytics complex
@@ -74,9 +74,44 @@ Example:
 vars:
 timezone_conversion_flag: True
   raw_table_timezone_offset_hours: {
-    "Shopify.Raw.Brand_UK_Shopify_orders":-7,
-    "Shopify.Raw.Brand_UK_Shopify_products":-7
-  }
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ABANDONED_CHECKOUTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_BALANCE_TRANSACTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_COLLECTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_CUSTOM_COLLECTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_CUSTOMERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_DISPUTES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_EVENTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_FULFILLMENT_EVENTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_FULFILLMENT_ORDERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_GIFT_CARDS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_INVENTORY_ITEMS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_INVENTORY_LEVELS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_LOCATIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_POLICIES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRICE_RULES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCT_METAFIELDS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_REFUNDS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSADDRESSES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSCUSTOMER":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSDISCOUNTALLOCATIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSDISCOUNTAPPLICATIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSFULLFILMENTS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSLINEITEMS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSLINEITEMSPROPERTIES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDRESLINEITEMSTAXLINES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSNOTEATTRIBUTES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERSSHIPPINGLINES":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_REFUNDLINEITEMSTAX":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_REFUNDSLINEITEMS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_REFUNDSREFUNDLINEITEMS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_REFUNDSTRANSACTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_SHOP":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_SMARTCOLLECTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_TENDORTRANSACTIONS":-7,
+    "Shopify.Raw.BRAND_UK_SHOPIFY_TRANSACTIONS":-7,
+}
 ```
 Here, -7 represents the offset hours between UTC and PDT considering we are sitting in PDT timezone and want the data in this timezone
 
@@ -94,388 +129,545 @@ Shopify_Customers: False
 
 This package contains models from the Shopify API which includes reports on {{sales, margin, inventory, product}}. The primary outputs of this package are described below.
 
-| **Category**                 | **Model**  | **Description** |
-| ------------------------- | ---------------| ----------------------- |
-|Customer | [ShopifyCustomers](models/Shopify/ShopifyCustomers.sql)  | A detailed report which gives infomration about Customers |
-|Addresses | [ShopifyCustomersAddresses](models/Shopify/ShopifyCustomersAddresses.sql)  | A detailed report which gives infomration about the addresses of each customer |
-|Inventory | [ShopifyInventory](models/Shopify/ShopifyInventory.sql)  | A detailed report which gives infomration about inventory levels |
-|Orders | [ShopifyOrdersAddresses](models/Shopify/ShopifyOrdersAddresses.sql)  | A list of billing and shipping addresses |
-|Orders | [ShopifyOrdersCustomer](models/Shopify/ShopifyOrdersCustomer.sql)| A report of orders at customer level |
-|Orders | [ShopifyOrdersLineItemsDiscounts](models/Shopify/ShopifyOrdersLineItemsDiscounts.sql)| A report of orders with discount allocations |
-|Orders | [ShopifyOrdersFulfillmentOrders](models/Shopify/ShopifyOrdersFulfillmentOrders.sql)| A report of orders with fulfillment details, destinations and assigned locations. |
-|Orders | [ShopifyOrdersFulfillments](models/Shopify/ShopifyOrdersFulfillments.sql)| A report of orders with fulfillment details, destinations and assigned locations at product level.|
-|Orders | [ShopifyOrdersLineItemsTaxLines](models/Shopify/ShopifyOrdersLineItemsTaxLines.sql)| A list of orders with  product level taxes. |
-|Orders | [ShopifyOrdersLineItems](models/Shopify/ShopifyOrdersLineItems.sql)| A list of orders at product level |
-|Orders | [ShopifyOrdersRefundLines](models/Shopify/ShopifyOrdersRefundLines.sql)| A list of refunded orders which includes refund & order level revenue. |
-|Orders | [ShopifyOrdersRefundsLineItems](models/Shopify/ShopifyOrdersRefundsLineItems.sql)| A list of refunded orders which includes refund & product level revenue. |
-|Orders | [ShopifyOrdersRefundsTaxLines](models/Shopify/ShopifyOrdersRefundsTaxLines.sql)| A list of taxes associated with the refunded item. |
-|Orders | [ShopifyOrdersShippingLines](models/Shopify/ShopifyOrdersShippingLines.sql)| A list of orders with shipping details |
-|Orders | [ShopifyOrdersTransactions](models/Shopify/ShopifyOrdersTransactions.sql)| A list of order transactions |
-|Orders | [ShopifyOrders](models/Shopify/ShopifyOrders.sql)| A list of orders |
-|Product | [ShopifyProduct](models/Shopify/ShopifyProduct.sql)| A list of product summary, manufacturer & dimensions |
-|Refunds | [ShopifyRefundsTransactions](models/Shopify/ShopifyRefundsTransactions.sql)| A list of refund transactions |
-|Transactions | [ShopifyTransactions](models/Shopify/ShopifyTransactions.sql)| A report of transactions with transactions fees, sources and status. |
-|Countries | [ShopifyCountries](models/Shopify/ShopifyCountries.sql)| A list of countries. |
-|Events | [ShopifyEvents](models/Shopify/ShopifyEvents.sql)| A list of events. |
-|Shops | [ShopifyShop](models/Shopify/ShopifyShop.sql)| Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand. |
-|Checkouts | [ShopifyCheckouts](models/Shopify/ShopifyCheckouts.sql)| Checkout are used to enter their shipping information and payment details before placing the order. |
-|Transactions | [ShopifyTenderTransactions](models/Shopify/ShopifyTenderTransactions.sql)| Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place. |
-|Policies | [ShopifyPolicies](models/Shopify/ShopifyPolicies.sql)| List of policies for your Shopify store like Refund policy, Privacy policy, Terms of service, Shipping policy, Legal notice. |
-|Collections | [ShopifySmartCollections](models/Shopify/ShopifySmartCollections.sql)| An automated collection uses selection conditions to automatically include matching products. |
-|Collections | [ShopifyCollects](models/Shopify/ShopifyCollects.sql)| A list of collections. |
-|Locations | [ShopifyLocations](models/Shopify/ShopifyLocations.sql)| Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory. |
-|Price Rules | [ShopifyPriceRules](models/Shopify/ShopifyPriceRules.sql)| A list of rules to set pricing. |
-|Carrier Services | [ShopifyCarrierServices](models/Shopify/ShopifyCarrierServices.sql)| A list of carrier services. |
-|Payouts | [ShopifyPayouts](models/Shopify/ShopifyPayouts.sql)| lists all of your payouts and their current status. |
+| **Category**                 | **Model**  | **Description** | **Unique Key** |   **Partition Key**   | **Cluster Key** |
+| ----------------- | ---------------| ----------------------------------- | ----------- | ----------------------------- | ------------- |
+|Customer | [ShopifyCustomers](models/Shopify/ShopifyCustomers.sql)  | A detailed report which gives infomration about Customers | customers_id |  field: updated_at, data_type: timestamp, granularity: day | customers_id |
+|Addresses | [ShopifyCustomersAddress](models/Shopify/ShopifyCustomersAddress.sql)  | A detailed report which gives infomration about the addresses of each customer | customer_id, id | | customer_id |
+|Inventory | [ShopifyInventoryLevels](models/Shopify/ShopifyInventoryLevels.sql)  | A detailed report which gives infomration about inventory levels | inventory_item_id, location_id | field: updated_at, data_type: timestamp, granularity: day | inventory_item_id |
+|Inventory | [ShopifyInventoryItems](models/Shopify/ShopifyInventoryItems.sql)  | A detailed report which gives infomration about inventory Items | id, sku | field: created_at, data_type: timestamp, granularity: day | id, sku |
+|Orders | [ShopifyOrdersAddresses](models/Shopify/ShopifyOrdersAddresses.sql)  | A list of billing and shipping addresses | order_id, email | field: created_at, data_type: timestamp, granularity: day | order_id, email |
+|Orders | [ShopifyOrdersCustomer](models/Shopify/ShopifyOrdersCustomer.sql)| A report of orders at customer level | order_id, customer_id | field: created_at, data_type: timestamp, granularity: day | order_id |
+|Orders | [ShopifyOrdersFulfillments](models/Shopify/ShopifyOrdersFulfillments.sql)| A report of orders with fulfillment details, destinations and assigned locations at product level. | order_id, fulfillments_id, line_items_id | field: created_at, data_type: timestamp, granularity: day | order_id | 
+|Orders | [ShopifyOrdersLineItemsTaxLines](models/Shopify/ShopifyOrdersLineItemsTaxLines.sql)| A list of orders with  product level taxes. | order_id, line_items_id, tax_lines_title, _seq_id | field: created_at, data_type: timestamp, granularity: day | order_id, line_items_id, tax_lines_title |
+|Orders | [ShopifyOrdersLineItems](models/Shopify/ShopifyOrdersLineItems.sql)| A list of orders at product level | order_id, line_items_id | field: created_at, data_type: timestamp, granularity: day | order_id, line_items_id |
+|Orders | [ShopifyOrdersShippingLines](models/Shopify/ShopifyOrdersShippingLines.sql)| A list of orders with shipping details | order_id, shipping_lines_id | field: created_at, data_type: timestamp granularity: day | order_id, shipping_lines_id |
+|Orders | [ShopifyOrders](models/Shopify/ShopifyOrders.sql)| A list of orders | order_id | field: created_at, data_type: timestamp, granularity: day | order_id |
+|Orders | [ShopifyOrdersNoteAttributes](models/Shopify/ShopifyOrdersNoteAttributes.sql)| A list of orders with the order note attributes unnested| order_id, note_attributes_name | field: created_at, data_type: timestamp, granularity: day | order_id |
+|Orders | [ShopifyOrdersDiscountAllocations](models/Shopify/ShopifyOrdersDiscountAllocations.sql)| A list of orders with discount allocations | id, line_items_id, discount_application_index | field: created_at, data_type: timestamp, granularity: day | id, line_items_id, discount_application_index |
+|Orders | [ShopifyOrdersDiscountApplications](models/Shopify/ShopifyOrdersDiscountApplications.sql)| A list of orders with discount applications | order_id, discount_applications_target_type, discount_applications_type, discount_applications_value_type, _seq_id | field: created_at, data_type: timestamp, granularity: day | order_id |
+|Product | [ShopifyProducts](models/Shopify/ShopifyProducts.sql)| A list of product summary, manufacturer & dimensions | variants_sku, id, variant_id | field: created_at, data_type: timestamp, granularity: day | variants_sku |
+|Product | [ShopifyProductMetafields](models/Shopify/ShopifyProductMetafields.sql)| A report of product metadata. | id | field: created_at, data_type: timestamp, granularity: day | id | 
+|Refunds | [ShopifyRefundsTransactions](models/Shopify/ShopifyRefundsTransactions.sql)| A list of refund transactions | refund_id, transactions_id, _seq_id | field: created_at, data_type: timestamp, granularity: day | refund_id |
+|Transactions | [ShopifyTransactions](models/Shopify/ShopifyTransactions.sql)| A report of transactions with transactions fees, sources and status. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Countries | [ShopifyCountries](models/Shopify/ShopifyCountries.sql)| A list of countries. | id, provinces_id | | provinces_id |
+|Events | [ShopifyEvents](models/Shopify/ShopifyEvents.sql)| A list of events. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Shops | [ShopifyShop](models/Shopify/ShopifyShop.sql)| Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Transactions | [ShopifyTenderTransactions](models/Shopify/ShopifyTenderTransactions.sql)| Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place. | id | field: processed_at, data_type: timestamp, granularity: day | id |
+|Policies | [ShopifyPolicies](models/Shopify/ShopifyPolicies.sql)| List of policies for your Shopify store like Refund policy, Privacy policy, Terms of service, Shipping policy, Legal notice. | title | field: created_at, data_type: timestamp, granularity: day | title |
+|Collections | [ShopifySmartCollections](models/Shopify/ShopifySmartCollections.sql)| An automated collection uses selection conditions to automatically include matching products. | id | field: updated_at, data_type: timestamp, granularity: day | id |
+|Collections | [ShopifyCollects](models/Shopify/ShopifyCollects.sql)| A list of collections. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Locations | [ShopifyLocations](models/Shopify/ShopifyLocations.sql)| Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Price Rules | [ShopifyPriceRules](models/Shopify/ShopifyPriceRules.sql)| A list of rules to set pricing. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Carrier Services | [ShopifyCarrierServices](models/Shopify/ShopifyCarrierServices.sql)| A list of carrier services. | id | | id |
+|Payouts | [ShopifyPayouts](models/Shopify/ShopifyPayouts.sql)| lists all of your payouts and their current status. | id | field': date, data_type: date | id |
+|Checkouts | [ShopifyAbandonedCheckouts](models/Shopify/ShopifyAbandonedCheckouts.sql)| List of Abandoned Checkouts, Checkout are used to enter their shipping information and payment details before placing the order. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Transactions | [ShopifyBalanceTransactions](models/Shopify/ShopifyBalanceTransactions.sql)| A list of order transactions | id | field: processed_at, data_type: timestamp, granularity: day | id |
+|Collections | [ShopifyCustomCollections](models/Shopify/ShopifyCustomCollections.sql)| An automated collection uses selection conditions to automatically include matching products. | id | field: updated_at, data_type: timestamp, granularity: day | id |
+|Disputes | [ShopifyDisputes](models/Shopify/ShopifyDisputes.sql)| A list orders along with the customer details. | id, order_id | field: initiated_at, data_type: timestamp, granularity: day | id, order_id |
+|Fulfillment | [ShopifyFulfillmentEvents](models/Shopify/ShopifyFulfillmentEvents.sql)| A list of Fulfillment events. | id, fulfillment_id | field: created_at, data_type: timestamp, granularity: day | id |
+|Fulfillment | [ShopifyFulfillmentOrders](models/Shopify/ShopifyFulfillmentOrders.sql)| A report of orders with fulfillment details, destinations and assigned locations. | id, order_id, line_items_id | field: created_at, data_type: timestamp, granularity: day | order_id, line_items_id |
+|GiftCards | [ShopifyGiftCards](models/Shopify/ShopifyGiftCards.sql)| A report of gift cards. | id | field: created_at, data_type: timestamp, granularity: day | id |
+|Refund | [ShopifyRefundLineItemsTax](models/Shopify/ShopifyRefundLineItemsTax.sql)| A list of taxes associated with the refunded item. | refund_id, refund_line_items_id, tax_lines_title, _seq_id | field created_at, data_type: timestamp, granularity: day | refund_id |
+|Refund | [ShopifyRefundsLineItems](models/Shopify/ShopifyRefundsLineItems.sql)| A list of refunded orders which includes refund & product level revenue. | refund_id, refund_line_items_id, line_item_variant_id | field: created_at, data_type: timestamp, granularity: day | refund_id |
+|Refund | [ShopifyRefundsRefundLineItems](models/Shopify/ShopifyRefundsRefundLineItems.sql)| A list of refunded orders which includes refund & product level revenue. | refund_id, refund_line_items_id | field: created_at, data_type: timestamp, granularity: day | refund_id |
 
+
+## DBT Tests
+
+The tests property defines assertions about a column, table, or view. The property contains a list of generic tests, referenced by name, which can include the four built-in generic tests available in dbt. For example, you can add tests that ensure a column contains no duplicates and zero null values. Any arguments or configurations passed to those tests should be nested below the test name.
+
+| **Tests**  | **Description** |
+| ---------------| ------------------------------------------- |
+| [Not Null Test](https://docs.getdbt.com/reference/resource-properties/tests#testing-an-expression)  | This test validates that there are no null values present in a column |
+| [Data Recency Test](https://github.com/dbt-labs/dbt-utils/blob/main/macros/generic_tests/recency.sql)  | This is used to check for issues with data refresh within {{ x }} days, please specify the value of number of days at {{ x }} |
+| [Accepted Value Test](https://docs.getdbt.com/reference/resource-properties/tests#accepted_values)  | This test validates that all of the values in a column are present in a supplied list of values. If any values other than those provided in the list are present, then the test will fail, by default it consists of default values and this needs to be changed based on the project |
+| [Uniqueness Test](https://docs.getdbt.com/reference/resource-properties/tests#testing-an-expression)  | This test validates that there are no duplicate values present in a field |
+
+### Table Name: ShopifyAbandonedCheckouts
+
+|   **Columns**    | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+|       :--        |        :-:        |          :-:          |           :-:           |         :-:         |
+| `    brand      `|        Yes        |          Yes          |           Yes           |                     |
+| `    store      `|        Yes        |                       |                         |                     |
+| `      id       `|        Yes        |                       |                         |         Yes         |
+| `    email      `|        Yes        |                       |                         |                     |
+| `  created_at   `|        Yes        |                       |                         |                     |
+| `  updated_at   `|        Yes        |      Yes (1 day)      |                         |                     |
+
+incremental_strategy: merge
+unique_key: ['id','order_id']
+partition_by: { 'field': 'initiated_at', 'data_type': 'timestamp', 'granularity': 'day' }
+cluster_by: ['id','order_id']
+
+### Table Name: ShopifyBalanceTransactions
+
+|   **Columns**    | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `   payout_id   `| Yes |  |  |  |
+| ` payout_status `| Yes |  | Yes |  |
+| `  processed_at `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyCarrierServices
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     active    `| Yes |  | Yes |  |
+
+### Table Name: ShopifyCollects
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| ` collection_id `| Yes |  |  |  |
+| `   product_id  `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyCountries
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     name      `| Yes |  |  |  |
+| `     code      `| Yes |  |  |  |
+| `  provinces_id `| Yes |  |  | Yes |
+
+### Table Name: ShopifyCustomCollections
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     handle    `| Yes |  |  |  |
+| `     title     `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `  published_at `| Yes |  |  |  |
+
+### Table Name: ShopifyCustomerAddress
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  customer_id  `| Yes |  |  | Yes |
+| `    country    `| Yes |  |  |  |
+
+### Table Name: ShopifyCustomers
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  customers_id `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyDisputes
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  | Yes |
+| `     type      `| Yes |  |  |  |
+| `    status     `| Yes |  |  |  |
+| `  initiated_at `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyEvents
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  subject_type `| Yes |  |  |  |
+| `     verb      `| Yes |  |  |  |
+| `   created_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyFulfillmentEvents
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| ` fulfillment_id`| Yes |  |  | Yes |
+| `    status     `| Yes |  | Yes  |  |
+| `   created_at  `| Yes |  |  |  |
+| `  updated_at   `| Yes | Yes (1 day) |  |  |
+| `   order_id    `| Yes |  |  |  |
+
+### Table Name: ShopifyFulfillmentOrders
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :----------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `       id        `| Yes |  |  | Yes |
+| `    order_id     `| Yes |  |  | Yes |
+| `  request_status `| Yes |  | Yes  |  |
+| `     status      `| Yes |  | Yes  |  |
+| `destination_email`| Yes |  |  |  |
+| `  line_items_id  `| Yes |  |  | Yes |
+| `    created_at   `| Yes |  |  |  |
+| `    updated_at   `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyGiftCards
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyInventoryItems
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :----------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `       id        `| Yes |  |  | Yes |
+| `       sku       `| Yes |  |  | Yes |
+| `    created_at   `| Yes |  |  |  |
+| `    updated_at   `| Yes | Yes (1 day) |  |  |
+| `requires_shipping`| Yes |  | Yes  |  |
+| `     tracked     `| Yes |  | Yes  |  |
+| `inventory_item_id`| Yes |  |  |  |
+
+### Table Name: ShopifyInventoryLevels
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `inventory_item_id`| Yes |  |  | Yes |
+| `   location_id   `| Yes |  |  | Yes |
+| `   updated_at    `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyLocations
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `      zip      `| Yes |  |  | Yes |
+| `    country    `| Yes |  |  |  |
+
+### Table Name: ShopifyOrders
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyOrdersAddresses
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  | Yes |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyOrdersCustomer
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `       brand       `| Yes |  | Yes |  |
+| `       store       `| Yes |  |  |  |
+| `      order_id     `| Yes |  |  | Yes |
+| `     created_at    `| Yes |  |  |  |
+| `       email       `| Yes |  |  | Yes |
+| `    order_number   `| Yes |  |  |  |
+| `    processed_at   `| Yes |  |  |  |
+| `     updated_at    `| Yes | Yes (1 day) |  |  |
+| `    customer_id    `| Yes |  |  |  |
+| `customer_created_at`| Yes |  |  |  |
+| `   customer_email  `| Yes |  |  |  |
+| `customer_updated_at`| Yes |  |  |  |
+
+### Table Name: ShopifyOrdersDiscountAllocations
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :-------------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `          brand           `| Yes |  | Yes |  |
+| `          store           `| Yes |  |  |  |
+| `         order_id         `| Yes |  |  | Yes |
+| `        created_at        `| Yes |  |  |  |
+| `          email           `| Yes |  |  |  |
+| `       order_number       `| Yes |  |  |  |
+| `       processed_at       `| Yes |  |  |  |
+| `        updated_at        `| Yes | Yes (1 day) |  |  |
+| `       line_items_id      `| Yes |  |  | Yes |
+| `discount_application_index`| Yes |  |  | Yes |
+
+### Table Name: ShopifyOrdersDiscountApplications
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `             brand               `| Yes |  | Yes |  |
+| `             store               `| Yes |  |  |  |
+| `            order_id             `| Yes |  |  | Yes |
+| `           created_at            `| Yes |  |  |  |
+| `             email               `| Yes |  |  |  |
+| `          order_number           `| Yes |  |  |  |
+| `          processed_at           `| Yes |  |  |  |
+| `           updated_at            `| Yes | Yes (1 day) |  |  |
+| `discount_applications_target_type`| Yes |  |  | Yes |
+| `    discount_applications_type   `| Yes |  |  | Yes |
+| `discount_applications_value_type `| Yes |  |  | Yes |
+| `            _seq_id              `| Yes |  |  | Yes |
+
+### Table Name: ShopifyOrdersFulfillments
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `fulfillments_id`| Yes |  |  | Yes |
+| ` line_items_id `| Yes |  |  | Yes |
+
+### Table Name: ShopifyOrdersLineItems
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand        `| Yes |  | Yes |  |
+| `        store        `| Yes |  |  |  |
+| `       order_id      `| Yes |  |  | Yes |
+| `      created_at     `| Yes |  |  |  |
+| `        email        `| Yes |  |  |  |
+| `     order_number    `| Yes |  |  |  |
+| `     processed_at    `| Yes |  |  |  |
+| `      updated_at     `| Yes | Yes (1 day) |  |  |
+| `    line_items_id    `| Yes |  |  | Yes |
+| `line_items_variant_id`| Yes |  |  |  |
+
+### Table Name: ShopifyOrdersLineItemsTaxLines
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `    order_id   `| Yes |  |  | Yes |
+| `   created_at  `| Yes |  |  |  |
+| `     email     `| Yes |  |  |  |
+| `  order_number `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| ` line_items_id `| Yes |  |  | Yes |
+| `tax_lines_title`| Yes |  |  | Yes |
+| `    _seq_id    `| Yes |  |  | Yes |
+
+### Table Name: ShopifyOrdersShippingLines
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :----------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `      brand      `| Yes |  | Yes |  |
+| `      store      `| Yes |  |  |  |
+| `     order_id    `| Yes |  |  | Yes |
+| `    created_at   `| Yes |  |  |  |
+| `      email      `| Yes |  |  |  |
+| `   order_number  `| Yes |  |  |  |
+| `   processed_at  `| Yes |  |  |  |
+| `    updated_at   `| Yes | Yes (1 day) |  |  |
+| `shipping_lines_id`| Yes |  |  | Yes |
+
+### Table Name: ShopifyPayouts
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    status     `| Yes |  | Yes ['in_transit', 'paid'] |  |
+| `     date      `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyPolicies
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes |  |  |  |
+| `     title     `| Yes |  |  | Yes |
+
+### Table Name: ShopifyPriceRules
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `  target_type  `| Yes |  |  |  |
+| `   starts_at   `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `     title     `| Yes |  |  |  |
+
+### Table Name: ShopifyProductMetafields
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    owner_id   `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyProducts
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     vendor    `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `   variant_id  `| Yes |  |  | Yes |
+| `  variants_sku `| Yes |  |  | Yes |
+
+### Table Name: ShopifyRefundLineItemsTax
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :-------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand       `| Yes |  | Yes |  |
+| `        store       `| Yes |  |  |  |
+| `      refund_id     `| Yes |  |  | Yes |
+| `       order_id     `| Yes |  |  |  |
+| `      created_at    `| Yes |  |  |  |
+| `       user_id      `| Yes |  |  |  |
+| `     processed_at   `| Yes |  |  |  |
+| `refund_line_items_id`| Yes |  |  | Yes |
+| `     line_item_id   `| Yes |  |  |  |
+| `   tax_lines_title  `| Yes |  |  | Yes |
+| `       _seq_id      `| Yes |  |  | Yes |
+
+### Table Name: ShopifyRefundsLineItems
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :-------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand       `| Yes |  | Yes |  |
+| `        store       `| Yes |  |  |  |
+| `      refund_id     `| Yes |  |  | Yes |
+| `      order_id      `| Yes |  |  |  |
+| `      created_at    `| Yes |  |  |  |
+| `       user_id      `| Yes |  |  |  |
+| `     processed_at   `| Yes |  |  |  |
+| `refund_line_items_id`| Yes |  |  | Yes |
+| `     line_item_id   `| Yes |  |  |  |
+
+### Table Name: ShopifyRefundsRefundLineItems
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :-------------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `        brand       `| Yes |  | Yes |  |
+| `        store       `| Yes |  |  |  |
+| `      refund_id     `| Yes |  |  | Yes |
+| `       order_id     `| Yes |  |  |  |
+| `      created_at    `| Yes |  |  |  |
+| `       user_id      `| Yes |  |  |  |
+| `     processed_at   `| Yes |  |  |  |
+| `refund_line_items_id`| Yes |  |  | Yes |
+
+### Table Name: ShopifyRefundsTransactions
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `   refund_id   `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `    user_id    `| Yes |  |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `transactions_id`| Yes |  |  | Yes |
+| `    _seq_id    `| Yes |  |  | Yes |
+
+### Table Name: ShopifyShop
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `     email     `| Yes |  |  |  |
+| `   created_at  `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifySmartCollections
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+
+### Table Name: ShopifyTenderTransactions
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| ` payment_method`| Yes |  |  |  |
+
+### Table Name: ShopifyTransactions
+
+| **Columns**  | **Not Null Test** | **Data Recency Test** | **Accepted Value Test** | **Uniqueness Test** |
+| :--------------- | :--------------- | :--------------- | :--------------- | :--------------- |
+| `     brand     `| Yes |  | Yes |  |
+| `     store     `| Yes |  |  |  |
+| `      id       `| Yes |  |  | Yes |
+| `    order_id   `| Yes |  |  |  |
+| `   updated_at  `| Yes | Yes (1 day) |  |  |
+| `  processed_at `| Yes |  |  |  |
+| `   payment_id  `| Yes |  |  |  |
+| `    user_id    `| Yes |  |  |  |
 
 
 
 ### For details about default configurations for Table Primary Key columns, Partition columns, Clustering columns, please refer the properties.yaml used for this package as below. 
 	You can overwrite these default configurations by using your project specific properties yaml.
-```yaml
-version: 2
-models:
-  - name: ShopifyAbandonedCheckouts
-    description: After a customer adds products to a cart, they use your checkout to enter their shipping information and payment details before placing the order.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyBalanceTransactions
-    description: A list of order transactions.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyCarrierServices
-    description: A list of carrier services.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      cluster_by: ['id']
-
-  - name: ShopifyCollects
-    description: A list of collects.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyCountries
-    description: A list of countries.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id','provinces_id']
-      cluster_by: ['provinces_id']
-
-  - name: ShopifyCustomCollections
-    description: An automated collection uses selection conditions to automatically include matching products.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyCustomerAddress
-    description: A list of all the customer addresses and related fields
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['customers_id','id']
-      cluster_by: ['customers_id']
-
-  - name: ShopifyCustomers
-    description: A list orders along with the customer details
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['customers_id']
-      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['customers_id']
-
-  - name: ShopifyDisputes
-    description: A list orders along with the customer details
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id','order_id']
-      partition_by: { 'field': 'initiated_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id','order_id']
-
-  - name: ShopifyEvents
-    description: A list of events.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyFulfillmentEvents
-    description: A list of events.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id','fulfillment_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyFulfillmentOrders
-    description: A report of orders with fulfillment details, destinations and assigned locations.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id','order_id','line_items_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id']
-
-  - name: ShopifyGiftCards
-    description: A report of gift cards.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyInventoryItems
-    description: A detailed report which gives details about inventory levels
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id','inventory_item_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['inventory_item_id']
-
-  - name: ShopifyInventoryLevels
-    description: A detailed report which gives details about inventory levels
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['inventory_item_id','location_id']
-      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['inventory_item_id']
-
-  - name: ShopifyLocations
-    description: Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyOrders
-    description: A list of orders.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersAddresses
-    description: A list of billing and shipping addresses
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','email']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','email']
-
-  - name: ShopifyOrdersCustomer
-    description: A report of orders at customer level
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','customer_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersDiscountAllocations
-    description: A list of orders at product level.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','line_items_id','discount_application_index']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id','discount_application_index']
-
-  - name: ShopifyOrdersDiscountApplications
-    description: A list of order and line item discounts with their coupon codes.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','discount_applications_target_type','discount_applications_type','discount_applications_value_type','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersFulfillments
-    description: A report of orders with fulfillment details, destinations and assigned locations at product level.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','fulfillments_id','line_items_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id']
-
-  - name: ShopifyOrdersLineItems
-    description: A list of orders at product level.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','line_items_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id']
-
-  - name: ShopifyOrdersLineItemsTaxLines
-    description: A list of orders with  product level taxes.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','line_items_id','tax_lines_title','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','line_items_id','tax_lines_title'] 
-
-  - name: ShopifyOrdersShippingLines
-    description: A list of orders.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['order_id','shipping_lines_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','shipping_lines_id']
-
-  - name: ShopifyPayouts
-    description: lists all of your payouts and their current status.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'date', 'data_type': 'date' }
-      cluster_by: ['id']
-
-  - name: ShopifyPolicies
-    description: List of policies for your Shopify store like Refund policy, Privacy policy, Terms of service, Shipping policy, Legal notice.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['title']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['title']
-
-  - name: ShopifyPriceRules
-    description: A list of rules to set pricing.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyProductMetafields
-    description: A report of product metadata
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyProducts
-    description: A list of product summary, manufacturer & dimensions
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['sku','product_id','variant_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['sku']
-
-  - name: ShopifyRefundLineItemsTax
-    description: A list of taxes associated with the refunded item.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['refund_id','refund_line_items_id','tax_lines_title','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['refund_id']
-
-  - name: ShopifyRefundsLineItems
-    description: A list of refunded orders which includes refund & product level revenue.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['refund_id','refund_line_items_id','line_item_variant_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['refund_id']
-
-  - name: ShopifyRefundsRefundLineItems
-    description: A list of refunded orders which includes refund & product level revenue.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['refund_id','refund_line_items_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['refund_id']
-
-  - name: ShopifyRefundsTransactions
-    description: A list of refund transactions.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['refund_id','transactions_id','_seq_id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['refund_id']
-
-  - name: ShopifyShop
-    description: Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifySmartCollections
-    description: An automated collection uses selection conditions to automatically include matching products.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyTenderTransactions
-    description: Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-  - name: ShopifyTransactions
-    description: A report of transactions with transactions fees, sources and status.
-    config:
-      materialized: incremental
-      incremental_strategy: merge
-      unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id']
-
-```
 
 
 
