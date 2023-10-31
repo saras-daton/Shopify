@@ -4,51 +4,33 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
-{% endset %}
+{% set relations = dbt_utils.get_relations_by_pattern(
+schema_pattern=var('raw_schema'),
+table_pattern=var('shopify_countries_tbl_ptrn'),
+exclude=var('shopify_countries_exclude_tbl_ptrn'),
+database=var('raw_database')) %}
 
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-
-{% set table_name_query %}
-{{set_table_name('%shopify%countries')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
-{% endset %}  
-
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
+{% for i in relations %}
     {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
     {% endif %}
 
     {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
 
+    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+    {% else %}
+            {% set hr = 0 %}
+    {% endif %}
 
-        select 
+
+    select 
         '{{brand}}' as brand,
         '{{store}}' as store,
         cast(a.id as string) as id,
@@ -56,42 +38,26 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.code,
         a.tax_name,
         a.tax,
-        {% if target.type =='snowflake' %}
-        provinces.value:id::varchar as provinces_id,
-        provinces.value:country_id as provinces_country_id,
-        provinces.value:name as provinces_name,
-        provinces.value:code as provinces_code,
-        provinces.value:shipping_zone_id as provinces_shipping_zone_id,
-        provinces.value:tax as provinces_tax,
-        provinces.value:tax_percentage as provinces_tax_percentage,
-        provinces.value:tax_name as provinces_tax_name,
-        {% else %}
-        provinces.id as provinces_id,
-        provinces.country_id as provinces_country_id,
-        provinces.name as provinces_name,
-        provinces.code as provinces_code,
-        provinces.shipping_zone_id as provinces_shipping_zone_id,
-        provinces.tax as provinces_tax,
-        provinces.tax_percentage as provinces_tax_percentage,
-        provinces.tax_name as provinces_tax_name,
-        {% endif %}
+        {{extract_nested_value("provinces","id","string")}} as provinces_id,
+        {{extract_nested_value("provinces","country_id","string")}} as provinces_country_id,
+        {{extract_nested_value("provinces","name","string")}} as provinces_name,
+        {{extract_nested_value("provinces","code","string")}} as provinces_code,
+        {{extract_nested_value("provinces","shipping_zone_id","string")}} as provinces_shipping_zone_id,
+        {{extract_nested_value("provinces","tax","string")}} as provinces_tax,
+        {{extract_nested_value("provinces","tax_percentage","string")}} as provinces_tax_percentage,
+        {{extract_nested_value("provinces","tax_name","string")}} as provinces_tax_name,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,      
-        
-        from  {{i}} a
-                {{unnesting("provinces")}} 
-                {% if is_incremental() %}
-                {# /* -- this filter will only be applied on an incremental run */ #}
-                where {{daton_batch_runtime()}}  >= {{max_loaded}}
-                {% endif %}
-        {% if target.type =='snowflake' %}
-        qualify dense_rank() over (partition by a.id,provinces.value:id order by {{daton_batch_runtime()}} desc) row_num=1
-        {% else %}
-        qualify dense_rank() over (partition by a.id,provinces.id order by {{daton_batch_runtime()}} desc) =1
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id     
+    from  {{i}} a
+        {{unnesting("provinces")}} 
+        {% if is_incremental() %}
+        {# /* -- this filter will only be applied on an incremental run */ #}
+        where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_countries_lookback') }},0) from {{ this }})
         {% endif %}
+    qualify dense_rank() over (partition by a.id, {{extract_nested_value("provinces","id","string")}} order by {{daton_batch_runtime()}} desc) = 1
 
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

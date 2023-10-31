@@ -61,7 +61,10 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         request_status,
         status,
         supported_actions,
-        {{extract_nested_value("destination","id","string")}} as destination_id,
+        {% if target.type=='snowflake' %}
+        cast(destination.value:id as string) as destination_id,
+        {% else %}
+        cast(destination.id as string) as destination_id, {% endif %}
         {{extract_nested_value("destination","address1","string")}} as destination_address1,
         {{extract_nested_value("destination","address2","string")}} as destination_address2,
         {{extract_nested_value("destination","city","string")}} as destination_city,
@@ -73,7 +76,13 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("destination","province","string")}} as destination_province,
         {{extract_nested_value("destination","zip","string")}} as destination_zip,
         {{extract_nested_value("destination","company","string")}} as destination_company,
-        {{extract_nested_value("line_items","id","string")}} as line_items_id,
+        {% if target.type=='snowflake' %}
+        cast(line_items.value:id as string) as line_items_id,
+        cast(line_items.value:shop_id as string) as line_items_shop_id,
+        {% else %}
+        cast(line_items.id as string) as line_items_id,
+        cast(line_items.shop_id as string) as line_items_shop_id,
+        {% endif %}
         {{extract_nested_value("line_items","shop_id","string")}} as line_items_shop_id,
         {{extract_nested_value("line_items","fulfillment_order_id","string")}} as line_items_fulfillment_order_id,
         {{extract_nested_value("line_items","quantity","int")}} as line_items_quantity,

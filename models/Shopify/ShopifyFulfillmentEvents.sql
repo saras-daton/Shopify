@@ -4,53 +4,29 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
-{% endset %}
+{% set relations = dbt_utils.get_relations_by_pattern(
+schema_pattern=var('raw_schema'),
+table_pattern=var('shopify_fulfillment_events_tbl_ptrn'),
+exclude=var('shopify_fulfillment_events_exclude_tbl_ptrn'),
+database=var('raw_database')) %}
 
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-
-{% set table_name_query %}
-{{set_table_name('%shopify%fulfillment_events')}}
-{% endset %}
-
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
+{% for i in relations %}
     {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
     {% endif %}
 
     {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
 
     {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
-        {% set hr = 0 %}
+            {% set hr = 0 %}
     {% endif %}
 
         select 
@@ -60,7 +36,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         cast(fulfillment_id as string) as fulfillment_id,
         status,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="happened_at") }} as {{ dbt.type_timestamp() }}) as happened_at,
-        shop_id,
+        cast(shop_id as string) as shop_id,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
         cast(order_id as string) as order_id,
@@ -82,9 +58,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         from  {{i}} a
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            where {{daton_batch_runtime()}}  >= {{max_loaded}}
+            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_fulfillment_events_lookback') }},0) from {{ this }})
             {% endif %}
         qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) = 1
-
     {% if not loop.last %} union all {% endif %}
 {% endfor %}

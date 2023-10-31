@@ -10,8 +10,8 @@
 
 {% set relations = dbt_utils.get_relations_by_pattern(
 schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_abcheckouts_campaign_tbl_ptrn'),
-exclude=var('shopify_abcheckouts_campaign_exclude_tbl_ptrn'),
+table_pattern=var('shopify_abandoned_checkouts_tbl_ptrn'),
+exclude=var('shopify_abandoned_checkouts_exclude_tbl_ptrn'),
 database=var('raw_database')) %}
 
 {% for i in relations %}
@@ -85,7 +85,7 @@ database=var('raw_database')) %}
             {% endif %}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_campaign_lookback') }},0) from {{ this }})
+            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_abandoned_checkouts_lookback') }},0) from {{ this }})
             {% endif %}
     qualify row_number() over (partition by a.id order by {{daton_batch_runtime()}} desc)= 1
 

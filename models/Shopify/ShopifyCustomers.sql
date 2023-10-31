@@ -8,52 +8,29 @@
 -- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
-{% endset %}
+{% set relations = dbt_utils.get_relations_by_pattern(
+schema_pattern=var('raw_schema'),
+table_pattern=var('shopify_customers_tbl_ptrn'),
+exclude=var('shopify_customers_exclude_tbl_ptrn'),
+database=var('raw_database')) %}
 
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-
-{% set table_name_query %}
-{{set_table_name('%shopify%customers')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
-{% endset %}  
-
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
+{% for i in relations %}
     {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
     {% endif %}
 
     {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
+
     {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
-        {% set hr = 0 %}
+            {% set hr = 0 %}
     {% endif %}
 
         select 
@@ -72,47 +49,27 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         verified_email,
         tax_exempt,
         tags,
-        currency,
+        a.currency,
         a.phone,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="accepts_marketing_updated_at") }} as {{ dbt.type_timestamp() }}) as accepts_marketing_updated_at,
         a.admin_graphql_api_id,
-        {% if target.type =='snowflake' %}
-        default_address.value:id::VARCHAR as default_address_id,
-        default_address.value:customer_id::VARCHAR as default_address_customer_id,
-        default_address.value:first_name::VARCHAR as default_address_first_name,
-        default_address.value:last_name::VARCHAR as default_address_last_name,
-        default_address.value:address1::VARCHAR as default_address_address1,
-        default_address.value:city::VARCHAR as default_address_city,
-        default_address.value:province::VARCHAR as default_address_province,
-        default_address.value:country::VARCHAR as default_address_country,
-        default_address.value:zip::VARCHAR as default_address_zip,
-        default_address.value:phone::VARCHAR as default_address_phone,
-        default_address.value:name::VARCHAR as default_address_name,
-        default_address.value:province_code::VARCHAR as default_address_province_code,
-        default_address.value:country_code::VARCHAR as default_address_country_code,
-        default_address.value:country_name::VARCHAR as default_address_country_name,
-        default_address.value:default::VARCHAR as default_address_default,
-        default_address.value:address2::VARCHAR as default_address_address2,
-        default_address.value:company::VARCHAR as default_address_company,
-        {% else %}
-        default_address.id as default_address_id,
-        default_address.customer_id as default_address_customer_id,
-        default_address.first_name as default_address_first_name,
-        default_address.last_name as default_address_last_name,
-        default_address.address1 as default_address_address1,
-        default_address.city as default_address_city,
-        default_address.province as default_address_province,
-        default_address.country as default_address_country,
-        default_address.zip as default_address_zip,
-        default_address.phone as default_address_phone,
-        default_address.name as default_address_name,
-        default_address.province_code as default_address_province_code,
-        default_address.country_code as default_address_country_code,
-        default_address.country_name as default_address_country_name,
-        default_address.default as default_address_default,
-        default_address.address2 as default_address_address2,
-        default_address.company as default_address_company,
-        {% endif %}
+        {{extract_nested_value("default_address","id","string")}} as default_address_id,
+        {{extract_nested_value("default_address","customer_id","string")}} as default_address_customer_id,
+        {{extract_nested_value("default_address","first_name","string")}} as default_address_first_name,
+        {{extract_nested_value("default_address","last_name","string")}} as default_address_last_name,
+        {{extract_nested_value("default_address","address1","string")}} as default_address_address1,
+        {{extract_nested_value("default_address","city","string")}} as default_address_city,
+        {{extract_nested_value("default_address","province","string")}} as default_address_province,
+        {{extract_nested_value("default_address","country","string")}} as default_address_country,
+        {{extract_nested_value("default_address","zip","string")}} as default_address_zip,
+        {{extract_nested_value("default_address","phone","string")}} as default_address_phone,
+        {{extract_nested_value("default_address","name","string")}} as default_address_name,
+        {{extract_nested_value("default_address","province_code","string")}} as default_address_province_code,
+        {{extract_nested_value("default_address","country_code","string")}} as default_address_country_code,
+        {{extract_nested_value("default_address","country_name","string")}} as default_address_country_name,
+        {{extract_nested_value("default_address","default","boolean")}} as default_address_default,
+        {{extract_nested_value("default_address","address2","string")}} as default_address_address2,
+        {{extract_nested_value("default_address","company","string")}} as default_address_company,
         last_order_id,
         last_order_name,
         marketing_opt_in_level,
@@ -128,7 +85,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from  {{i}} a
                 {{unnesting("default_address")}} 
                 {% if var('currency_conversion_flag') %}
@@ -136,7 +93,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
                 {% endif %}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                where {{daton_batch_runtime()}}  >= {{max_loaded}}
+                where a.{{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_customers_lookback') }},0) from {{ this }})
                 {% endif %}
         qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}} desc) = 1
 
