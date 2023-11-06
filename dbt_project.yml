@@ -148,6 +148,10 @@ vars:
   shopify_orders_line_items_tbl_ptrn: '%shopify%orders'
   shopify_orders_line_items_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_line_items_lookback: 2592000000
+  
+  shopify_orders_line_items_properties_tbl_ptrn: '%shopify%orders'
+  shopify_orders_line_items_properties_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
+  shopify_orders_line_items_properties_lookback: 2592000000
 
   shopify_orders_line_items_tax_lines_tbl_ptrn: '%shopify%orders'
   shopify_orders_line_items_tax_lines_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
