@@ -93,7 +93,7 @@ vars:
   shopify_disputes_exclude_tbl_ptrn: ''
   shopify_disputes_lookback: 2592000000
 
-  shopify_events_tbl_ptrn: '%shopify%events'
+  shopify_events_tbl_ptrn: '%shopify_events'
   shopify_events_exclude_tbl_ptrn: ''
   shopify_events_lookback: 2592000000
 
@@ -121,44 +121,44 @@ vars:
   shopify_locations_exclude_tbl_ptrn: ''
   shopify_locations_lookback: 2592000000
 
-  shopify_orders_tbl_ptrn: '%shopify%orders'
-  shopify_orders_exclude_tbl_ptrn: ''
+  shopify_orders_tbl_ptrn: '%shopify_bq_orders'
+  shopify_orders_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_lookback: 2592000000
 
   shopify_orders_addresses_tbl_ptrn: '%shopify%orders'
-  shopify_orders_addresses_exclude_tbl_ptrn: ''
+  shopify_orders_addresses_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_addresses_lookback: 2592000000
 
   shopify_orders_customer_tbl_ptrn: '%shopify%orders'
-  shopify_orders_customer_exclude_tbl_ptrn: ''
+  shopify_orders_customer_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_customer_lookback: 2592000000
 
-  shopify_orders_discount_allocations_tbl_ptrn: '%shopify%'
-  shopify_orders_discount_allocations_exclude_tbl_ptrn: ''
+  shopify_orders_discount_allocations_tbl_ptrn: '%shopify%orders'
+  shopify_orders_discount_allocations_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_discount_allocations_lookback: 2592000000
 
   shopify_orders_discount_applications_tbl_ptrn: '%shopify%orders'
-  shopify_orders_discount_applications_exclude_tbl_ptrn: ''
+  shopify_orders_discount_applications_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_discount_applications_lookback: 2592000000
 
   shopify_orders_fulfillments_tbl_ptrn: '%shopify%orders'
-  shopify_orders_fulfillments_exclude_tbl_ptrn: ''
+  shopify_orders_fulfillments_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_fulfillments_lookback: 2592000000
 
   shopify_orders_line_items_tbl_ptrn: '%shopify%orders'
-  shopify_orders_line_items_exclude_tbl_ptrn: ''
+  shopify_orders_line_items_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_line_items_lookback: 2592000000
 
-  shopify_orders_line_items_taxlines_tbl_ptrn: '%shopify%orders'
-  shopify_orders_line_items_taxlines_exclude_tbl_ptrn: ''
-  shopify_orders_line_items_taxlines_lookback: 2592000000
+  shopify_orders_line_items_tax_lines_tbl_ptrn: '%shopify%orders'
+  shopify_orders_line_items_tax_lines_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
+  shopify_orders_line_items_tax_lines_lookback: 2592000000
 
   shopify_orders_note_attributes_tbl_ptrn: '%shopify%orders'
-  shopify_orders_note_attributes_exclude_tbl_ptrn: ''
+  shopify_orders_note_attributes_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_note_attributes_lookback: 2592000000
 
   shopify_orders_shipping_lines_tbl_ptrn: '%shopify%orders'
-  shopify_orders_shipping_lines_exclude_tbl_ptrn: ''
+  shopify_orders_shipping_lines_exclude_tbl_ptrn: '%shopify%fulfillment_orders'
   shopify_orders_shipping_lines_lookback: 2592000000
 
   shopify_payouts_tbl_ptrn: '%shopify%payouts'
@@ -210,7 +210,8 @@ vars:
   shopify_tender_transactions_lookback: 2592000000
 
   shopify_transactions_tbl_ptrn: '%shopify%transactions'
-  shopify_transactions_exclude_tbl_ptrn: ''
+  shopify_transactions_exclude1_tbl_ptrn: '%tender%'
+  shopify_transactions_exclude2_tbl_ptrn: '%balance%'
   shopify_transactions_lookback: 2592000000
 
   ShopifyAbandonedCheckouts: True

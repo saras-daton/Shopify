@@ -8,51 +8,29 @@
     -- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-{% if is_incremental() %}
-    {%- set max_loaded_query -%}
-    select coalesce(max(_daton_batch_runtime) - 2592000000, 0) from {{ this }}
-    {% endset %}
+{% set relations = dbt_utils.get_relations_by_pattern(
+schema_pattern=var('raw_schema'),
+table_pattern=var('shopify_orders_note_attributes_tbl_ptrn'),
+exclude=var('shopify_orders_note_attributes_exclude_tbl_ptrn'),
+database=var('raw_database')) %}
 
-    {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-    {%- if execute -%}
-        {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-    {% else %}
-        {% set max_loaded = 0 %}
-    {%- endif -%}
-{% endif %}
-
-{% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
-{% endset %}
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-    {# Return the first column #}
-    {% set results_list = results.columns[0].values() %}
-    {% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-    {% set results_list = [] %}
-    {% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
+{% for i in relations %}
     {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand = i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
     {% endif %}
 
     {% if var('get_storename_from_tablename_flag') %}
-        {% set store = i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
 
     {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
-        {% set hr = 0 %}
+            {% set hr = 0 %}
     {% endif %}
 
     select 
@@ -78,19 +56,11 @@
         current_total_price_set,
         current_total_tax,
         current_total_tax_set,
-    {% if target.type =='snowflake' %}
-        discount_codes.value:code::varchar as discount_code,
-        discount_codes.value:amount::numeric as discount_amount,
-        discount_codes.value:type::varchar as discount_type,
-        note_attributes.value:name::varchar as note_attributes_name,
-        note_attributes.value:value::varchar as note_attributes_value,
-    {% else %}
-        discount_codes.code as discount_code,
-        discount_codes.amount as discount_amount,
-        discount_codes.type as discount_type,
-        note_attributes.name as note_attributes_name,
-        note_attributes.value as note_attributes_value,
-    {% endif %}
+        {{extract_nested_value("discount_codes","code","string")}} as discount_code,
+        {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
+        {{extract_nested_value("discount_codes","type","string")}} as discount_type,
+        {{extract_nested_value("note_attributes","name","string")}} as note_attributes_name,
+        {{extract_nested_value("note_attributes","value","string")}} as note_attributes_value,
         email,
         estimated_taxes,
         financial_status,
@@ -168,12 +138,9 @@
     {{ unnesting("note_attributes") }}
     {% if is_incremental() %}
         {# /* -- this filter will only be applied on an incremental run */ #}
-        where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
-    {% endif %}
-{% if target.type =='snowflake' %}
-    qualify dense_rank() over (partition by a.id, note_attributes.value:name order by a.{{ daton_batch_runtime() }} desc) = 1
-{% else %}
-    qualify dense_rank() over (partition by a.id, note_attributes.name order by a.{{ daton_batch_runtime() }} desc) = 1
-{% endif %}
-{% if not loop.last %} union all {% endif %}
+        where a.{{ daton_batch_runtime() }} >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_orders_note_attributes_lookback') }},0) from {{ this }})
+    {% endif %} 
+
+    qualify dense_rank() over (partition by a.id, {{extract_nested_value("note_attributes","name","string")}} order by a.{{ daton_batch_runtime() }} desc) = 1
+    {% if not loop.last %} union all {% endif %}
 {% endfor %}

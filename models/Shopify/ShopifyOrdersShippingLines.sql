@@ -8,51 +8,29 @@
     -- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-{% if is_incremental() %}
-    {%- set max_loaded_query -%}
-    select coalesce(max(_daton_batch_runtime) - 2592000000, 0) from {{ this }}
-    {% endset %}
+{% set relations = dbt_utils.get_relations_by_pattern(
+schema_pattern=var('raw_schema'),
+table_pattern=var('shopify_orders_shipping_lines_tbl_ptrn'),
+exclude=var('shopify_orders_shipping_lines_exclude_tbl_ptrn'),
+database=var('raw_database')) %}
 
-    {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-    {%- if execute -%}
-        {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-    {% else %}
-        {% set max_loaded = 0 %}
-    {%- endif -%}
-{% endif %}
-
-{% set table_name_query %}
-    {{ set_table_name('%shopify%orders') }} and lower(table_name) not like '%shopify%fulfillment_orders' and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
-{% endset %}
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-    {# Return the first column #}
-    {% set results_list = results.columns[0].values() %}
-    {% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-    {% set results_list = [] %}
-    {% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
+{% for i in relations %}
     {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand = i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
     {% else %}
         {% set brand = var('default_brandname') %}
     {% endif %}
 
     {% if var('get_storename_from_tablename_flag') %}
-        {% set store = i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
     {% else %}
         {% set store = var('default_storename') %}
     {% endif %}
 
     {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
     {% else %}
-        {% set hr = 0 %}
+            {% set hr = 0 %}
     {% endif %}
 
     select 
@@ -73,15 +51,9 @@
         cast(current_total_discounts as numeric) as current_total_discounts,
         cast(current_total_price as numeric) as current_total_price,
         cast(current_total_tax as numeric) as current_total_tax,
-    {% if target.type =='snowflake' %}
-        discount_codes.value:code::varchar as discount_code,
-        discount_codes.value:amount::numeric as discount_amount,
-        discount_codes.value:type::varchar as discount_type,
-    {% else %}
-        discount_codes.code as discount_code,
-        discount_codes.amount as discount_amount,
-        discount_codes.type as discount_type,
-    {% endif %}
+        {{extract_nested_value("discount_codes","code","string")}} as discount_code,
+        {{extract_nested_value("discount_codes","amount","numeric")}} as discount_amount,
+        {{extract_nested_value("discount_codes","type","string")}} as discount_type,
         email,
         estimated_taxes,
         financial_status,
@@ -115,31 +87,13 @@
         cast(total_tip_received as numeric) as total_tip_received,
         total_weight,
         cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-    {% if target.type =='snowflake' %}
-        coalesce(shipping_lines.value:id::varchar,'N/A') as shipping_lines_id,
-        shipping_lines.value:code::varchar as shipping_lines_code,
-        shipping_lines.value:discounted_price::numeric as shipping_lines_discounted_price,
-        shipping_lines.value:discounted_price_set as shipping_lines_discounted_price_set,
-        shipping_lines.value:price::numeric as shipping_lines_price,
-        shipping_lines.value:price_set as shipping_lines_price_set,
-        shipping_lines.value:source::varchar as shipping_lines_source,
-        shipping_lines.value:title::varchar as shipping_lines_title,
-        shipping_lines.value:tax_lines as shipping_lines_tax_lines,
-        shipping_lines.value:discount_allocations as shipping_lines_discount_allocations,
-        shipping_lines.value:carrier_identifier::varchar as shipping_lines_carrier_identifier,
-    {% else %}
-        coalesce(cast(shipping_lines.id as string),'N/A') as shipping_lines_id,
-        shipping_lines.code as shipping_lines_code,
-        cast(shipping_lines.discounted_price as numeric) as shipping_lines_discounted_price,
-        shipping_lines.discounted_price_set as shipping_lines_discounted_price_set,
-        cast(shipping_lines.price as numeric) as shipping_lines_price,
-        shipping_lines.price_set as shipping_lines_price_set,
-        shipping_lines.source as shipping_lines_source,
-        shipping_lines.title as shipping_lines_title,
-        shipping_lines.tax_lines as shipping_lines_tax_lines,
-        shipping_lines.discount_allocations as shipping_lines_discount_allocations,
-        shipping_lines.carrier_identifier as shipping_lines_carrier_identifier,
-    {% endif %}
+        coalesce({{extract_nested_value("shipping_lines","id","string")}},'N/A') as shipping_lines_id,
+        {{extract_nested_value("shipping_lines","code","string")}} as shipping_lines_code,
+        {{extract_nested_value("shipping_lines","discounted_price","numeric")}} as shipping_lines_discounted_price,
+        {{extract_nested_value("shipping_lines","price","numeric")}} as shipping_lines_price,
+        {{extract_nested_value("shipping_lines","source","string")}} as shipping_lines_source,
+        {{extract_nested_value("shipping_lines","title","string")}} as shipping_lines_title,
+        {{extract_nested_value("shipping_lines","carrier_identifier","string")}} as shipping_lines_carrier_identifier,
         cast(app_id as string) as app_id,
         customer_locale,
         note,
@@ -170,8 +124,8 @@
     {{ unnesting("shipping_lines") }}
     {% if is_incremental() %}
         {# /* -- this filter will only be applied on an incremental run */ #}
-        where a.{{ daton_batch_runtime() }} >= {{ max_loaded }}
-    {% endif %}
+        where a.{{ daton_batch_runtime() }} >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_orders_shipping_lines_lookback') }},0) from {{ this }})
+    {% endif %} 
 
     qualify dense_rank() over (partition by a.id order by a.{{ daton_batch_runtime() }} desc) = 1
     {% if not loop.last %} union all {% endif %}
