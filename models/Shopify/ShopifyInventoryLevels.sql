@@ -4,38 +4,18 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% set relations = dbt_utils.get_relations_by_pattern(
-schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_inventory_levels_tbl_ptrn'),
-exclude=var('shopify_inventory_levels_exclude_tbl_ptrn'),
-database=var('raw_database')) %}
-
-{% for i in relations %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-            {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("shopify_inventory_levels_tbl_ptrn","shopify_inventory_levels_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
     select 
-    '{{brand}}' as brand,
-    '{{store}}' as store,
+    {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+    {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
     cast(inventory_item_id as string) as inventory_item_id,
     cast(location_id as string) as location_id,
     available as inventory_levels_available,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+    {{timezone_conversion("updated_at")}} as updated_at,
     admin_graphql_api_id,
     {{daton_user_id()}} as _daton_user_id,
     {{daton_batch_runtime()}} as _daton_batch_runtime,

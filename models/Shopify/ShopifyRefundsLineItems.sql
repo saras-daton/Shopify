@@ -8,55 +8,29 @@
 -- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-{% set relations = dbt_utils.get_relations_by_pattern(
-schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_refunds_line_items_tbl_ptrn'),
-exclude=var('shopify_refunds_line_items_exclude_tbl_ptrn'),
-database=var('raw_database')) %}
-
-{% for i in relations %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-            {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("shopify_refunds_tbl_ptrn","shopify_refunds_line_items_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
         select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
         b.* {{exclude()}} (_daton_user_id, _daton_batch_runtime, _daton_batch_id),
-        {% if var('currency_conversion_flag') %}
-            case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then b.subtotal_set_presentment_currency_code else c.from_currency_code end as exchange_currency_code,
-        {% else %}
-            safe_cast(1 as decimal) as exchange_currency_rate,
-            b.subtotal_set_presentment_currency_code as exchange_currency_code, 
-        {% endif %}
         b._daton_user_id,
         b._daton_batch_runtime,
         b._daton_batch_id,
         current_timestamp() as _last_updated,
+        {{ currency_conversion('c.value', 'c.from_currency_code', 'b.subtotal_set_presentment_currency_code') }},
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from (
         select
         safe_cast(a.id as string) refund_id,
         safe_cast(order_id as string) order_id,
-        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+        {{timezone_conversion("a.created_at")}} as created_at,
         note,
         safe_cast(user_id as string) user_id,
-        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
+        {{timezone_conversion("a.processed_at")}} as processed_at,
         restock,
         safe_cast(a.admin_graphql_api_id as string) admin_graphql_api_id,
         {{extract_nested_value('refund_line_items','id','string')}} as refund_line_items_id,
@@ -108,12 +82,7 @@ database=var('raw_database')) %}
             where a.{{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_refunds_line_items_lookback') }},0) from {{ this }})
             {% endif %}
 
-            qualify  
-            {% if target.type =='snowflake' %}
-            row_number() over (partition by a.id, refund_line_items.value:id, line_item.value:variant_id order by _daton_batch_runtime desc) = 1
-            {% else %}
-            row_number() over (partition by a.id, refund_line_items.id, line_item.variant_id order by _daton_batch_runtime desc) = 1
-            {% endif %}
+            qualify row_number() over (partition by a.id, {{extract_nested_value('refund_line_items','id','string')}}, {{extract_nested_value("line_item","variant_id","string")}} order by _daton_batch_runtime desc) = 1
 
         ) b
         {% if var('currency_conversion_flag') %}

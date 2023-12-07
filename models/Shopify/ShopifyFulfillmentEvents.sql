@@ -4,46 +4,26 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% set relations = dbt_utils.get_relations_by_pattern(
-schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_fulfillment_events_tbl_ptrn'),
-exclude=var('shopify_fulfillment_events_exclude_tbl_ptrn'),
-database=var('raw_database')) %}
-
-{% for i in relations %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-            {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("shopify_fulfillment_events_tbl_ptrn","shopify_fulfillment_events_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
         select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
         cast(id as string) as id,
         cast(fulfillment_id as string) as fulfillment_id,
         status,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="happened_at") }} as {{ dbt.type_timestamp() }}) as happened_at,
+        {{timezone_conversion("happened_at")}} as happened_at,
         cast(shop_id as string) as shop_id,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        {{timezone_conversion("created_at")}} as created_at,
+        {{timezone_conversion("updated_at")}} as updated_at,
         cast(order_id as string) as order_id,
         admin_graphql_api_id,
         message,
         country,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="estimated_delivery_at") }} as {{ dbt.type_timestamp() }}) as estimated_delivery_at,
+        {{timezone_conversion("estimated_delivery_at")}} as estimated_delivery_at,
         city,
         province,
         zip,

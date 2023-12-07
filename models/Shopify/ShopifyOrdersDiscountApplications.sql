@@ -8,36 +8,16 @@
     -- depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-{% set relations = dbt_utils.get_relations_by_pattern(
-schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_orders_discount_applications_tbl_ptrn'),
-exclude=var('shopify_orders_discount_applications_exclude_tbl_ptrn'),
-database=var('raw_database')) %}
-
-{% for i in relations %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-            {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("shopify_orders_tbl_ptrn","shopify_orders_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
     select *, row_number() over (partition by order_id order by _daton_batch_runtime desc) _seq_id
     from (
         select 
-            '{{ brand }}' as brand,
-            '{{ store }}' as store,
+            {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+            {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
             safe_cast(a.id as string) as order_id, 
             admin_graphql_api_id,
             browser_ip,
@@ -47,8 +27,8 @@ database=var('raw_database')) %}
             checkout_token,
             confirmed,
             contact_email,
-            safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-            currency,
+            {{timezone_conversion("created_at")}} as created_at,
+            {{ currency_conversion('c.value', 'c.from_currency_code', 'a.currency') }},
             cast(current_subtotal_price as numeric) as current_subtotal_price,
             cast(current_total_discounts as numeric) as current_total_discounts,
             cast(current_total_price as numeric) as current_total_price,
@@ -66,7 +46,7 @@ database=var('raw_database')) %}
             payment_gateway_names,
             phone,
             presentment_currency,
-            safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
+            {{timezone_conversion("processed_at")}} as processed_at,
             processing_method,
             reference,
             referring_site,
@@ -85,7 +65,7 @@ database=var('raw_database')) %}
             cast(total_tip_received as numeric) as total_tip_received,
             total_weight,
             cast(total_line_items_price as numeric) as total_line_items_price,
-            safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+            {{timezone_conversion("a.updated_at")}} as updated_at,
             {{extract_nested_value("discount_applications","target_type","string")}} as discount_applications_target_type,
             {{extract_nested_value("discount_applications","type","string")}} as discount_applications_type,
             {{extract_nested_value("discount_applications","value","string")}} as discount_applications_value,
@@ -98,20 +78,13 @@ database=var('raw_database')) %}
             safe_cast(app_id as string) as app_id,
             customer_locale,
             note,
-            safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as closed_at,
+            {{timezone_conversion("closed_at")}} as closed_at,
             fulfillment_status,
             safe_cast(location_id as string) as location_id,
             cancel_reason,
-            safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="closed_at") }} as {{ dbt.type_timestamp() }}) as cancelled_at,
+            {{timezone_conversion("cancelled_at")}} as cancelled_at,
             safe_cast(user_id as string) as user_id,
             safe_cast(device_id as string) as device_id,
-            {% if var('currency_conversion_flag') %}
-                case when c.value is null then 1 else c.value end as exchange_currency_rate,
-                case when c.from_currency_code is null then a.currency else c.from_currency_code end as exchange_currency_code,
-            {% else %}
-                safe_cast(1 as decimal) as exchange_currency_rate,
-                a.currency as exchange_currency_code,
-            {% endif %}
             a.{{daton_user_id()}} as _daton_user_id,
             a.{{daton_batch_runtime()}} as _daton_batch_runtime,
             a.{{daton_batch_id()}} as _daton_batch_id,

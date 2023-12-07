@@ -10,7 +10,7 @@
 
 {% set relations = dbt_utils.get_relations_by_pattern(
 schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_refund_line_items_tax_tbl_ptrn'),
+table_pattern=var('shopify_refunds_tbl_ptrn'),
 exclude=var('shopify_refund_line_items_tax_exclude_tbl_ptrn'),
 database=var('raw_database')) %}
 
@@ -37,26 +37,20 @@ with unnested_refunds as(
     select * 
     from (
         select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
         b.* {{exclude()}} (_daton_user_id, _daton_batch_runtime, _daton_batch_id),
-        {% if var('currency_conversion_flag') %}
-            case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then b.subtotal_set_presentment_currency_code else c.from_currency_code end as exchange_currency_code,
-        {% else %}
-            safe_cast(1 as decimal) as exchange_currency_rate,
-            b.subtotal_set_presentment_currency_code as exchange_currency_code, 
-        {% endif %}
         b._daton_user_id,
         b._daton_batch_runtime,
         b._daton_batch_id,
         current_timestamp() as _last_updated,
+        {{ currency_conversion('c.value', 'c.from_currency_code', 'b.subtotal_set_presentment_currency_code') }},
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from (
         select
         safe_cast(a.id as string) refund_id,
         safe_cast(a.order_id as string) order_id,
-        safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+        {{timezone_conversion("created_at")}} as created_at,
         a.note,
         safe_cast(user_id as string) user_id,
         safe_cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.processed_at") }} as {{ dbt.type_timestamp() }}) as processed_at,
@@ -117,8 +111,8 @@ with unnested_refunds as(
         ) b
         {% if var('currency_conversion_flag') %}
             left join {{ref('ExchangeRates')}} c on date(b.created_at) = c.date and b.subtotal_set_presentment_currency_code = c.to_currency_code
-        {% endif %}
-    )
+            {% endif %}
+    )            
     {% if not loop.last %} union all {% endif %}
 {% endfor %}
 )   
@@ -127,7 +121,6 @@ with unnested_refunds as(
 select *, row_number() over (partition by refund_id order by _daton_batch_runtime desc) _seq_id
 from (
 select *
-from unnested_refunds 
-qualify
-dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) = 1
+from unnested_refunds
+qualify dense_rank() over (partition by refund_id order by _daton_batch_runtime desc) = 1
 )

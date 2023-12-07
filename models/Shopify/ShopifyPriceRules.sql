@@ -4,34 +4,14 @@
     {{ config(enabled=False) }}
 {% endif %}
 
-{% set relations = dbt_utils.get_relations_by_pattern(
-schema_pattern=var('raw_schema'),
-table_pattern=var('shopify_price_rules_tbl_ptrn'),
-exclude=var('shopify_price_rules_exclude_tbl_ptrn'),
-database=var('raw_database')) %}
-
-{% for i in relations %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-            {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("shopify_price_rules_tbl_ptrn","shopify_price_rules_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
     select 
-        '{{ brand }}' as brand,
-        '{{ store }}' as store,
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
         cast(id as string) id,
         value_type,
         value,
@@ -40,10 +20,10 @@ database=var('raw_database')) %}
         target_selection,
         allocation_method,
         once_per_customer,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="starts_at") }} as {{ dbt.type_timestamp() }}) as starts_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="ends_at") }} as {{ dbt.type_timestamp() }}) as ends_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        {{timezone_conversion("starts_at")}} as starts_at,
+        {{timezone_conversion("ends_at")}} as ends_at,
+        {{timezone_conversion("created_at")}} as created_at,
+        {{timezone_conversion("updated_at")}} as updated_at,
         title,
         admin_graphql_api_id,
         usage_limit,

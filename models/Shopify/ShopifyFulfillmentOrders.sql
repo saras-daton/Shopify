@@ -4,56 +4,14 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
-{% endset %}
-
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-{% set table_name_query %}
-{{set_table_name('%shopify%fulfillment_orders%')}}
-{% endset %}  
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("shopify_fulfillment_orders_tbl_ptrn","shopify_fulfillment_orders_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
         select 
-        '{{brand}}' as brand,
-        '{{store}}' as store,
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
         cast(a.id as string) as id,
         cast(a.shop_id as string) as shop_id,
         cast(order_id as string) as order_id,
@@ -78,12 +36,11 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("destination","company","string")}} as destination_company,
         {% if target.type=='snowflake' %}
         cast(line_items.value:id as string) as line_items_id,
-        cast(line_items.value:shop_id as string) as line_items_shop_id,
+        coalesce(cast(line_items.value:shop_id as string), 'N/A') as line_items_shop_id,
         {% else %}
         cast(line_items.id as string) as line_items_id,
-        cast(line_items.shop_id as string) as line_items_shop_id,
+        coalesce(cast(line_items.shop_id as string), 'N/A') as line_items_shop_id,
         {% endif %}
-        {{extract_nested_value("line_items","shop_id","string")}} as line_items_shop_id,
         {{extract_nested_value("line_items","fulfillment_order_id","string")}} as line_items_fulfillment_order_id,
         {{extract_nested_value("line_items","quantity","int")}} as line_items_quantity,
         {{extract_nested_value("line_items","line_item_id","string")}} as line_items_line_item_id,
@@ -102,9 +59,9 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("assigned_location","zip","string")}} as assigned_location_zip,
         {{extract_nested_value("delivery_method","id","string")}} as delivery_method_id,
         {{extract_nested_value("delivery_method","method_type","string")}} as delivery_method_method_type,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="fulfill_at") }} as {{ dbt.type_timestamp() }}) as fulfill_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        {{timezone_conversion("fulfill_at")}} as fulfill_at,
+        {{timezone_conversion("fulfill_at")}} as created_at,
+        {{timezone_conversion("fulfill_at")}} as updated_at,
         a.{{daton_user_id()}} as _daton_user_id,
         a.{{daton_batch_runtime()}} as _daton_batch_runtime,
         a.{{daton_batch_id()}} as _daton_batch_id,
@@ -117,7 +74,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{unnesting("delivery_method")}}
         {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE a.{{daton_batch_runtime()}}  >= {{max_loaded}}
+            where a.{{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_fulfillment_orders_lookback') }},0) from {{ this }})
         {% endif %}               
         qualify row_number() over (partition by a.id order by _daton_batch_runtime desc) = 1
         
