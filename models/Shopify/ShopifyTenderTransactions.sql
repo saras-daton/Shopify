@@ -20,6 +20,7 @@
         cast(order_id as string) order_id,
         cast(amount as numeric) amount,
         {{ currency_conversion('c.value', 'c.from_currency_code', 'a.currency') }},
+        currency,
         test,
         {{timezone_conversion("processed_at")}} as processed_at,
         remote_reference,

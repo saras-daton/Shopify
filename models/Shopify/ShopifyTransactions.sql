@@ -29,6 +29,7 @@
     source_name,
     cast(amount as numeric) amount,
     {{ currency_conversion('c.value', 'c.from_currency_code', 'a.currency') }},
+    currency,
     payment_id,
     admin_graphql_api_id,
     message,

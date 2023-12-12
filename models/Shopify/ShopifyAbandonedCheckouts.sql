@@ -16,7 +16,7 @@
     select 
         {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
         {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
-        cast(id as string) as id,
+        cast(a.id as string) as id,
         token,
         cart_token,
         email,
@@ -25,6 +25,7 @@
         {{timezone_conversion("updated_at")}} as updated_at,
         taxes_included,
         total_weight,
+        {{ currency_conversion('c.value', 'c.from_currency_code', 'a.currency') }},
         currency,
         customer_locale,
         name,
@@ -52,6 +53,9 @@
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
     from  {{i}} a
+            {% if var('currency_conversion_flag') %}
+                    left join {{ref('ExchangeRates')}} c on date(a.updated_at) = c.date and a.currency = c.to_currency_code
+            {% endif %}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where a.{{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_abandoned_checkouts_lookback') }},0) from {{ this }})

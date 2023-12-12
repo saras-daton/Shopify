@@ -14,6 +14,7 @@
         {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,        cast(id as string) as id,
         status,
         cast(date as date) as date,
+        {{ currency_conversion('c.value', 'c.from_currency_code', 'a.currency') }},
         currency,
         cast(amount as numeric) as amount,
         {{extract_nested_value("summary","adjustments_fee_amount","numeric")}} as summary_adjustments_fee_amount,
@@ -32,6 +33,9 @@
         current_timestamp() as _last_updated,
         '{{ env_var("DBT_CLOUD_RUN_ID", "manual") }}' as _run_id
     from  {{ i }} a
+    {% if var('currency_conversion_flag') %}
+                    left join {{ref('ExchangeRates')}} c on date(a.updated_at) = c.date and a.currency = c.to_currency_code
+            {% endif %}
     {{ unnesting("summary") }} 
     {% if is_incremental() %}
         {# /* -- this filter will only be applied on an incremental run */ #}

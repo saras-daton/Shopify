@@ -30,6 +30,7 @@
         {{timezone_conversion("updated_at")}} as updated_at,
         country_code,
         country_name,
+        {{ currency_conversion('c.value', 'c.from_currency_code', 'a.currency') }},
         currency,
         customer_email,
         timezone,
@@ -73,6 +74,9 @@
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         from  {{i}} a
+                {% if var('currency_conversion_flag') %}
+                    left join {{ref('ExchangeRates')}} c on date(a.updated_at) = c.date and a.currency = c.to_currency_code
+                {% endif %}
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
                 where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_shop_lookback') }},0) from {{ this }})

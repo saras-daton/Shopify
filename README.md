@@ -96,9 +96,11 @@ This package contains models from the Shopify API which includes reports on {{sa
 
 | **Category**                 | **Model**  | **Description** |
 | ------------------------- | ---------------| ----------------------- |
+|Checkouts | [ShopifyAbandonedCheckouts](models/Shopify/ShopifyAbandonedCheckouts.sql)| Checkout are used to enter their shipping information and payment details before placing the order. |
 |Customer | [ShopifyCustomers](models/Shopify/ShopifyCustomers.sql)  | A detailed report which gives infomration about Customers |
 |Addresses | [ShopifyCustomersAddresses](models/Shopify/ShopifyCustomersAddresses.sql)  | A detailed report which gives infomration about the addresses of each customer |
-|Inventory | [ShopifyInventory](models/Shopify/ShopifyInventory.sql)  | A detailed report which gives infomration about inventory levels |
+|Inventory | [ShopifyInventoryLevels](models/Shopify/ShopifyInventory.sql)  | A detailed report which gives infomration about inventory levels |
+|Inventory | [ShopifyInventoryItems](models/Shopify/ShopifyInventory.sql)  | A detailed report which gives infomration about inventory items |
 |Orders | [ShopifyOrdersAddresses](models/Shopify/ShopifyOrdersAddresses.sql)  | A list of billing and shipping addresses |
 |Orders | [ShopifyOrdersCustomer](models/Shopify/ShopifyOrdersCustomer.sql)| A report of orders at customer level |
 |Orders | [ShopifyOrdersLineItemsDiscounts](models/Shopify/ShopifyOrdersLineItemsDiscounts.sql)| A report of orders with discount allocations |
@@ -106,20 +108,20 @@ This package contains models from the Shopify API which includes reports on {{sa
 |Orders | [ShopifyOrdersFulfillments](models/Shopify/ShopifyOrdersFulfillments.sql)| A report of orders with fulfillment details, destinations and assigned locations at product level.|
 |Orders | [ShopifyOrdersLineItemsTaxLines](models/Shopify/ShopifyOrdersLineItemsTaxLines.sql)| A list of orders with  product level taxes. |
 |Orders | [ShopifyOrdersLineItems](models/Shopify/ShopifyOrdersLineItems.sql)| A list of orders at product level |
-|Orders | [ShopifyOrdersRefundLines](models/Shopify/ShopifyOrdersRefundLines.sql)| A list of refunded orders which includes refund & order level revenue. |
+|Orders | [ShopifyOrdersLineItemsProperties](models/Shopify/ShopifyOrdersLineItemsProperties.sql)| A list of properties at the product level |
+|Orders | [ShopifyOrdersRefundLines](models/Shopify/ShopifyOrdersRefundsRefundLineItems.sql)| A list of refunded orders which includes refund & order level revenue. |
 |Orders | [ShopifyOrdersRefundsLineItems](models/Shopify/ShopifyOrdersRefundsLineItems.sql)| A list of refunded orders which includes refund & product level revenue. |
-|Orders | [ShopifyOrdersRefundsTaxLines](models/Shopify/ShopifyOrdersRefundsTaxLines.sql)| A list of taxes associated with the refunded item. |
+|Orders | [ShopifyOrdersRefundsLineItemsTax](models/Shopify/ShopifyOrdersRefundsTaxLines.sql)| A list of taxes associated with the refunded item. |
 |Orders | [ShopifyOrdersShippingLines](models/Shopify/ShopifyOrdersShippingLines.sql)| A list of orders with shipping details |
 |Orders | [ShopifyOrdersTransactions](models/Shopify/ShopifyOrdersTransactions.sql)| A list of order transactions |
 |Orders | [ShopifyOrders](models/Shopify/ShopifyOrders.sql)| A list of orders |
 |Orders | [ShopifyOrdersNoteAttributes](models/Shopify/ShopifyOrdersNoteAttributes.sql)| A list of orders with the order note attributes unnested|
-|Product | [ShopifyProduct](models/Shopify/ShopifyProduct.sql)| A list of product summary, manufacturer & dimensions |
+|Product | [ShopifyProducts](models/Shopify/ShopifyProduct.sql)| A list of product summary, manufacturer & dimensions |
 |Refunds | [ShopifyRefundsTransactions](models/Shopify/ShopifyRefundsTransactions.sql)| A list of refund transactions |
 |Transactions | [ShopifyTransactions](models/Shopify/ShopifyTransactions.sql)| A report of transactions with transactions fees, sources and status. |
 |Countries | [ShopifyCountries](models/Shopify/ShopifyCountries.sql)| A list of countries. |
 |Events | [ShopifyEvents](models/Shopify/ShopifyEvents.sql)| A list of events. |
 |Shops | [ShopifyShop](models/Shopify/ShopifyShop.sql)| Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand. |
-|Checkouts | [ShopifyCheckouts](models/Shopify/ShopifyCheckouts.sql)| Checkout are used to enter their shipping information and payment details before placing the order. |
 |Transactions | [ShopifyTenderTransactions](models/Shopify/ShopifyTenderTransactions.sql)| Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place. |
 |Policies | [ShopifyPolicies](models/Shopify/ShopifyPolicies.sql)| List of policies for your Shopify store like Refund policy, Privacy policy, Terms of service, Shipping policy, Legal notice. |
 |Collections | [ShopifySmartCollections](models/Shopify/ShopifySmartCollections.sql)| An automated collection uses selection conditions to automatically include matching products. |

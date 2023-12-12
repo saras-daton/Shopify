@@ -36,10 +36,10 @@
         {{extract_nested_value("destination","company","string")}} as destination_company,
         {% if target.type=='snowflake' %}
         cast(line_items.value:id as string) as line_items_id,
-        coalesce(cast(line_items.value:shop_id as string), 'N/A') as line_items_shop_id,
+        cast(line_items.value:shop_id as string) as line_items_shop_id,
         {% else %}
         cast(line_items.id as string) as line_items_id,
-        coalesce(cast(line_items.shop_id as string), 'N/A') as line_items_shop_id,
+        cast(line_items.shop_id as string) as line_items_shop_id,
         {% endif %}
         {{extract_nested_value("line_items","fulfillment_order_id","string")}} as line_items_fulfillment_order_id,
         {{extract_nested_value("line_items","quantity","int")}} as line_items_quantity,
