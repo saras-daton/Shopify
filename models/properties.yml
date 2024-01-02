@@ -831,7 +831,7 @@ models:
       incremental_strategy: merge
       unique_key: ['id','line_items_id','discount_application_index']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['id','line_items_id','discount_application_index']
+      cluster_by: ['id','line_items_id','discount_allocations_discount_application_index']
     columns:
       - name: brand
         tests:

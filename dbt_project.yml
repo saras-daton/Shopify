@@ -7,34 +7,71 @@ config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "Shopify" #equivalent to project_id in BigQuery
+  raw_database: "EDM" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "Daton" #equivalent to dataset in BigQuery
+  raw_schema: "EDM" #equivalent to dataset in BigQuery
     # Example Schema name
 
-  get_brandname_from_tablename_flag: True
+  get_brandname_from_tablename_flag: False
   # if get_brandname_from_tablename_flag = True, position of brand name in the daton integration name
   brandname_position_in_tablename: 0
   # if get_brandname_from_tablename_flag = False, provide the brand name to be populated in the table
-  default_brandname: ""
+  default_brandname: ''
 
   get_storename_from_tablename_flag: True    
   # if get_storename_from_tablename_flag = True, position of store name in the daton integration name
   storename_position_in_tablename: 1
   # if get_storename_from_tablename_flag = False, provide the store name to be populated in the table
-  default_storename: ""
+  default_storename: ''
 
   currency_conversion_flag: False
-  timezone_conversion_flag: False
-  raw_table_timezone_offset_hours: {
-    "Shopify.Raw.BRAND_UK_SHOPIFY_ORDERS":-7,
-    "Shopify.Raw.BRAND_UK_SHOPIFY_PRODUCTS":-7
-  }
+  timezone_conversion_flag: True
 
   # Variables used for dbt-tests
   'dbt_date:time_zone': 'America/Los_Angeles'
 
       # Above are Example entries for raw table level input offset hours
+  
+  shopify_abandoned_checkouts_lookback: 2592000000
+  shopify_balance_transactions_lookback: 2592000000
+  shopify_carrier_services_lookback: 2592000000
+  shopify_collects_lookback: 2592000000
+  shopify_countries_lookback: 2592000000
+  shopify_custom_collections_lookback: 2592000000
+  shopify_customer_address_lookback: 2592000000
+  shopify_customers_lookback: 2592000000
+  shopify_disputes_lookback: 2592000000
+  shopify_events_lookback: 2592000000
+  shopify_fulfillment_events_lookback: 2592000000
+  shopify_fulfillment_orders_lookback: 2592000000
+  shopify_giftcards_lookback: 2592000000
+  shopify_inventory_items_lookback: 2592000000
+  shopify_inventory_levels_lookback: 2592000000
+  shopify_locations_lookback: 2592000000
+  shopify_orders_lookback: 2592000000
+  shopify_orders_addresses_lookback: 2592000000
+  shopify_orders_customer_lookback: 2592000000
+  shopify_orders_discount_allocations_lookback: 2592000000
+  shopify_orders_discount_applications_lookback: 2592000000
+  shopify_orders_fulfillments_lookback: 2592000000
+  shopify_orders_line_items_lookback: 2592000000
+  shopify_orders_line_items_properties_lookback: 2592000000
+  shopify_orders_line_items_tax_lines_lookback: 2592000000
+  shopify_orders_note_attributes_lookback: 2592000000
+  shopify_orders_shipping_lines_lookback: 2592000000
+  shopify_payouts_lookback: 2592000000
+  shopify_policies_lookback: 2592000000
+  shopify_price_rules_lookback: 2592000000
+  shopify_product_metafields_lookback: 2592000000
+  shopify_products_lookback: 2592000000
+  shopify_refund_line_items_tax_lookback: 2592000000
+  shopify_refunds_line_items_lookback: 2592000000
+  shopify_refunds_refund_line_items_lookback: 2592000000
+  shopify_refunds_transactions_lookback: 2592000000
+  shopify_shop_lookback: 2592000000
+  shopify_smart_collections_lookback: 2592000000
+  shopify_tender_transactions_lookback: 2592000000
+  shopify_transactions_lookback: 2592000000
 
   ShopifyAbandonedCheckouts: True
   ShopifyBalanceTransactions: True

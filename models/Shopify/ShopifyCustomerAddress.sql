@@ -4,52 +4,14 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
-{% endset %}
-
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-
-{% set table_name_query %}
-{{set_table_name('%shopify%customer_address')}}
-{% endset %}  
-
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name('shopify_customer_address_tbl_ptrn','%shopify%customer_address','shopify_customer_address_exclude_tbl_ptrn','') %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
         select 
-            '{{brand}}' as brand,
-            '{{store}}' as store,
+            {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+            {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
             cast(id as string) as id,
             cast(customer_id as string) as customer_id,
             address1,
@@ -75,7 +37,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         from  {{i}} a
                 {% if is_incremental() %}
                 {# /* -- this filter will only be applied on an incremental run */ #}
-                where {{daton_batch_runtime()}}  >= {{max_loaded}}
+                where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_customer_address_lookback') }},0) from {{ this }})
                 {% endif %}
         qualify dense_rank() over (partition by a.id order by {{daton_batch_runtime()}}, {{daton_batch_id()}} desc) = 1
 

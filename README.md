@@ -130,7 +130,7 @@ This package contains models from the Shopify API which includes reports on {{sa
 |Payouts | [ShopifyPayouts](models/Shopify/ShopifyPayouts.sql)| lists all of your payouts and their current status. |
 
 
-
+## DBT Tests
 
 The tests property defines assertions about a column, table, or view. The property contains a list of generic tests, referenced by name, which can include the four built-in generic tests available in dbt. For example, you can add tests that ensure a column contains no duplicates and zero null values. Any arguments or configurations passed to those tests should be nested below the test name.
 
@@ -623,7 +623,6 @@ cluster_by: ['id','order_id']
 | user_id | Yes |  |  |  |
 
 
-
 ### For details about default configurations for Table Primary Key columns, Partition columns, Clustering columns, please refer the properties.yaml used for this package as below. 
 	You can overwrite these default configurations by using your project specific properties yaml.
 ```yaml
@@ -637,6 +636,34 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyBalanceTransactions
     description: A list of order transactions.
@@ -644,8 +671,38 @@ models:
       materialized: incremental
       incremental_strategy: merge
       unique_key: ['id']
-      partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
+      partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: payout_id
+        tests:
+          - not_null
+      - name: payout_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["in_transit","pending","paid"]
+      - name: processed_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyCarrierServices
     description: A list of carrier services.
@@ -654,6 +711,28 @@ models:
       incremental_strategy: merge
       unique_key: ['id']
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: active
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['true','false']
+              quote: false
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyCollects
     description: A list of collects.
@@ -663,6 +742,37 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: collection_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyOrdersNoteAttributes
     description: A list of orders along with the note attributes unnested.
@@ -714,6 +824,32 @@ models:
       incremental_strategy: merge
       unique_key: ['id','provinces_id']
       cluster_by: ['provinces_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: name
+        tests:
+          - not_null
+      - name: code
+        tests:
+          - not_null
+      - name: provinces_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - provinces_id
 
   - name: ShopifyCustomCollections
     description: An automated collection uses selection conditions to automatically include matching products.
@@ -723,14 +859,65 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: handle
+        tests:
+          - not_null
+      - name: title
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyCustomerAddress
     description: A list of all the customer addresses and related fields
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['customers_id','id']
-      cluster_by: ['customers_id']
+      unique_key: ['customer_id','id']
+      cluster_by: ['customer_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+      - name: country
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - customer_id
+            - id
 
   - name: ShopifyCustomers
     description: A list orders along with the customer details
@@ -740,6 +927,34 @@ models:
       unique_key: ['customers_id']
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['customers_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: customers_id
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - customers_id
 
   - name: ShopifyDisputes
     description: A list orders along with the customer details
@@ -749,6 +964,38 @@ models:
       unique_key: ['id','order_id']
       partition_by: { 'field': 'initiated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id','order_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: type
+        tests:
+          - not_null
+      - name: status
+        tests:
+          - not_null
+      - name: initiated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - order_id
 
   - name: ShopifyEvents
     description: A list of events.
@@ -758,6 +1005,34 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: subject_type
+        tests:
+          - not_null
+      - name: verb
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyFulfillmentEvents
     description: A list of events.
@@ -767,6 +1042,43 @@ models:
       unique_key: ['id','fulfillment_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["status", "in_transit", "confirmed", "out_for_delivery", "label_printed", "delivered", "label_purchased", "attempted_delivery", "failure"]
+      - name: fulfillment_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: order_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - fulfillment_id
 
   - name: ShopifyFulfillmentOrders
     description: A report of orders with fulfillment details, destinations and assigned locations.
@@ -776,6 +1088,52 @@ models:
       unique_key: ['id','order_id','line_items_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: request_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["unsubmitted", "submitted"]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["open", "closed"]
+      - name: destination_email
+        tests:
+          - not_null
+      - name: line_items_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - order_id
+            - line_items_id
 
   - name: ShopifyGiftCards
     description: A report of gift cards.
@@ -785,15 +1143,84 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyInventoryItems
     description: A detailed report which gives details about inventory levels
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['id','inventory_item_id']
+      unique_key: ['id','sku']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['inventory_item_id']
+      cluster_by: ['id','sku']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: sku
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: requires_shipping
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['true','false']
+              quote: false
+      - name: tracked
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['true','false']
+              quote: false
+      - name: inventory_item_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - sku
 
   - name: ShopifyInventoryLevels
     description: A detailed report which gives details about inventory levels
@@ -803,6 +1230,32 @@ models:
       unique_key: ['inventory_item_id','location_id']
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['inventory_item_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: inventory_item_id
+        tests:
+          - not_null
+      - name: location_id
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - inventory_item_id
+            - location_id
 
   - name: ShopifyLocations
     description: Locations can be retail stores, warehouses, popups, dropshippers, or any other place where you manage or stock inventory.
@@ -812,6 +1265,49 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: zip
+        tests:
+          - not_null
+      - name: country
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: legacy
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['true','false']
+              quote: false
+      - name: active
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['true','false']
+              quote: false
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyOrders
     description: A list of orders.
@@ -821,6 +1317,40 @@ models:
       unique_key: ['order_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
 
   - name: ShopifyOrdersAddresses
     description: A list of billing and shipping addresses
@@ -830,6 +1360,41 @@ models:
       unique_key: ['order_id','email']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','email']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - email
 
   - name: ShopifyOrdersCustomer
     description: A report of orders at customer level
@@ -839,6 +1404,53 @@ models:
       unique_key: ['order_id','customer_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: customer_id
+        tests:
+          - not_null
+      - name: customer_created_at
+        tests:
+          - not_null
+      - name: customer_email
+        tests:
+          - not_null
+      - name: customer_updated_at
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - customer_id
 
   - name: ShopifyOrdersDiscountAllocations
     description: A list of orders at product level.
@@ -848,6 +1460,48 @@ models:
       unique_key: ['order_id','line_items_id','discount_application_index']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id','discount_application_index']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: line_items_id
+        tests:
+          - not_null
+      - name: discount_application_index
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - line_items_id
+            - discount_application_index
 
   - name: ShopifyOrdersDiscountApplications
     description: A list of order and line item discounts with their coupon codes.
@@ -857,6 +1511,56 @@ models:
       unique_key: ['order_id','discount_applications_target_type','discount_applications_type','discount_applications_value_type','_seq_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: discount_applications_target_type
+        tests:
+          - not_null
+      - name: discount_applications_type
+        tests:
+          - not_null
+      - name: discount_applications_value_type
+        tests:
+          - not_null
+      - name: _seq_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - discount_applications_target_type
+            - discount_applications_type
+            - discount_applications_value_type
+            - _seq_id
 
   - name: ShopifyOrdersFulfillments
     description: A report of orders with fulfillment details, destinations and assigned locations at product level.
@@ -866,6 +1570,48 @@ models:
       unique_key: ['order_id','fulfillments_id','line_items_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: fulfillments_id
+        tests:
+          - not_null
+      - name: line_items_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - fulfillments_id
+            - line_items_id
 
   - name: ShopifyOrdersLineItems
     description: A list of orders at product level.
@@ -875,6 +1621,47 @@ models:
       unique_key: ['order_id','line_items_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: line_items_id
+        tests:
+          - not_null
+      - name: line_items_variant_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - line_items_id
 
   - name: ShopifyOrdersLineItemsTaxLines
     description: A list of orders with  product level taxes.
@@ -884,6 +1671,52 @@ models:
       unique_key: ['order_id','line_items_id','tax_lines_title','_seq_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['order_id','line_items_id','tax_lines_title'] 
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: line_items_id
+        tests:
+          - not_null
+      - name: tax_lines_title
+        tests:
+          - not_null
+      - name: _seq_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - line_items_id
+            - tax_lines_title
+            - _seq_id
 
   - name: ShopifyOrdersShippingLines
     description: A list of orders.
@@ -892,7 +1725,45 @@ models:
       incremental_strategy: merge
       unique_key: ['order_id','shipping_lines_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['order_id','shipping_lines_id']
+      cluster_by: ['order_id','shipping_lines_id'] 
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: order_number
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: shipping_lines_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - order_id
+            - shipping_lines_id
 
   - name: ShopifyPayouts
     description: lists all of your payouts and their current status.
@@ -901,7 +1772,34 @@ models:
       incremental_strategy: merge
       unique_key: ['id']
       partition_by: { 'field': 'date', 'data_type': 'date' }
-      cluster_by: ['id']
+      cluster_by: ['id'] 
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: date
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["in_transit", "paid"]
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyPolicies
     description: List of policies for your Shopify store like Refund policy, Privacy policy, Terms of service, Shipping policy, Legal notice.
@@ -911,6 +1809,28 @@ models:
       unique_key: ['title']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['title']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+      - name: title
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - title
 
   - name: ShopifyPriceRules
     description: A list of rules to set pricing.
@@ -920,6 +1840,40 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: target_type
+        tests:
+          - not_null
+      - name: starts_at
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: title
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyProductMetafields
     description: A report of product metadata
@@ -929,15 +1883,79 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: owner_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyProducts
     description: A list of product summary, manufacturer & dimensions
     config:
       materialized: incremental
       incremental_strategy: merge
-      unique_key: ['sku','product_id','variant_id']
+      unique_key: ['variants_sku','id','variant_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
-      cluster_by: ['sku']
+      cluster_by: ['variants_sku']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: vendor
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: variant_id
+        tests:
+          - not_null
+      - name: variants_sku
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - variant_id
+            - variants_sku
 
   - name: ShopifyRefundLineItemsTax
     description: A list of taxes associated with the refunded item.
@@ -947,6 +1965,49 @@ models:
       unique_key: ['refund_id','refund_line_items_id','tax_lines_title','_seq_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['refund_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: refund_id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: refund_line_items_id
+        tests:
+          - not_null
+      - name: line_item_id
+        tests:
+          - not_null
+      - name: tax_lines_title
+        tests:
+          - not_null
+      - name: _seq_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - refund_id
+            - refund_line_items_id
+            - tax_lines_title
+            - _seq_id
 
   - name: ShopifyRefundsLineItems
     description: A list of refunded orders which includes refund & product level revenue.
@@ -956,6 +2017,45 @@ models:
       unique_key: ['refund_id','refund_line_items_id','line_item_variant_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['refund_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: refund_id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: refund_line_items_id
+        tests:
+          - not_null
+      - name: line_item_id
+        tests:
+          - not_null
+      - name: line_item_variant_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - refund_id
+            - refund_line_items_id
+            - line_item_variant_id
 
   - name: ShopifyRefundsRefundLineItems
     description: A list of refunded orders which includes refund & product level revenue.
@@ -965,6 +2065,38 @@ models:
       unique_key: ['refund_id','refund_line_items_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['refund_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: refund_id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: refund_line_items_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - refund_id
+            - refund_line_items_id
 
   - name: ShopifyRefundsTransactions
     description: A list of refund transactions.
@@ -974,6 +2106,42 @@ models:
       unique_key: ['refund_id','transactions_id','_seq_id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['refund_id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: refund_id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+      - name: transactions_id
+        tests:
+          - not_null
+      - name: _seq_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - refund_id
+            - transactions_id
+            - _seq_id
 
   - name: ShopifyShop
     description: Shop is a shopping destination and delivery tracking app that can be used  to track packages, discover new stores and products, make purchases using Shop Pay , and engage with your brand.
@@ -983,6 +2151,34 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifySmartCollections
     description: An automated collection uses selection conditions to automatically include matching products.
@@ -992,6 +2188,28 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'updated_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: updated_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyTenderTransactions
     description: Tender transaction created trigger starts a workflow when a monetary action such as a payment or refund takes place.
@@ -1001,6 +2219,34 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'processed_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: processed_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: payment_method
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
   - name: ShopifyTransactions
     description: A report of transactions with transactions fees, sources and status.
@@ -1010,6 +2256,40 @@ models:
       unique_key: ['id']
       partition_by: { 'field': 'created_at', 'data_type': 'timestamp', 'granularity': 'day' }
       cluster_by: ['id']
+    columns:
+      - name: brand
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["B"]
+      - name: store
+        tests:
+          - not_null
+      - name: id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: processed_at
+        tests:
+          - not_null
+      - name: payment_id
+        tests:
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
 
 ```
 

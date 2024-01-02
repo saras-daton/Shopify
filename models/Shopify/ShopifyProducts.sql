@@ -4,115 +4,50 @@
 {{ config( enabled = False ) }}
 {% endif %}
 
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
-{% endset %}
-
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-{% set table_name_query %}
-{{set_table_name('%shopify%products')}} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
-{% endset %}  
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-{% set results_list = [] %}
-{% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name('shopify_products_tbl_ptrn','%shopify%products','shopify_products_exclude_tbl_ptrn','') %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
 
     select 
-    '{{brand}}' as brand,
-    '{{store}}' as store,
+    {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+    {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
     cast(a.id as string) id,
     a.title,
     body_html,
     vendor,
     product_type,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
+    {{timezone_conversion("a.created_at")}} as created_at,
     handle,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="a.updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="published_at") }} as {{ dbt.type_timestamp() }}) as published_at,
+    {{timezone_conversion("a.updated_at")}} as updated_at,
+    {{timezone_conversion("published_at")}} as published_at,
     published_scope,
     tags,
     a.admin_graphql_api_id,
-    {% if target.type =='snowflake' %}
-    variants.value:id::varchar as variant_id,
-    coalesce(variants.value:product_id::varchar,'N/A') as variants_product_id,
-    variants.value:title::varchar as variants_title,
-    variants.value:price::numeric as variants_price,
-    coalesce(variants.value:sku::varchar,'N/A') as variants_sku,
-    variants.value:position::varchar as variants_position,
-    variants.value:inventory_policy::varchar as variants_inventory_policy,
-    variants.value:fulfillment_service::varchar as variants_fulfillment_service,
-    variants.value:inventory_management::varchar as variants_inventory_management,
-    variants.value:option1::varchar as variants_option1,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.value:created_at::timestamp") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.value:updated_at::timestamp") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
-    variants.value:taxable::varchar as variants_taxable,
-    variants.value:barcode::varchar as variants_barcode,
-    variants.value:grams::varchar as variants_grams,
-    variants.value:image_id::varchar as variants_image_id,
-    variants.value:weight::numeric as variants_weight,
-    variants.value:weight_unit::varchar as variants_weight_unit,
-    variants.value:inventory_item_id::varchar as variants_inventory_item_id,
-    variants.value:inventory_quantity::numeric as variants_inventory_quantity,
-    variants.value:old_inventory_quantity::numeric as variants_old_inventory_quantity,
-    variants.value:presentment_prices as variants_presentment_prices,
-    {% else %}
-    cast(variants.id as string) as variant_id,
-    coalesce(cast(variants.product_id as string),'N/A') as variants_product_id,
-    variants.title as variants_title,
-    cast(variants.price as numeric) as variants_price,
-    coalesce(cast(variants.sku as string),'N/A') as variants_sku,
-    variants.position as variants_position,
-    variants.inventory_policy as variants_inventory_policy,
-    variants.fulfillment_service as variants_fulfillment_service,
-    variants.inventory_management as variants_inventory_management,
-    variants.option1 as variants_option1,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.created_at") }} as {{ dbt.type_timestamp() }}) as variants_created_at,
-    cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="variants.updated_at") }} as {{ dbt.type_timestamp() }}) as variants_updated_at,
-    variants.taxable as variants_taxable,
-    variants.barcode as variants_barcode,
-    variants.grams as variants_grams,
-    variants.image_id as variants_image_id,
-    variants.weight as variants_weight,
-    variants.weight_unit as variants_weight_unit,
-    variants.inventory_item_id as variants_inventory_item_id,
-    variants.inventory_quantity as variants_inventory_quantity,
-    variants.old_inventory_quantity as variants_old_inventory_quantity,
-    {% endif %}
+    {{extract_nested_value("variants","id","string")}} as variant_id,
+    {{extract_nested_value("variants","product_id","string")}} as variants_product_id,
+    {{extract_nested_value("variants","title","string")}} as variant_title,
+    {{extract_nested_value("variants","price","numeric")}} as variants_price,
+    {{extract_nested_value("variants","sku","string")}} as variants_sku,
+    {{extract_nested_value("variants","position","string")}} as variants_position,
+    {{extract_nested_value("variants","inventory_policy","string")}} as variants_inventory_policy,
+    {{extract_nested_value("variants","fulfillment_service","string")}} as variants_fulfillment_service,
+    {{extract_nested_value("variants","inventory_management","string")}} as variant_inventory_management,
+    {{extract_nested_value("variants","option1","string")}} as variants_option1,
+    {{extract_nested_value("variants","created_at","string")}} as variants_created_at,
+    {{extract_nested_value("variants","updated_at","string")}} as variants_updated_at,
+    {{extract_nested_value("variants","taxable","string")}} as variants_taxable,
+    {{extract_nested_value("variants","barcode","string")}} as variants_barcode,
+    {{extract_nested_value("variants","grams","string")}} as variants_grams,
+    {{extract_nested_value("variants","image_id","string")}} as variants_image_id,
+    {{extract_nested_value("variants","weight","numeric")}} as variants_weight,
+    {{extract_nested_value("variants","weight_unit","string")}} as variants_weight_unit,
+    {{extract_nested_value("variants","inventory_item_id","string")}} as variants_inventory_item_id,
+    {{extract_nested_value("variants","inventory_quantity","numeric")}} as variants_inventory_quantity,
+    {{extract_nested_value("variants","old_inventory_quantity","numeric")}} as variants_old_inventory_quantity,
+    {{extract_nested_value("price","amount","string")}} as price_amount,
+    {{extract_nested_value("price","currency_code","string")}} as price_currency_code,
     template_suffix,
     status,
     {{daton_user_id()}} as _daton_user_id,
@@ -122,9 +57,11 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
     '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
     from {{i}} a
             {{unnesting("variants")}}
+            {{multi_unnesting('variants','presentment_prices')}}
+            {{multi_unnesting('presentment_prices','price')}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            where {{daton_batch_runtime()}}  >= {{max_loaded}} 
+            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_products_lookback') }},0) from {{ this }})
             {% endif %}
     qualify dense_rank() over (partition by a.id order by _daton_batch_runtime desc) = 1
         

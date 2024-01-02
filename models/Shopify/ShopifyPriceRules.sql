@@ -4,56 +4,14 @@
     {{ config(enabled=False) }}
 {% endif %}
 
-{% if is_incremental() %}
-    {%- set max_loaded_query -%}
-    select coalesce(max(_daton_batch_runtime) - 2592000000, 0) from {{ this }}
-    {% endset %}
-
-    {%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-    {%- if execute -%}
-        {% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-    {% else %}
-        {% set max_loaded = 0 %}
-    {%- endif -%}
-{% endif %}
-
-{% set table_name_query %}
-{{ set_table_name('%shopify%price_rules') }} and lower(table_name) not like '%googleanalytics%' and lower(table_name) not like 'v1%'
-{% endset %}
-
-{% set results = run_query(table_name_query) %}
-{% if execute %}
-    {# Return the first column #}
-    {% set results_list = results.columns[0].values() %}
-    {% set tables_lowercase_list = results.columns[1].values() %}
-{% else %}
-    {% set results_list = [] %}
-    {% set tables_lowercase_list = [] %}
-{% endif %}
-
-{% for i in results_list %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand = i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store = i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
-
-    {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours') %}
-        {% set hr = var('raw_table_timezone_offset_hours')[i] %}
-    {% else %}
-        {% set hr = 0 %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name('shopify_price_rules_tbl_ptrn','%shopify%price_rules','shopify_price_rules_exclude_tbl_ptrn','') %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
     select 
-        '{{ brand }}' as brand,
-        '{{ store }}' as store,
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
         cast(id as string) id,
         value_type,
         value,
@@ -62,10 +20,10 @@
         target_selection,
         allocation_method,
         once_per_customer,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="starts_at") }} as {{ dbt.type_timestamp() }}) as starts_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="ends_at") }} as {{ dbt.type_timestamp() }}) as ends_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="created_at") }} as {{ dbt.type_timestamp() }}) as created_at,
-        cast({{ dbt.dateadd(datepart="hour", interval=hr, from_date_or_timestamp="updated_at") }} as {{ dbt.type_timestamp() }}) as updated_at,
+        {{timezone_conversion("starts_at")}} as starts_at,
+        {{timezone_conversion("ends_at")}} as ends_at,
+        {{timezone_conversion("created_at")}} as created_at,
+        {{timezone_conversion("updated_at")}} as updated_at,
         title,
         admin_graphql_api_id,
         usage_limit,
@@ -82,8 +40,8 @@
     from {{ i }} a
     {% if is_incremental() %}
         {# /* -- this filter will only be applied on an incremental run */ #}
-        where {{ daton_batch_runtime() }} >= {{ max_loaded }}
+        where {{ daton_batch_runtime() }} >= (select coalesce(max(_daton_batch_runtime) - {{var('shopify_price_rules_lookback') }},0) from {{ this }})
     {% endif %}
     qualify dense_rank() over (partition by a.id order by {{ daton_batch_runtime() }} desc) = 1
     {% if not loop.last %} union all {% endif %}
-{% endfor %}
+{% endfor %} 
